@@ -1,0 +1,65 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { db, Item, count } from 'astro:db';
+import AddToCart from '../components/AddToChart.tsx';
+
+// Wir holen alle Items aus der DB
+const allItems = await db.select().from(Item);
+
+// Wir wählen per Zufall eines aus
+const randomItem = allItems[Math.floor(Math.random() * allItems.length)];
+---
+
+<Layout title="Objekt des Tages">
+  <main class="page-container">
+    <section class="daily-highlight">
+      <div class="highlight-card">
+        <span class="eyebrow">Highlight des Tages</span>
+        <h1>{randomItem.name}</h1>
+        <p class="description">{randomItem.description}</p>
+        
+        <div class="purchase-zone">
+          <p class="price">{randomItem.price.toFixed(2)} €</p>
+          <AddToCart client:load itemId={randomItem.id} initialStock={randomItem.stock} />
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .page-container {
+    padding-top: var(--nav-height);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .highlight-card {
+    background: white;
+    padding: 4rem;
+    border-radius: 32px;
+    max-width: 600px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+  }
+
+  .description {
+    font-size: 1.3rem;
+    color: var(--color-subtext);
+    margin: 2rem 0;
+  }
+
+  .purchase-zone {
+    margin-top: 3rem;
+    border-top: 1px solid #eee;
+    padding-top: 2rem;
+  }
+
+  .price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+</style>

@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { db, Item, desc } from 'astro:db';
+import AddToChart from '../components/AddToChart.tsx';
 
 // SSR-Magie: Wir laden die Daten live bei jedem Seitenaufruf aus der Datenbank
 // und sortieren sie so, dass das langweiligste Objekt zuerst kommt.
@@ -8,62 +9,34 @@ const items = await db.select().from(Item).orderBy(desc(Item.boredom));
 ---
 
 <Layout title="The Ordinary Emporium">
-  <main>
-    <h1>🏛️ The Ordinary Emporium</h1>
-    <p>Willkommen im Archiv des Alltäglichen. Entdecken Sie unsere absolut unspektakuläre Kollektion.</p>
+  <main class="page-container">
+    
+    <section class="hero">
+      <span class="eyebrow">Exklusive Belanglosigkeit</span>
+      <h1>The Ordinary Emporium</h1>
+      <p class="hero-subtitle">Willkommen im Archiv des Alltäglichen. Entdecken Sie unsere absolut unspektakuläre Kollektion.</p>
+    </section>
 
-    <div class="grid">
+    <div class="product-grid">
       {items.map((item) => (
-        <div class="card">
-          <h2>{item.name}</h2>
-          <p>{item.description}</p>
-          <div class="meta">
-            <span class="boredom-badge">Langeweile-Faktor: {item.boredom}/10</span>
+        /* Und hier "product-card" statt "card" */
+        <div class="product-card">
+          <div>
+            <span class="boredom-label">Langeweile-Faktor: {item.boredom}/10</span>
+            <h2>{item.name}</h2>
+            <p class="description">{item.description}</p>
           </div>
-          <p class="price">{item.price.toFixed(2)} €</p>
-          <p class="stock"><small>Noch {item.stock} Stück auf Lager</small></p>
           
+          <div class="card-footer">
+            <p class="price">{item.price.toFixed(2)} €</p>
+            <AddToChart 
+              client:load 
+              itemId={item.id} 
+              initialStock={item.stock} 
+            />
           </div>
+        </div>
       ))}
     </div>
   </main>
 </Layout>
-
-<style>
-  main { 
-    padding: 2rem; 
-    max-width: 1000px; 
-    margin: 0 auto; 
-    font-family: system-ui, sans-serif;
-  }
-  h1 { 
-    font-size: 2.5rem; 
-    margin-bottom: 0.5rem; 
-  }
-  .grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-    gap: 1.5rem; 
-    margin-top: 2rem; 
-  }
-  .card { 
-    background: white; 
-    padding: 1.5rem; 
-    border-radius: 8px; 
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
-    border: 1px solid #eee; 
-    display: flex;
-    flex-direction: column;
-  }
-  .card h2 { margin-top: 0; }
-  .meta { margin: 1rem 0; }
-  .price { font-weight: bold; color: #333; font-size: 1.25rem; margin-bottom: 0; }
-  .stock { color: #666; margin-top: 0.2rem; margin-bottom: 1.5rem; }
-  .boredom-badge { 
-    background: #e0e0e0; 
-    padding: 0.3rem 0.6rem; 
-    border-radius: 4px; 
-    font-size: 0.85rem; 
-    color: #333; 
-  }
-</style>

@@ -1,0 +1,62 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Über uns">
+  <main class="page-container">
+    <section class="hero reveal">
+      <span class="eyebrow">Unsere Philosophie</span>
+      <h1>Hinter der Langeweile.</h1>
+      <p class="hero-subtitle">
+        Wir glauben, dass die Welt laut genug ist. Das Emporium ist ein Ort der Stille und der absoluten Durchschnittlichkeit.
+      </p>
+    </section>
+
+    <section class="about-content reveal">
+      <div class="text-block">
+        <h2>Warum Grau?</h2>
+        <p>
+          Grau ist nicht einfach eine Farbe, es ist ein Statement. In einer Welt voller Neonlichter bieten wir das Visuelle Äquivalent einer lauwarmen Tasse Wasser.
+        </p>
+      </div>
+      
+      <div class="text-block">
+        <h2>Unsere Mission</h2>
+        <p>
+          Vom ausgetrockneten Textmarker bis zur leicht verbogenen Büroklammer – wir kuratieren Objekte, die normalerweise übersehen werden.
+        </p>
+      </div>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  /* Wir nutzen wieder den page-container für den Abstand zur Navi */
+  .page-container {
+    padding-top: var(--nav-height);
+  }
+
+  .hero {
+    padding: 8rem 2rem 4rem;
+    text-align: center;
+  }
+
+  .about-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 4rem 2rem;
+    display: grid;
+    gap: 4rem;
+  }
+
+  .text-block h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .text-block p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--color-subtext);
+  }
+</style>
