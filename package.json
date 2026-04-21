@@ -12,6 +12,20 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^6.1.8"
+    "@astrojs/db": "^0.20.1",
+    "@astrojs/node": "^10.0.5",
+    "@astrojs/solid-js": "^6.0.1",
+    "@prisma/client": "^7.7.0",
+    "astro": "^6.1.8",
+    "solid-js": "^1.9.12"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "dotenv": "^17.4.2",
+    "prisma": "^7.7.0",
+    "tsx": "^4.21.0"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }
