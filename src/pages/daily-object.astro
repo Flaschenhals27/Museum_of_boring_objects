@@ -3,63 +3,222 @@ import Layout from '../layouts/Layout.astro';
 import { db, Item, count } from 'astro:db';
 import AddToCart from '../components/AddToChart.tsx';
 
-// Wir holen alle Items aus der DB
-const allItems = await db.select().from(Item);
+const countResult = await db.select({ value: count() }).from(Item);
+const itemCount = countResult[0].value;
+const randomOffset = Math.floor(Math.random() * itemCount);
+const randomItems = await db.select().from(Item).limit(1).offset(randomOffset);
+const randomItem = randomItems[0];
 
-// Wir wählen per Zufall eines aus
-const randomItem = allItems[Math.floor(Math.random() * allItems.length)];
+// Features aus JSON holen, Fallback auf leeres Array
+const features = (randomItem.features as Array<{ headline: string; subtext: string }>) ?? [];
+const imageSrc = randomItem.image ?? '/products/placeholder.jpg'
 ---
 
-<Layout title="Objekt des Tages">
-  <main class="page-container">
-    <section class="daily-highlight">
-      <div class="highlight-card">
-        <span class="eyebrow">Highlight des Tages</span>
-        <h1>{randomItem.name}</h1>
-        <p class="description">{randomItem.description}</p>
-        
-        <div class="purchase-zone">
-          <p class="price">{randomItem.price.toFixed(2)} €</p>
-          <AddToCart client:load itemId={randomItem.id} initialStock={randomItem.stock} />
-        </div>
+<Layout title={randomItem.name}>
+  <main class="product-page">
+
+    <!-- HERO-SEKTION -->
+    <section class="section section-hero">
+      <div class="section-inner">
+        <p class="eyebrow">Objekt des Tages</p>
+        <h1 class="hero-title">{randomItem.name}</h1>
+        <p class="hero-sub">{randomItem.description}</p>
+      </div>
+      <div class="product-visual">
+        <img src={imageSrc} alt={randomItem.name} class="product-img">
       </div>
     </section>
+
+    <!-- DYNAMISCHE FEATURE-SEKTIONEN -->
+    {features.map((feature, i) => (
+      <section class={`section section-feature ${i % 2 === 1 ? 'section-feature--reverse' : ''}`}>
+        <div class="section-inner">
+          <h2 class="feature-headline">{feature.headline}</h2>
+          <p class="feature-subtext">{feature.subtext}</p>
+        </div>
+        <div class="product-visual">
+          <img src={imageSrc} alt={randomItem.name} class="product-img">
+        </div>
+      </section>
+    ))}
+
+    <!-- KAUF-SEKTION (immer ganz unten) -->
+    <section class="section section-buy">
+      <div class="buy-card">
+        <p class="buy-eyebrow">Bereit für das Unvermeidliche?</p>
+        <h2 class="buy-title">{randomItem.name}</h2>
+        <p class="buy-desc">{randomItem.description}</p>
+        <p class="buy-price">{randomItem.price.toFixed(2)} €</p>
+        <AddToCart client:load itemId={randomItem.id} initialStock={randomItem.stock} />
+      </div>
+    </section>
+
   </main>
 </Layout>
 
 <style>
-  .page-container {
+  .product-page {
     padding-top: var(--nav-height);
+  }
+
+  /* Basis-Sektion */
+  .section {
     min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4rem;
+    padding: 6rem 4rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* Hero */
+  .section-hero {
+    flex-direction: column;
+    text-align: center;
+    gap: 3rem;
+  }
+
+  .eyebrow {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-subtext);
+    margin: 0;
+  }
+
+  .hero-title {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin: 0.5rem 0;
+  }
+
+  .hero-sub {
+    font-size: 1.3rem;
+    color: var(--color-subtext);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Feature-Sektionen */
+  .section-feature {
+    flex-direction: row;
+  }
+
+  .section-feature--reverse {
+    flex-direction: row-reverse;
+  }
+
+  .section-inner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+
+  .feature-headline {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin: 0;
+  }
+
+  .feature-subtext {
+    font-size: 1.2rem;
+    color: var(--color-subtext);
+    line-height: 1.6;
+    margin: 0;
+    max-width: 480px;
+  }
+
+  /* Produktbild-Platzhalter */
+  .product-visual {
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  .highlight-card {
-    background: white;
-    padding: 4rem;
+  .product-img {
+    width: 100%;
+    max-width: 420px;
+    max-height: 420px;
+    aspect-ratio: 1;
+    object-fit: contain;   /* Bild wird nicht verzerrt, passt sich ein */
+    border-radius: 24px;
+    background: #e8e8ed; 
+  }
+
+  .placeholder-img span {
+    font-size: 3rem;
+    opacity: 0.4;
+  }
+
+  .placeholder-img small {
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* Kauf-Sektion */
+  .section-buy {
+    flex-direction: column;
+    background: var(--color-text);
+    color: #f5f5f7;
     border-radius: 32px;
-    max-width: 600px;
     text-align: center;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+    margin: 2rem auto 6rem;
+    min-height: unset;
+    padding: 6rem 4rem;
   }
 
-  .description {
-    font-size: 1.3rem;
-    color: var(--color-subtext);
-    margin: 2rem 0;
+  .buy-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+    max-width: 600px;
   }
 
-  .purchase-zone {
-    margin-top: 3rem;
-    border-top: 1px solid #eee;
-    padding-top: 2rem;
+  .buy-eyebrow {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    margin: 0;
   }
 
-  .price {
-    font-size: 1.5rem;
+  .buy-title {
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
     font-weight: 700;
-    margin-bottom: 1rem;
+    letter-spacing: -0.03em;
+    margin: 0;
+  }
+
+  .buy-desc {
+    opacity: 0.6;
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .buy-price {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .section {
+      flex-direction: column !important;
+      padding: 4rem 1.5rem;
+    }
   }
 </style>

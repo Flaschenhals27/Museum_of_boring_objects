@@ -8,6 +8,8 @@ const Item = defineTable({
     boredom: column.number(),
     price: column.number(),
     stock: column.number(),
+    features: column.json(),
+    image: column.text({optional: true}),
   }
 });
 

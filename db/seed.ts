@@ -9,6 +9,21 @@ export default async function seed() {
       boredom: 9,
       price: 15.99,
       stock: 42,
+      image: 'products/bueroklammer.jpg',
+      features: [
+        {
+          headline: "Revolutionäre Biegung.",
+          subtext: "Jahrzehntelange Forschung flossen in diesen präzisen 47°-Winkel. Papier hat keine Chance."
+        },
+        {
+          headline: "Grau. Aber nicht irgendein Grau.",
+          subtext: "Ein Grau, das Stärke ausstrahlt. Dezent. Kraftvoll. Unaufgeregt. Legendär."
+        },
+        {
+          headline: "Kompatibel mit jedem Papier.",
+          subtext: "A4. A5. Sogar Notizzettel. Die Büroklammer kennt keine Grenzen."
+        }
+      ]
     },
     {
       id: 2,
@@ -17,8 +32,22 @@ export default async function seed() {
       boredom: 10,
       price: 24.50,
       stock: 3,
+      image: 'products/textmarker.jpg',
+      features: [
+        {
+          headline: "Das Ende des Lichts.",
+          subtext: "Er war einmal leuchtend. Strahlend. Jetzt ist er trocken – und gerade deshalb unvergesslich."
+        },
+        {
+          headline: "Ein Geräusch, das bleibt.",
+          subtext: "Dieses charakteristische Kratzen. Wie Kreide auf einer Tafel, aber deutlich teurer."
+        },
+        {
+          headline: "Seltenheit als Feature.",
+          subtext: "Noch 3 auf Lager. Nicht weil wir wenig bestellt haben. Sondern weil die Nachfrage überwältigend war."
+        }
+      ]
     }
   ]);
-  
   console.log('🏛️ Museumsobjekte erfolgreich in Astro DB geladen!');
 }
