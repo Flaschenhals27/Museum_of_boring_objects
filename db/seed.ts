@@ -9,7 +9,12 @@ export default async function seed() {
       boredom: 9,
       price: 15.99,
       stock: 42,
-      image: 'products/bueroklammer.jpg',
+      images: [
+        'products/clip/hero.jpg',
+        'products/clip/colorful.jpg',
+        'products/clip/red-white-red.jpg',
+        'products/clip/black.jpg',
+      ],
       features: [
         {
           headline: "Revolutionäre Biegung.",
@@ -32,7 +37,12 @@ export default async function seed() {
       boredom: 10,
       price: 24.50,
       stock: 3,
-      image: 'products/textmarker.jpg',
+      images: [
+        'products/highlighter/hero.jpg',
+        'products/highlighter/five-pack.jpg',
+        'products/highlighter/four-pieces.jpg',
+        'products/highlighter/circle.jpg',
+      ],
       features: [
         {
           headline: "Das Ende des Lichts.",

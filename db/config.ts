@@ -9,7 +9,7 @@ const Item = defineTable({
     price: column.number(),
     stock: column.number(),
     features: column.json(),
-    image: column.text({optional: true}),
+    images: column.json({optional: true}),
   }
 });
 

@@ -11,7 +11,8 @@ const randomItem = randomItems[0];
 
 // Features aus JSON holen, Fallback auf leeres Array
 const features = (randomItem.features as Array<{ headline: string; subtext: string }>) ?? [];
-const imageSrc = randomItem.image ?? '/products/placeholder.jpg'
+const images = (randomItem.images as string[]) ?? [];
+const getImageSrc = (index: number) => images[index] || 'products/placeholder.jpg';
 ---
 
 <Layout title={randomItem.name}>
@@ -25,7 +26,9 @@ const imageSrc = randomItem.image ?? '/products/placeholder.jpg'
         <p class="hero-sub">{randomItem.description}</p>
       </div>
       <div class="product-visual">
-        <img src={imageSrc} alt={randomItem.name} class="product-img">
+        <div class="img-wrapper">
+          <img src={getImageSrc(0)} alt={randomItem.name} class="product-img">
+        </div>
       </div>
     </section>
 
@@ -37,7 +40,9 @@ const imageSrc = randomItem.image ?? '/products/placeholder.jpg'
           <p class="feature-subtext">{feature.subtext}</p>
         </div>
         <div class="product-visual">
-          <img src={imageSrc} alt={randomItem.name} class="product-img">
+          <div class="img-wrapper">
+            <img src={getImageSrc(i+1)} alt={randomItem.name} class="product-img">
+          </div>
         </div>
       </section>
     ))}
@@ -63,7 +68,6 @@ const imageSrc = randomItem.image ?? '/products/placeholder.jpg'
 
   /* Basis-Sektion */
   .section {
-    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -78,6 +82,7 @@ const imageSrc = randomItem.image ?? '/products/placeholder.jpg'
     flex-direction: column;
     text-align: center;
     gap: 3rem;
+    padding-top: 8rem;
   }
 
   .eyebrow {
@@ -145,14 +150,17 @@ const imageSrc = randomItem.image ?? '/products/placeholder.jpg'
     justify-content: center;
   }
 
+  .img-wrapper {
+    border-radius: 24px;
+    overflow: hidden;  /* schneidet das Bild an den abgerundeten Ecken ab */
+    max-width: 420px;
+    width: 100%;
+  }
+
   .product-img {
     width: 100%;
-    max-width: 420px;
-    max-height: 420px;
-    aspect-ratio: 1;
-    object-fit: contain;   /* Bild wird nicht verzerrt, passt sich ein */
-    border-radius: 24px;
-    background: #e8e8ed; 
+    display: block;   /* verhindert kleinen Lücken unter dem Bild */
+    object-fit: cover;
   }
 
   .placeholder-img span {
@@ -173,9 +181,9 @@ const imageSrc = randomItem.image ?? '/products/placeholder.jpg'
     color: #f5f5f7;
     border-radius: 32px;
     text-align: center;
-    margin: 2rem auto 6rem;
+    margin: 2rem auto 3rem; /* GEÄNDERT: 6rem → 3rem */
     min-height: unset;
-    padding: 6rem 4rem;
+    padding: 3rem 2rem;     /* GEÄNDERT: 6rem 4rem → 3rem 2rem */
   }
 
   .buy-card {
@@ -196,7 +204,7 @@ const imageSrc = randomItem.image ?? '/products/placeholder.jpg'
   }
 
   .buy-title {
-    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    font-size: clamp(1.2rem, 2vw, 1.8rem); /* GEÄNDERT: kleiner */
     font-weight: 700;
     letter-spacing: -0.03em;
     margin: 0;
@@ -209,7 +217,7 @@ const imageSrc = randomItem.image ?? '/products/placeholder.jpg'
   }
 
   .buy-price {
-    font-size: 2rem;
+    font-size: 1.4rem;  /* GEÄNDERT: 2rem → 1.4rem */
     font-weight: 700;
     margin: 0;
   }
