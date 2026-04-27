@@ -1,62 +1,301 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+export const prerender = true; // SSG – diese Seite ist statisch!
 ---
 
 <Layout title="Über uns">
-  <main class="page-container">
-    <section class="hero reveal">
+  <main class="about-page">
+
+    <!-- HERO -->
+    <section class="about-hero">
       <span class="eyebrow">Unsere Philosophie</span>
       <h1>Hinter der Langeweile.</h1>
-      <p class="hero-subtitle">
-        Wir glauben, dass die Welt laut genug ist. Das Emporium ist ein Ort der Stille und der absoluten Durchschnittlichkeit.
+      <p class="about-hero-sub">
+        Wir glauben, dass die Welt laut genug ist. Das Emporium ist ein Ort der Stille
+        und der absoluten Durchschnittlichkeit.
       </p>
     </section>
 
-    <section class="about-content reveal">
-      <div class="text-block">
-        <h2>Warum Grau?</h2>
-        <p>
-          Grau ist nicht einfach eine Farbe, es ist ein Statement. In einer Welt voller Neonlichter bieten wir das Visuelle Äquivalent einer lauwarmen Tasse Wasser.
-        </p>
+    <!-- DREI WERTE-KACHELN -->
+    <section class="values-grid">
+      <div class="value-card">
+        <span class="value-icon">🪨</span>
+        <h3>Kompromisslose Mittelmäßigkeit</h3>
+        <p>Wir kuratieren nur Objekte, die niemand wirklich braucht. Das ist unsere Stärke.</p>
       </div>
-      
-      <div class="text-block">
-        <h2>Unsere Mission</h2>
-        <p>
-          Vom ausgetrockneten Textmarker bis zur leicht verbogenen Büroklammer – wir kuratieren Objekte, die normalerweise übersehen werden.
-        </p>
+      <div class="value-card">
+        <span class="value-icon">😴</span>
+        <h3>Zertifizierte Langeweile</h3>
+        <p>Jedes Produkt wird sorgfältig auf sein Langweile-Potential geprüft. Unter 7/10 kommt es nicht ins Sortiment.</p>
+      </div>
+      <div class="value-card">
+        <span class="value-icon">📦</span>
+        <h3>Nachhaltige Bedeutungslosigkeit</h3>
+        <p>Unsere Objekte hinterlassen keinen Eindruck – und damit eine minimale CO₂-Bilanz im kollektiven Gedächtnis.</p>
       </div>
     </section>
+
+    <!-- GROSSES ZITAT -->
+    <section class="quote-section">
+      <blockquote>
+        "In einer Welt voller Neonlichter sind wir das visuelle Äquivalent
+        einer lauwarmen Tasse Wasser."
+      </blockquote>
+      <cite>— Der Gründer, vermutlich</cite>
+    </section>
+
+    <!-- GESCHICHTE -->
+    <section class="story-section">
+      <div class="story-text">
+        <span class="eyebrow">Unsere Geschichte</span>
+        <h2>Wie alles begann.</h2>
+        <p>
+          Es war ein grauer Dienstagmorgen. Eine Büroklammer lag auf dem Schreibtisch.
+          Niemand beachtete sie. In diesem Moment wurde das Ordinary Emporium geboren –
+          als stiller Protest gegen die Tyrannei des Interessanten.
+        </p>
+        <p>
+          Seitdem kuratieren wir unermüdlich Objekte, die normalerweise übersehen werden.
+          Vom ausgetrockneten Textmarker bis zur leicht verbogenen Büroklammer –
+          jedes Stück erzählt die Geschichte seiner eigenen Unrelevanz.
+        </p>
+      </div>
+      <div class="story-stats">
+        <div class="stat">
+          <span class="stat-number">2</span>
+          <span class="stat-label">Produkte</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">0</span>
+          <span class="stat-label">Auszeichnungen</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">∞</span>
+          <span class="stat-label">Langeweile</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number">1</span>
+          <span class="stat-label">grauer Dienstag</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="about-cta">
+      <h2>Bereit für das Gewöhnliche?</h2>
+      <p>Entdecken Sie unsere Kollektion. Sie werden underwhelmed sein.</p>
+      <a href="/" class="cta-button">Zum Shop</a>
+    </section>
+
   </main>
 </Layout>
 
 <style>
-  /* Wir nutzen wieder den page-container für den Abstand zur Navi */
-  .page-container {
+  .about-page {
     padding-top: var(--nav-height);
-  }
-
-  .hero {
-    padding: 8rem 2rem 4rem;
-    text-align: center;
-  }
-
-  .about-content {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 4rem 2rem;
-    display: grid;
-    gap: 4rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
 
-  .text-block h2 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
+  /* Hero */
+  .about-hero {
+    text-align: center;
+    padding: 8rem 2rem 5rem;
   }
 
-  .text-block p {
-    font-size: 1.2rem;
-    line-height: 1.6;
+  .eyebrow {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: var(--color-subtext);
+  }
+
+  .about-hero h1 {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0.5rem 0 1.5rem;
+  }
+
+  .about-hero-sub {
+    font-size: 1.2rem;
+    color: var(--color-subtext);
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* Werte-Grid */
+  .values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem 0 5rem;
+  }
+
+  .value-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .value-icon {
+    font-size: 2rem;
+  }
+
+  .value-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .value-card p {
+    font-size: 0.95rem;
+    color: var(--color-subtext);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Zitat */
+  .quote-section {
+    text-align: center;
+    padding: 4rem 2rem;
+    border-top: 1px solid #e8e8e8;
+    border-bottom: 1px solid #e8e8e8;
+    margin-bottom: 5rem;
+  }
+
+  blockquote {
+    font-size: clamp(1.3rem, 3vw, 2rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.4;
+    margin: 0 0 1rem;
+    font-style: italic;
+  }
+
+  cite {
+    font-size: 0.9rem;
+    color: var(--color-subtext);
+    font-style: normal;
+  }
+
+  /* Geschichte */
+  .story-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+    padding-bottom: 5rem;
+  }
+
+  .story-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .story-text h2 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0;
+  }
+
+  .story-text p {
+    font-size: 1rem;
+    color: var(--color-subtext);
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  /* Stats */
+  .story-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .stat {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--color-subtext);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* CTA */
+  .about-cta {
+    background: var(--color-text);
+    color: #f5f5f7;
+    border-radius: 32px;
+    text-align: center;
+    padding: 4rem 2rem;
+    margin-bottom: 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .about-cta h2 {
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0;
+  }
+
+  .about-cta p {
+    opacity: 0.6;
+    margin: 0;
+  }
+
+  .cta-button {
+    margin-top: 0.5rem;
+    background: white;
+    color: var(--color-text);
+    text-decoration: none;
+    padding: 0.75rem 2rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: opacity 0.2s;
+  }
+
+  .cta-button:hover {
+    opacity: 0.85;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .story-section {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
   }
 </style>

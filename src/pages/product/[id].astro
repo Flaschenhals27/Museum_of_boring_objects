@@ -1,0 +1,352 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { db, Item, eq } from 'astro:db';
+import AddToCart from '../../components/AddToChart.tsx';
+
+// [id] aus der URL holen – das ist das dynamische Routing von Astro
+const { id } = Astro.params;
+
+// Produkt aus der DB laden anhand der ID
+const results = await db.select().from(Item).where(eq(Item.id, Number(id)));
+const item = results[0];
+
+// Falls kein Produkt gefunden → 404
+if (!item) {
+  return Astro.redirect('/404');
+}
+
+const features = (item.features as Array<{ headline: string; subtext: string }>) ?? [];
+const images = (item.images as string[]) ?? [];
+const getImageSrc = (index: number) => images[index] || '/products/placeholder.jpg';
+const specs = (item.specs as Record<string, string>) ?? {};
+const hasSpecs = Object.keys(specs).length > 0;
+---
+
+<Layout title={item.name}>
+  <main class="detail-page">
+
+    <!-- BREADCRUMB -->
+    <nav class="breadcrumb">
+      <a href="/">Shop</a>
+      <span>›</span>
+      <span>{item.name}</span>
+    </nav>
+
+    <!-- HAUPTBEREICH: Bilder links, Info rechts -->
+    <div class="detail-grid">
+
+      <!-- LINKE SEITE: Bildergalerie -->
+      <div class="gallery">
+        <!-- Großes Hauptbild -->
+        <div class="gallery-main">
+          <img src={getImageSrc(0)} alt={item.name} class="gallery-main-img" id="main-img" />
+        </div>
+        <!-- Thumbnails falls mehrere Bilder vorhanden -->
+        {images.length > 1 && (
+          <div class="gallery-thumbs">
+            {images.map((src, i) => (
+              <img
+                src={src}
+                alt={`${item.name} ${i + 1}`}
+                class={`gallery-thumb ${i === 0 ? 'active' : ''}`}
+                data-index={i}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <!-- RECHTE SEITE: Produktinfo -->
+      <div class="detail-info">
+        <span class="boredom-badge">😴 Langeweile-Faktor: {item.boredom}/10</span>
+        <h1 class="detail-title">{item.name}</h1>
+        <p class="detail-desc">{item.description}</p>
+
+        <div class="detail-divider"></div>
+
+        <p class="detail-price">{item.price.toFixed(2)} €</p>
+
+        <div class="detail-stock">
+          {item.stock > 0
+            ? <span class="in-stock">✓ Auf Lager ({item.stock} Stück)</span>
+            : <span class="out-of-stock">✗ Ausverkauft</span>
+          }
+        </div>
+
+        <AddToCart client:load itemId={item.id} initialStock={item.stock} />
+
+        <!-- Features als Accordion-Liste -->
+        {features.length > 0 && (
+          <div class="detail-features">
+            <p class="features-label">Produkthighlights</p>
+            {features.map((f) => (
+              <div class="feature-item">
+                <p class="feature-item-headline">{f.headline}</p>
+                <p class="feature-item-subtext">{f.subtext}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <!-- TECHNISCHE DATEN -->
+        {hasSpecs && (
+        <div class="specs-section">
+            <h2 class="specs-title">Technische Daten</h2>
+            <table class="specs-table">
+            <tbody>
+                {Object.entries(specs).map(([key, value]) => (
+                <tr>
+                    <td class="specs-key">{key}</td>
+                    <td class="specs-value">{value}</td>
+                </tr>
+                ))}
+            </tbody>
+            </table>
+        </div>
+        )}
+
+    </div>
+
+  </main>
+</Layout>
+
+<!-- Thumbnail-Klick wechselt das Hauptbild -->
+<script>
+  const thumbs = document.querySelectorAll('.gallery-thumb');
+  const mainImg = document.getElementById('main-img') as HTMLImageElement;
+
+  thumbs.forEach((thumb) => {
+    thumb.addEventListener('click', () => {
+      // Aktiven Thumbnail wechseln
+      thumbs.forEach(t => t.classList.remove('active'));
+      thumb.classList.add('active');
+      // Hauptbild tauschen
+      mainImg.src = (thumb as HTMLImageElement).src;
+    });
+  });
+</script>
+
+<style>
+  .detail-page {
+    padding-top: var(--nav-height);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-bottom: 6rem;
+  }
+
+  /* Breadcrumb */
+  .breadcrumb {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 2rem 0 1rem;
+    font-size: 0.85rem;
+    color: var(--color-subtext);
+  }
+
+  .breadcrumb a {
+    color: var(--color-subtext);
+    text-decoration: none;
+  }
+
+  .breadcrumb a:hover {
+    color: var(--color-text);
+  }
+
+  /* Haupt-Grid: 55% Bilder, 45% Info */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 55fr 45fr;
+    gap: 4rem;
+    align-items: start;
+    padding-top: 1rem;
+  }
+
+  /* Galerie */
+  .gallery-main {
+    border-radius: 20px;
+    overflow: hidden;
+    background: #e8e8ed;
+    aspect-ratio: 4/3;
+  }
+
+  .gallery-main-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .gallery-thumbs {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .gallery-thumb {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    opacity: 0.6;
+    transition: opacity 0.2s, border-color 0.2s;
+  }
+
+  .gallery-thumb:hover,
+  .gallery-thumb.active {
+    opacity: 1;
+    border-color: var(--color-text);
+  }
+
+  /* Info-Seite */
+  .detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: sticky;  /* bleibt beim Scrollen sichtbar */
+    top: calc(var(--nav-height) + 2rem);
+  }
+
+  .boredom-badge {
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: #f0f0f5;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    width: fit-content;
+  }
+
+  .detail-title {
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  .detail-desc {
+    color: var(--color-subtext);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .detail-divider {
+    height: 1px;
+    background: #e8e8e8;
+  }
+
+  .detail-price {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .detail-stock {
+    font-size: 0.9rem;
+  }
+
+  .in-stock {
+    color: #1a7f4b;
+    font-weight: 500;
+  }
+
+  .out-of-stock {
+    color: #c0392b;
+    font-weight: 500;
+  }
+
+  /* Features */
+  .detail-features {
+    margin-top: 1rem;
+    border-top: 1px solid #e8e8e8;
+    padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .features-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-subtext);
+    margin: 0;
+  }
+
+  .feature-item {
+    padding: 0.75rem;
+    background: #f5f5f7;
+    border-radius: 12px;
+  }
+
+  .feature-item-headline {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin: 0 0 0.25rem;
+  }
+
+  .feature-item-subtext {
+    font-size: 0.85rem;
+    color: var(--color-subtext);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .detail-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .detail-info {
+      position: static; /* kein sticky auf Mobile */
+    }
+  }
+
+  .specs-section {
+  margin-top: 2rem;
+  border-top: 1px solid #e8e8e8;
+  padding-top: 2rem;
+}
+
+.specs-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+}
+
+.specs-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.specs-table tr {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.specs-table tr:last-child {
+  border-bottom: none;
+}
+
+.specs-key {
+  padding: 0.6rem 0;
+  color: var(--color-subtext);
+  width: 45%;
+  vertical-align: top;
+}
+
+.specs-value {
+  padding: 0.6rem 0;
+  font-weight: 500;
+}
+</style>

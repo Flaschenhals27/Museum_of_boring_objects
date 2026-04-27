@@ -10,11 +10,19 @@ export default async function seed() {
       price: 15.99,
       stock: 42,
       images: [
-        'products/clip/hero.jpg',
-        'products/clip/colorful.jpg',
-        'products/clip/red-white-red.jpg',
-        'products/clip/black.jpg',
+        '/products/clip/hero.jpg',
+        '/products/clip/colorful.jpg',
+        '/products/clip/red-white-red.jpg',
+        '/products/clip/black.jpg',
       ],
+      specs: {
+        "Material": "Verzinkter Stahl",
+        "Länge": "32 mm",
+        "Breite": "8 mm",
+        "Gewicht": "0.5 g",
+        "Farbe": "Grau",
+        "Tragkraft": "ca. 10 Blatt"
+      },
       features: [
         {
           headline: "Revolutionäre Biegung.",
@@ -38,11 +46,19 @@ export default async function seed() {
       price: 24.50,
       stock: 3,
       images: [
-        'products/highlighter/hero.jpg',
-        'products/highlighter/five-pack.jpg',
-        'products/highlighter/four-pieces.jpg',
-        'products/highlighter/circle.jpg',
+        '/products/highlighter/hero.jpg',
+        '/products/highlighter/five-pack.jpg',
+        '/products/highlighter/four-pieces.jpg',
+        '/products/highlighter/circle.jpg',
       ],
+      specs: {
+        "Material": "Kunststoff, trocken",
+        "Länge": "135 mm",
+        "Tinte": "Keine",
+        "Farbe": "Ehemals Neongelb",
+        "Geruch": "Leicht chemisch",
+        "Zustand": "Hoffnungslos"
+      },
       features: [
         {
           headline: "Das Ende des Lichts.",
