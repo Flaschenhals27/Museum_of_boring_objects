@@ -1,0 +1,93 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { db, Cart, CartItem, eq } from 'astro:db';
+
+const sessionId = Astro.cookies.get('cart_session')?.value;
+if (sessionId) {
+  const cartRecord = (await db.select().from(Cart).where(eq(Cart.sessionId, sessionId)))[0];
+  if (cartRecord) {
+    await db.delete(CartItem).where(eq(CartItem.cartId, cartRecord.id));
+  }
+}
+---
+
+<Layout title="Bestellung bestätigt">
+  <main class="confirmed-page">
+    <div class="confirmed-card">
+      <p class="confirmed-icon">✅</p>
+      <h1>Bestellung aufgegeben.</h1>
+      <p class="confirmed-sub">
+        Elon Musk wurde soeben belastet. Er weiß es noch nicht.
+      </p>
+      <p class="confirmed-detail">
+        Ihre gewöhnlichen Gegenstände werden in 3-5 Werktagen geliefert.
+        Oder auch nicht. Wir sind ein Museum, kein Logistikunternehmen.
+      </p>
+      <a href="/" class="confirmed-btn">Weiter einkaufen</a>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .confirmed-page {
+    padding-top: var(--nav-height);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: calc(var(--nav-height) + 2rem) 2rem 4rem;
+  }
+
+  .confirmed-card {
+    background: white;
+    border-radius: 32px;
+    padding: 4rem 3rem;
+    max-width: 520px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .confirmed-icon {
+    font-size: 3.5rem;
+    margin: 0;
+  }
+
+  .confirmed-card h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0;
+  }
+
+  .confirmed-sub {
+    font-size: 1.1rem;
+    color: var(--color-subtext);
+    margin: 0;
+  }
+
+  .confirmed-detail {
+    font-size: 0.9rem;
+    color: var(--color-subtext);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .confirmed-btn {
+    margin-top: 1rem;
+    background: var(--color-text);
+    color: white;
+    text-decoration: none;
+    padding: 0.75rem 2rem;
+    border-radius: 999px;
+    font-weight: 600;
+    transition: opacity 0.2s;
+  }
+
+  .confirmed-btn:hover {
+    opacity: 0.85;
+  }
+</style>

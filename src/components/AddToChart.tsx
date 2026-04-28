@@ -1,27 +1,36 @@
-// src/components/AddToCart.tsx
 import { createSignal } from 'solid-js';
 
-// Wir definieren, welche Daten Astro an diese Komponente übergeben darf
 interface Props {
   itemId: number;
   initialStock: number;
 }
 
 export default function AddToCart(props: Props) {
-  // createSignal ist das SolidJS-Äquivalent zu Reacts useState
   const [stock, setStock] = createSignal(props.initialStock);
   const [isAdded, setIsAdded] = createSignal(false);
+  const [isLoading, setIsLoading] = createSignal(false);
 
-  const handleBuy = () => {
-    if (stock() > 0) {
-      setStock(stock() - 1); // Bestand lokal reduzieren
-      setIsAdded(true);      // Button-Status ändern
-      
-      // Nach 2 Sekunden den Text wieder zurücksetzen
-      setTimeout(() => setIsAdded(false), 2000);
-      
-      // Hier würde später der globale Warenkorb aktualisiert werden
-      console.log(`Objekt ${props.itemId} wurde in den Warenkorb gelegt!`);
+  const handleBuy = async () => {
+    if (stock() <= 0 || isLoading()) return;
+    setIsLoading(true);
+
+    try {
+      // NEU: API aufrufen statt nur lokal updaten
+      const res = await fetch('/api/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId: props.itemId, quantity: 1 }),
+      });
+
+      if (res.ok) {
+        setStock(stock() - 1);
+        setIsAdded(true);
+        setTimeout(() => setIsAdded(false), 2000);
+        // NEU: Event damit Nav-Badge sich aktualisiert
+        window.dispatchEvent(new CustomEvent('cart-updated'));
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -30,10 +39,9 @@ export default function AddToCart(props: Props) {
       <p style={{ color: "#666", "font-size": "0.9rem", "margin-bottom": "0.5rem" }}>
         Live-Bestand: {stock()} Stück
       </p>
-      
-      <button 
+      <button
         onClick={handleBuy}
-        disabled={stock() === 0}
+        disabled={stock() === 0 || isLoading()}
         style={{
           width: "100%",
           padding: "0.75rem",
@@ -45,11 +53,13 @@ export default function AddToCart(props: Props) {
           transition: "all 0.2s ease"
         }}
       >
-        {stock() === 0 
-          ? "Gähnend ausverkauft" 
-          : isAdded() 
-            ? "🥱 Im Warenkorb gelandet" 
-            : "In den Warenkorb"}
+        {isLoading()
+          ? "..."
+          : stock() === 0
+            ? "Gähnend ausverkauft"
+            : isAdded()
+              ? "🥱 Im Warenkorb gelandet"
+              : "In den Warenkorb"}
       </button>
     </div>
   );

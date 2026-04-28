@@ -1,0 +1,330 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { db, Cart, CartItem, Item, eq } from 'astro:db';
+
+// Session-ID aus Cookie holen
+const sessionId = Astro.cookies.get('cart_session')?.value;
+
+let cartItems: any[] = [];
+let total = 0;
+
+if (sessionId) {
+  const cartRecord = (await db.select().from(Cart).where(eq(Cart.sessionId, sessionId)))[0];
+
+  if (cartRecord) {
+    const rawItems = await db.select().from(CartItem).where(eq(CartItem.cartId, cartRecord.id));
+    cartItems = await Promise.all(
+      rawItems.map(async (cartItem) => {
+        const product = (await db.select().from(Item).where(eq(Item.id, cartItem.itemId)))[0];
+        return { cartItemId: cartItem.id, quantity: cartItem.quantity, product };
+      })
+    );
+    total = cartItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+  }
+}
+
+const isEmpty = cartItems.length === 0;
+---
+
+<Layout title="Warenkorb">
+  <main class="cart-page">
+
+    <h1 class="cart-title">Ihr Warenkorb</h1>
+    <p class="cart-sub">Gewöhnliches. Bald Ihres.</p>
+
+    {isEmpty ? (
+
+      <!-- LEERER WARENKORB -->
+      <div class="cart-empty">
+        <p class="cart-empty-icon">🛒</p>
+        <p class="cart-empty-text">Ihr Warenkorb ist so leer wie unsere Produktversprechen.</p>
+        <a href="/" class="cart-back-btn">Zum Shop</a>
+      </div>
+
+    ) : (
+
+      <div class="cart-layout">
+
+        <!-- LINKE SEITE: Produkte -->
+        <div class="cart-items">
+          {cartItems.map((item) => {
+            const images = (item.product.images as string[]) ?? [];
+            const thumbnail = images[0] ?? '/products/placeholder.jpg';
+            return (
+              <div class="cart-item">
+                <img src={thumbnail} alt={item.product.name} class="cart-item-img" />
+                <div class="cart-item-info">
+                  <p class="cart-item-name">{item.product.name}</p>
+                  <p class="cart-item-desc">{item.product.description}</p>
+                  <p class="cart-item-qty">Menge: {item.quantity}</p>
+                </div>
+                <div class="cart-item-price">
+                  <p>{(item.product.price * item.quantity).toFixed(2)} €</p>
+                  <!-- Entfernen-Button -->
+                  <button
+                    class="cart-remove-btn"
+                    data-cart-item-id={item.cartItemId}
+                    data-item-id={item.product.id}
+                    data-quantity={item.quantity}
+                  >
+                    Entfernen
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <!-- RECHTE SEITE: Zusammenfassung + Checkout -->
+        <div class="cart-summary">
+          <h2 class="summary-title">Zusammenfassung</h2>
+
+          {cartItems.map((item) => (
+            <div class="summary-line">
+              <span>{item.product.name} × {item.quantity}</span>
+              <span>{(item.product.price * item.quantity).toFixed(2)} €</span>
+            </div>
+          ))}
+
+          <div class="summary-divider"></div>
+
+          <div class="summary-total">
+            <span>Gesamt</span>
+            <span>{total.toFixed(2)} €</span>
+          </div>
+
+          <!-- CHECKOUT BUTTON -->
+          <a href="/checkout" class="checkout-btn">Zur Kasse →</a>
+        </div>
+
+      </div>
+
+    )}
+
+  </main>
+</Layout>
+
+<!-- Entfernen-Button Script -->
+<script>
+  document.querySelectorAll('.cart-remove-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const cartItemId = Number((btn as HTMLElement).dataset.cartItemId);
+      const itemId = Number((btn as HTMLElement).dataset.itemId);
+      const quantity = Number((btn as HTMLElement).dataset.quantity);
+
+      await fetch('/api/cart/remove', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cartItemId, itemId, quantity }),
+      });
+
+      // Seite neu laden damit Warenkorb aktuell ist
+      window.location.reload();
+    });
+  });
+</script>
+
+<style>
+  .cart-page {
+    padding-top: var(--nav-height);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-bottom: 6rem;
+  }
+
+  .cart-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 3rem 0 0.5rem;
+  }
+
+  .cart-sub {
+    color: var(--color-subtext);
+    margin: 0 0 3rem;
+  }
+
+  /* Leerer Warenkorb */
+  .cart-empty {
+    text-align: center;
+    padding: 6rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .cart-empty-icon {
+    font-size: 4rem;
+    margin: 0;
+  }
+
+  .cart-empty-text {
+    color: var(--color-subtext);
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .cart-back-btn {
+    margin-top: 1rem;
+    background: var(--color-text);
+    color: white;
+    text-decoration: none;
+    padding: 0.75rem 2rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  /* Layout */
+  .cart-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  /* Cart Items */
+  .cart-items {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .cart-item {
+    display: flex;
+    gap: 1.5rem;
+    background: white;
+    border-radius: 16px;
+    padding: 1.25rem;
+    align-items: center;
+  }
+
+  .cart-item-img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+
+  .cart-item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .cart-item-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin: 0;
+  }
+
+  .cart-item-desc {
+    font-size: 0.8rem;
+    color: var(--color-subtext);
+    margin: 0;
+  }
+
+  .cart-item-qty {
+    font-size: 0.8rem;
+    color: var(--color-subtext);
+    margin: 0;
+  }
+
+  .cart-item-price {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+
+  .cart-item-price p {
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .cart-remove-btn {
+    background: none;
+    border: none;
+    color: var(--color-subtext);
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    transition: color 0.2s;
+  }
+
+  .cart-remove-btn:hover {
+    color: #c0392b;
+  }
+
+  /* Summary */
+  .cart-summary {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    position: sticky;
+    top: calc(var(--nav-height) + 2rem);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .summary-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+  }
+
+  .summary-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--color-subtext);
+  }
+
+  .summary-divider {
+    height: 1px;
+    background: #e8e8e8;
+    margin: 0.5rem 0;
+  }
+
+  .summary-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .checkout-btn {
+    margin-top: 0.5rem;
+    background: var(--color-text);
+    color: white;
+    text-decoration: none;
+    padding: 0.9rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-align: center;
+    transition: opacity 0.2s;
+  }
+
+  .checkout-btn:hover {
+    opacity: 0.85;
+  }
+
+  @media (max-width: 768px) {
+    .cart-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .cart-summary {
+      position: static;
+    }
+  }
+</style>

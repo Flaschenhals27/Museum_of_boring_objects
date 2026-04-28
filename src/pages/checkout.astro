@@ -1,0 +1,427 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { db, Cart, CartItem, Item, eq } from 'astro:db';
+
+const sessionId = Astro.cookies.get('cart_session')?.value;
+
+let cartItems: any[] = [];
+let total = 0;
+
+if (sessionId) {
+  const cartRecord = (await db.select().from(Cart).where(eq(Cart.sessionId, sessionId)))[0];
+  if (cartRecord) {
+    const rawItems = await db.select().from(CartItem).where(eq(CartItem.cartId, cartRecord.id));
+    cartItems = await Promise.all(
+      rawItems.map(async (cartItem) => {
+        const product = (await db.select().from(Item).where(eq(Item.id, cartItem.itemId)))[0];
+        return { quantity: cartItem.quantity, product };
+      })
+    );
+    total = cartItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+  }
+}
+
+// Falls Warenkorb leer → zurück zum Shop
+if (cartItems.length === 0) {
+  return Astro.redirect('/');
+}
+---
+
+<Layout title="Kasse">
+  <main class="checkout-page">
+
+    <h1 class="checkout-title">Kasse</h1>
+    <p class="checkout-sub">Fast geschafft. Oder auch nicht.</p>
+
+    <div class="checkout-layout">
+
+      <!-- LINKE SEITE: Formular -->
+      <div class="checkout-form">
+
+        <!-- Lieferadresse -->
+        <div class="form-section">
+          <h2 class="form-title">Lieferadresse</h2>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Vorname</label>
+              <input type="text" placeholder="Max" />
+            </div>
+            <div class="form-field">
+              <label>Nachname</label>
+              <input type="text" placeholder="Mustermann" />
+            </div>
+            <div class="form-field form-field--full">
+              <label>Straße & Hausnummer</label>
+              <input type="text" placeholder="Musterstraße 1" />
+            </div>
+            <div class="form-field">
+              <label>PLZ</label>
+              <input type="text" placeholder="12345" />
+            </div>
+            <div class="form-field">
+              <label>Stadt</label>
+              <input type="text" placeholder="Musterstadt" />
+            </div>
+            <div class="form-field form-field--full">
+              <label>E-Mail</label>
+              <input type="email" placeholder="max@mustermann.de" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Zahlungsmethode -->
+        <div class="form-section">
+          <h2 class="form-title">Zahlungsmethode</h2>
+          <div class="payment-options">
+
+            <label class="payment-option">
+              <input type="radio" name="payment" value="elon" checked />
+              <div class="payment-card">
+                <span class="payment-icon">🤵</span>
+                <div>
+                  <p class="payment-name">Elon Musk zahlt</p>
+                  <p class="payment-desc">Er hat genug. Wir fragen ihn gar nicht erst.</p>
+                </div>
+                <span class="payment-badge">Empfohlen</span>
+              </div>
+            </label>
+
+            <label class="payment-option payment-option--disabled">
+              <input type="radio" name="payment" value="card" disabled />
+              <div class="payment-card">
+                <span class="payment-icon">💳</span>
+                <div>
+                  <p class="payment-name">Kreditkarte</p>
+                  <p class="payment-desc">Wozu, wenn Elon zahlt?</p>
+                </div>
+                <span class="payment-badge payment-badge--unavailable">Nicht verfügbar</span>
+              </div>
+            </label>
+
+            <label class="payment-option payment-option--disabled">
+              <input type="radio" name="payment" value="paypal" disabled />
+              <div class="payment-card">
+                <span class="payment-icon">🅿️</span>
+                <div>
+                  <p class="payment-name">PayPal</p>
+                  <p class="payment-desc">Elon hat PayPal gegründet. Er zahlt trotzdem.</p>
+                </div>
+                <span class="payment-badge payment-badge--unavailable">Nicht verfügbar</span>
+              </div>
+            </label>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RECHTE SEITE: Bestellübersicht -->
+      <div class="checkout-summary">
+        <h2 class="summary-title">Ihre Bestellung</h2>
+
+        {cartItems.map((item) => {
+          const images = (item.product.images as string[]) ?? [];
+          const thumbnail = images[0] ?? '/products/placeholder.jpg';
+          return (
+            <div class="summary-item">
+              <img src={thumbnail} alt={item.product.name} class="summary-img" />
+              <div class="summary-item-info">
+                <p class="summary-item-name">{item.product.name}</p>
+                <p class="summary-item-qty">× {item.quantity}</p>
+              </div>
+              <p class="summary-item-price">{(item.product.price * item.quantity).toFixed(2)} €</p>
+            </div>
+          );
+        })}
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-total">
+          <span>Gesamt</span>
+          <span>{total.toFixed(2)} €</span>
+        </div>
+
+        <div class="summary-elon">
+          <p>💸 Wird von Elon Musk übernommen</p>
+        </div>
+
+        <!-- BESTELLEN BUTTON -->
+        <a href="/order-confirmed" class="order-btn">
+          Jetzt bestellen – auf Elons Kosten
+        </a>
+
+        <p class="checkout-disclaimer">
+          Mit dem Klick auf "Jetzt bestellen" bestätigen Sie, dass Elon Musk
+          für diese Transaktion verantwortlich ist. Er wurde nicht gefragt.
+        </p>
+      </div>
+
+    </div>
+
+  </main>
+</Layout>
+
+<style>
+  .checkout-page {
+    padding-top: var(--nav-height);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-bottom: 6rem;
+  }
+
+  .checkout-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 3rem 0 0.5rem;
+  }
+
+  .checkout-sub {
+    color: var(--color-subtext);
+    margin: 0 0 3rem;
+  }
+
+  .checkout-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  /* Formular */
+  .form-section {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 1.25rem;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .form-field--full {
+    grid-column: 1 / -1;
+  }
+
+  .form-field label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-subtext);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .form-field input {
+    padding: 0.65rem 0.85rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fafafa;
+  }
+
+  .form-field input:focus {
+    border-color: var(--color-text);
+    background: white;
+  }
+
+  /* Zahlungsoptionen */
+  .payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .payment-option {
+    cursor: pointer;
+  }
+
+  .payment-option input {
+    display: none;
+  }
+
+  .payment-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    transition: border-color 0.2s;
+  }
+
+  .payment-option input:checked + .payment-card {
+    border-color: var(--color-text);
+    background: #fafafa;
+  }
+
+  .payment-option--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .payment-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .payment-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin: 0;
+  }
+
+  .payment-desc {
+    font-size: 0.8rem;
+    color: var(--color-subtext);
+    margin: 0;
+  }
+
+  .payment-badge {
+    margin-left: auto;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: var(--color-text);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+
+  .payment-badge--unavailable {
+    background: #e0e0e0;
+    color: var(--color-subtext);
+  }
+
+  /* Zusammenfassung */
+  .checkout-summary {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    position: sticky;
+    top: calc(var(--nav-height) + 2rem);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .summary-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+  }
+
+  .summary-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .summary-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .summary-item-info {
+    flex: 1;
+  }
+
+  .summary-item-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .summary-item-qty {
+    font-size: 0.8rem;
+    color: var(--color-subtext);
+    margin: 0;
+  }
+
+  .summary-item-price {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+
+  .summary-divider {
+    height: 1px;
+    background: #e8e8e8;
+  }
+
+  .summary-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .summary-elon {
+    background: #f0f0f5;
+    border-radius: 10px;
+    padding: 0.75rem;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .summary-elon p {
+    margin: 0;
+  }
+
+  .order-btn {
+    background: var(--color-text);
+    color: white;
+    text-decoration: none;
+    padding: 0.9rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-align: center;
+    transition: opacity 0.2s;
+    font-size: 0.95rem;
+  }
+
+  .order-btn:hover {
+    opacity: 0.85;
+  }
+
+  .checkout-disclaimer {
+    font-size: 0.75rem;
+    color: var(--color-subtext);
+    text-align: center;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .checkout-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .checkout-summary {
+      position: static;
+    }
+  }
+</style>
