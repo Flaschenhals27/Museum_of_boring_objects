@@ -1,8 +1,10 @@
 ---
+import NavBar from '../components/NavBar.tsx';
 interface Props {
 	title: string;
 }
 const { title } = Astro.props
+
 ---
 
 <!doctype html>
@@ -16,17 +18,7 @@ const { title } = Astro.props
 		<title>{title} | The Ordinary Emporium</title>
 	</head>
 	<body>
-		<nav class="nav-container">
-			<div class="nav-blur-bg"></div>
-			<div class="nav-content">
-				<a href="/" class="nav-logo">The Ordinary Emporium</a>
-				<ul class="nav-links">
-					<li><a href="/daily-object">Objekt des Tages</a></li>
-					<li><a href="/">Shop</a></li>
-					<li><a href="/about">About</a></li>
-				</ul>
-			</div>
-		</nav>
+		<NavBar client:load />
 		<slot />
 		<footer class="footer">
 			<div class="footer-inner">
@@ -45,13 +37,6 @@ const { title } = Astro.props
 
 <style is:global>
 
-	:root {
-		--color-bg: #f5f5f7;
-		--color-text: #1d1d1f;
-		--color-subtext: #86866b;
-		--nav-height: 48px;
-	}
-
 	body {
 		margin: 0;
 		padding: 0;
@@ -66,63 +51,6 @@ const { title } = Astro.props
 
 	main, .produc-page {
 		flex: 1;
-	}
-
-	.nav-container {
-		position: fixed;   /* Bleibt beim Scrollen oben kleben */
-		top: 0;
-		width: 100%;
-		height: var(--nav-height);
-		z-index: 9999;     /* Immer ganz oben auf der Z-Achse */
-		display: flex;
-		justify-content: center;
-	}
-
-	.nav-blur-bg {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		background: rgba(245, 245, 247, 0.8); /* Leicht transparentes Grau */
-		backdrop-filter: blur(20px);          /* Der berühmte Apple-Glass-Effekt */
-		border-bottom: 1px solid rgba(0,0,0,0.1);
-	}
-
-	.nav-content {
-		position: relative; /* Über den Blur-Hintergrund legen */
-		width: 100%;
-		max-width: auto;
-		padding: 0 22px;
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-
-	.nav-logo {
-		text-decoration: none;
-		color: var(--color-text);
-		font-weight: 600;
-		font-size: 1.1rem;
-		letter-spacing: -0.02em;
-	}
-
-	.nav-links {
-		list-style: none;
-		display: flex;
-		gap: 24px;
-		margin: 0;
-		padding: 0;
-	}
-
-	.nav-links a {
-		text-decoration: none;
-		color: var(--color-text);
-		font-size: 0.75rem; /* Apple-Nav-Links sind oft sehr klein */
-		opacity: 0.8;
-		transition: opacity 0.2s;
-	}
-
-	.nav-links a:hover {
-		opacity: 1; /* Effekt beim Drüberfahren */
 	}
 
 	.footer {
@@ -176,4 +104,293 @@ const { title } = Astro.props
 		font-size: 0.75rem;
 		margin: 0;
 	}
+
+	.gallery-main {
+		border-radius: 20px;
+		overflow: hidden;
+		background: #e8e8ed;
+		aspect-ratio: 4/3;
+		cursor: zoom-in;
+		position: relative;
+	}
+
+	.gallery-main-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	.gallery-thumbs {
+		display: flex;
+		gap: 0.75rem;
+		margin-top: 1rem;
+		flex-wrap: wrap;
+	}
+
+	.gallery-thumb {
+		width: 80px;
+		height: 80px;
+		object-fit: cover;
+		border-radius: 10px;
+		cursor: pointer;
+		border: 2px solid transparent;
+		opacity: 0.6;
+		transition: opacity 0.2s, border-color 0.2s;
+	}
+
+	.gallery-thumb:hover,
+	.gallery-thumb.active {
+		opacity: 1;
+		border-color: var(--color-text);
+	}
+
+	.gallery-zoom-hint {
+		position: absolute;
+		bottom: 0.75rem;
+		right: 0.75rem;
+		background: rgba(0,0,0,0.5);
+		color: white;
+		font-size: 0.75rem;
+		padding: 0.3rem 0.6rem;
+		border-radius: 999px;
+		opacity: 0;
+		transition: opacity 0.2s;
+	}
+
+	.gallery-main:hover .gallery-zoom-hint {
+		opacity: 1;
+	}
+
+	/* Lightbox */
+	.lightbox {
+		position: fixed;
+		inset: 0;
+		background: rgba(0,0,0,0.9);
+		z-index: 99999;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.lightbox-content {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		max-width: 90vw;
+		max-height: 90vh;
+	}
+
+	.lightbox-img {
+		max-width: 80vw;
+		max-height: 85vh;
+		object-fit: contain;
+		border-radius: 8px;
+	}
+
+	.lightbox-close {
+		position: absolute;
+		top: -2.5rem;
+		right: 0;
+		background: none;
+		border: none;
+		color: white;
+		font-size: 1.5rem;
+		cursor: pointer;
+		opacity: 0.7;
+		transition: opacity 0.2s;
+	}
+
+	.lightbox-close:hover {
+		opacity: 1;
+	}
+
+	.lightbox-arrow {
+		background: rgba(255,255,255,0.1);
+		border: none;
+		color: white;
+		font-size: 2.5rem;
+		width: 48px;
+		height: 48px;
+		border-radius: 50%;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: background 0.2s;
+		flex-shrink: 0;
+	}
+
+	.lightbox-arrow:hover {
+		background: rgba(255,255,255,0.2);
+	}
+
+	.lightbox-counter {
+		position: absolute;
+		bottom: -2rem;
+		left: 50%;
+		transform: translateX(-50%);
+		color: white;
+		opacity: 0.5;
+		font-size: 0.85rem;
+		margin: 0;
+	}
+
+	/* Nav höher */
+:root {
+  --nav-height: 60px; /* GEÄNDERT: 48px → 60px */
+}
+
+/* Logo */
+.nav-logo {
+  text-decoration: none;
+  color: var(--color-text);
+  font-weight: 700;        /* GEÄNDERT: 600 → 700 */
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+  transition: opacity 0.2s;
+}
+
+.nav-logo:hover {
+  opacity: 0.7;
+}
+
+/* Links */
+.nav-link {
+  text-decoration: none;
+  color: var(--color-text);
+  font-size: 0.85rem;      /* GEÄNDERT: 0.75rem → 0.85rem */
+  opacity: 0.6;
+  transition: opacity 0.2s, font-size 0.2s;
+  display: inline-block;
+}
+
+.nav-link:hover {
+  opacity: 1;
+  font-size: 0.92rem;      /* Leichte Vergrößerung beim Hover */
+}
+
+/* Aktiver Link */
+.nav-link--active {
+  opacity: 1;
+  font-weight: 600;
+  position: relative;
+}
+
+/* Kleiner Punkt unter aktivem Link */
+.nav-link--active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: var(--color-text);
+  border-radius: 50%;
+}
+
+/* Hamburger */
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: var(--color-text);
+  padding: 0.25rem 0.5rem;
+}
+
+/* Mobile Menü */
+.nav-mobile {
+  display: none;
+  position: absolute;
+  top: var(--nav-height);
+  left: 0;
+  width: 100%;
+  background: rgba(245, 245, 247, 0.95);
+  backdrop-filter: blur(20px);
+  list-style: none;
+  margin: 0;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.nav-mobile.open {
+  display: block;
+}
+
+.nav-mobile li a {
+  display: block;
+  padding: 0.75rem 2rem;
+  text-decoration: none;
+  color: var(--color-text);
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.nav-mobile li a:hover {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+  .hamburger {
+    display: block;
+  }
+}
+
+:root {
+  --color-bg: #f5f5f7;
+  --color-text: #1d1d1f;
+  --color-subtext: #86866b;
+  --nav-height: 60px;
+}
+
+.nav-container {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: var(--nav-height);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-blur-bg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(245, 245, 247, 0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.nav-content {
+  position: relative;
+  width: 100%;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+}
 </style>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const btn = document.getElementById('hamburger-btn');
+    const menu = document.getElementById('nav-mobile');
+    btn?.addEventListener('click', () => menu?.classList.toggle('open'));
+  });
+</script>

@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import { db, Item, eq } from 'astro:db';
 import AddToCart from '../../components/AddToChart.tsx';
+import ImageGallery from '../../components/ImageGallery.tsx';
 
 // [id] aus der URL holen – das ist das dynamische Routing von Astro
 const { id } = Astro.params;
@@ -38,22 +39,7 @@ const hasSpecs = Object.keys(specs).length > 0;
       <!-- LINKE SEITE: Bildergalerie -->
       <div class="gallery">
         <!-- Großes Hauptbild -->
-        <div class="gallery-main">
-          <img src={getImageSrc(0)} alt={item.name} class="gallery-main-img" id="main-img" />
-        </div>
-        <!-- Thumbnails falls mehrere Bilder vorhanden -->
-        {images.length > 1 && (
-          <div class="gallery-thumbs">
-            {images.map((src, i) => (
-              <img
-                src={src}
-                alt={`${item.name} ${i + 1}`}
-                class={`gallery-thumb ${i === 0 ? 'active' : ''}`}
-                data-index={i}
-              />
-            ))}
-          </div>
-        )}
+        <ImageGallery client:load images={images} alt={item.name} />
       </div>
 
       <!-- RECHTE SEITE: Produktinfo -->
@@ -111,22 +97,6 @@ const hasSpecs = Object.keys(specs).length > 0;
   </main>
 </Layout>
 
-<!-- Thumbnail-Klick wechselt das Hauptbild -->
-<script>
-  const thumbs = document.querySelectorAll('.gallery-thumb');
-  const mainImg = document.getElementById('main-img') as HTMLImageElement;
-
-  thumbs.forEach((thumb) => {
-    thumb.addEventListener('click', () => {
-      // Aktiven Thumbnail wechseln
-      thumbs.forEach(t => t.classList.remove('active'));
-      thumb.classList.add('active');
-      // Hauptbild tauschen
-      mainImg.src = (thumb as HTMLImageElement).src;
-    });
-  });
-</script>
-
 <style>
   .detail-page {
     padding-top: var(--nav-height);
@@ -163,45 +133,6 @@ const hasSpecs = Object.keys(specs).length > 0;
     gap: 4rem;
     align-items: start;
     padding-top: 1rem;
-  }
-
-  /* Galerie */
-  .gallery-main {
-    border-radius: 20px;
-    overflow: hidden;
-    background: #e8e8ed;
-    aspect-ratio: 4/3;
-  }
-
-  .gallery-main-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  .gallery-thumbs {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .gallery-thumb {
-    width: 80px;
-    height: 80px;
-    object-fit: cover;
-    border-radius: 10px;
-    cursor: pointer;
-    border: 2px solid transparent;
-    opacity: 0.6;
-    transition: opacity 0.2s, border-color 0.2s;
-  }
-
-  .gallery-thumb:hover,
-  .gallery-thumb.active {
-    opacity: 1;
-    border-color: var(--color-text);
   }
 
   /* Info-Seite */
@@ -349,4 +280,5 @@ const hasSpecs = Object.keys(specs).length > 0;
   padding: 0.6rem 0;
   font-weight: 500;
 }
+
 </style>
