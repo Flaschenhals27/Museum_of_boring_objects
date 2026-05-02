@@ -153,7 +153,16 @@ if (cartItems.length === 0) {
 
         <script>
           document.getElementById('order-btn')?.addEventListener('click', async () => {
-            // Cookie setzen damit order-confirmed weiß dass Bestellung frisch ist
+            // Email aus dem Formular lesen
+            const customerEmail = (document.querySelector('input[type="email"]') as HTMLInputElement)?.value;
+            
+            if (!customerEmail) {
+              alert('Bitte gib eine Email-Adresse ein!');
+              return;
+            }
+
+            // Email in Cookie speichern damit order-confirmed sie lesen kann
+            document.cookie = `customer_email=${encodeURIComponent(customerEmail)}; path=/`;
             document.cookie = 'order_placed=true; path=/';
             window.location.href = '/order-confirmed';
           });
