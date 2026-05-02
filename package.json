@@ -12,11 +12,12 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/db": "^0.20.1",
+    "@astrojs/db": "^0.21.1",
     "@astrojs/node": "^10.0.5",
     "@astrojs/solid-js": "^6.0.1",
     "@prisma/client": "^7.7.0",
     "astro": "^6.1.8",
+    "resend": "^6.12.2",
     "solid-js": "^1.9.12"
   },
   "devDependencies": {

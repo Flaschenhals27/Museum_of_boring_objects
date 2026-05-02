@@ -146,10 +146,18 @@ if (cartItems.length === 0) {
         </div>
 
         <!-- BESTELLEN BUTTON -->
-        <a href="/order-confirmed" class="order-btn">
+        <!-- GEÄNDERT: kein einfacher Link mehr -->
+        <button class="order-btn" id="order-btn">
           Jetzt bestellen – auf Elons Kosten
-        </a>
+        </button>
 
+        <script>
+          document.getElementById('order-btn')?.addEventListener('click', async () => {
+            // Cookie setzen damit order-confirmed weiß dass Bestellung frisch ist
+            document.cookie = 'order_placed=true; path=/';
+            window.location.href = '/order-confirmed';
+          });
+        </script>
         <p class="checkout-disclaimer">
           Mit dem Klick auf "Jetzt bestellen" bestätigen Sie, dass Elon Musk
           für diese Transaktion verantwortlich ist. Er wurde nicht gefragt.
