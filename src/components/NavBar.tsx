@@ -24,44 +24,51 @@ export default function NavBar() {
   });
 
   return (
-    <nav class="nav-container">
-      <div class="nav-blur-bg"></div>
-      <div class="nav-content">
-        <a href="/" class="nav-logo">🪨 The Ordinary Emporium</a>
-        <ul class="nav-links">
-          <For each={links}>
-            {(link) => (
-              <li>
-                <a href={link.href} class={`nav-link ${currentPath() === link.href ? 'nav-link--active' : ''}`}>
-                  {link.label}
-                </a>
-              </li>
-            )}
-          </For>
-        </ul>
+  <nav class="nav-container">
+    <div class="nav-blur-bg"></div>
+    <div class="nav-content">
 
-        {/* NEU: Warenkorb-Icon */}
+      {/* Logo – linksbündig */}
+      <a href="/" class="nav-logo">🪨 The Ordinary Emporium</a>
+
+      {/* Links – zentriert */}
+      <ul class="nav-links">
+        <For each={links}>
+          {(link) => (
+            <li>
+              <a href={link.href} class={`nav-link ${currentPath() === link.href ? 'nav-link--active' : ''}`}>
+                {link.label}
+              </a>
+            </li>
+          )}
+        </For>
+      </ul>
+
+      {/* Rechte Seite – rechtsbündig */}
+      <div class="nav-right">
         <a href="/cart" class="nav-cart">
           🛒
           {cartCount() > 0 && (
             <span class="nav-cart-badge">{cartCount()}</span>
           )}
         </a>
-
         <button class="hamburger" id="hamburger-btn" aria-label="Menü öffnen">☰</button>
       </div>
-      <ul class="nav-mobile" id="nav-mobile">
-        <For each={links}>
-          {(link) => (
-            <li>
-              <a href={link.href} class={currentPath() === link.href ? 'nav-link--active' : ''}>
-                {link.label}
-              </a>
-            </li>
-          )}
-        </For>
-        <li><a href="/cart">🛒 Warenkorb {cartCount() > 0 ? `(${cartCount()})` : ''}</a></li>
-      </ul>
-    </nav>
-  );
+
+    </div>
+
+    <ul class="nav-mobile" id="nav-mobile">
+      <For each={links}>
+        {(link) => (
+          <li>
+            <a href={link.href} class={currentPath() === link.href ? 'nav-link--active' : ''}>
+              {link.label}
+            </a>
+          </li>
+        )}
+      </For>
+      <li><a href="/cart">🛒 Warenkorb {cartCount() > 0 ? `(${cartCount()})` : ''}</a></li>
+    </ul>
+  </nav>
+);
 }

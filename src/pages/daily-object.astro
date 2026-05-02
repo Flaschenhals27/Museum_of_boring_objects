@@ -19,7 +19,7 @@ const getImageSrc = (index: number) => images[index] || 'products/placeholder.jp
   <main class="product-page">
 
     <!-- HERO-SEKTION -->
-    <section class="section section-hero">
+    <section class="section section-hero reveal">
       <div class="section-inner">
         <p class="eyebrow">Objekt des Tages</p>
         <h1 class="hero-title">{randomItem.name}</h1>
@@ -34,7 +34,7 @@ const getImageSrc = (index: number) => images[index] || 'products/placeholder.jp
 
     <!-- DYNAMISCHE FEATURE-SEKTIONEN -->
     {features.map((feature, i) => (
-      <section class={`section section-feature ${i % 2 === 1 ? 'section-feature--reverse' : ''}`}>
+      <section class={`section section-feature ${i % 2 === 1 ? 'section-feature--reverse' : ''}` + ' reveal'}>
         <div class="section-inner">
           <h2 class="feature-headline">{feature.headline}</h2>
           <p class="feature-subtext">{feature.subtext}</p>
@@ -48,7 +48,7 @@ const getImageSrc = (index: number) => images[index] || 'products/placeholder.jp
     ))}
 
     <!-- KAUF-SEKTION (immer ganz unten) -->
-    <section class="section section-buy">
+    <section class="section section-buy reveal">
       <div class="buy-card">
         <p class="buy-eyebrow">Bereit für das Unvermeidliche?</p>
         <h2 class="buy-title">{randomItem.name}</h2>

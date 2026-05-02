@@ -1,7 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { db, Item, count } from 'astro:db';
 
-export const prerender = true; // SSG – diese Seite ist statisch!
+export const prerender = true;
+
+const countResult = await db.select({ value: count() }).from(Item);
+const itemCount = countResult[0].value;
 ---
 
 <Layout title="Über uns">
@@ -63,19 +67,20 @@ export const prerender = true; // SSG – diese Seite ist statisch!
       </div>
       <div class="story-stats">
         <div class="stat">
-          <span class="stat-number">2</span>
+          <!-- GEÄNDERT: hardcoded "2" → dynamisch aus DB -->
+          <span class="stat-number" data-target={itemCount}>0</span>
           <span class="stat-label">Produkte</span>
         </div>
         <div class="stat">
-          <span class="stat-number">0</span>
+          <span class="stat-number" data-target="0">0</span>
           <span class="stat-label">Auszeichnungen</span>
         </div>
         <div class="stat">
-          <span class="stat-number">∞</span>
+          <span class="stat-number" data-target="999999">∞</span>
           <span class="stat-label">Langeweile</span>
         </div>
         <div class="stat">
-          <span class="stat-number">1</span>
+          <span class="stat-number" data-target="1">1</span>
           <span class="stat-label">grauer Dienstag</span>
         </div>
       </div>
@@ -299,3 +304,40 @@ export const prerender = true; // SSG – diese Seite ist statisch!
     }
   }
 </style>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+
+      const el = entry.target as HTMLElement;
+      const target = parseInt(el.dataset.target || '0');
+      const duration = 1500; // ms
+      const steps = 60;
+      const increment = target / steps;
+      let current = 0;
+      let step = 0;
+
+      const timer = setInterval(() => {
+        step++;
+        // Easing – am Anfang schnell, am Ende langsam
+        const progress = step / steps;
+        const eased = 1 - Math.pow(1 - progress, 3);
+        current = Math.round(target * eased);
+        el.textContent = current.toString();
+
+        if (step >= steps) {
+          el.textContent = target.toString();
+          clearInterval(timer);
+        }
+      }, duration / steps);
+
+      observer.unobserve(el);
+    });
+  }, { threshold: 0.5 });
+
+  // Alle stat-numbers mit data-target beobachten
+  document.querySelectorAll('.stat-number[data-target]').forEach(el => {
+    observer.observe(el);
+  });
+</script>
