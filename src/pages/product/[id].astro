@@ -1,17 +1,14 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { db, Item, eq } from 'astro:db';
+import { db, Item, eq, ne, sql } from 'astro:db';
 import AddToCart from '../../components/AddToChart.tsx';
 import ImageGallery from '../../components/ImageGallery.tsx';
+import RecentlyViewed from '../../components/RecentlyViewed.tsx';
 
-// [id] aus der URL holen – das ist das dynamische Routing von Astro
 const { id } = Astro.params;
-
-// Produkt aus der DB laden anhand der ID
 const results = await db.select().from(Item).where(eq(Item.id, Number(id)));
 const item = results[0];
 
-// Falls kein Produkt gefunden → 404
 if (!item) {
   return Astro.redirect('/404');
 }
@@ -21,47 +18,45 @@ const images = (item.images as string[]) ?? [];
 const getImageSrc = (index: number) => images[index] || '/products/placeholder.jpg';
 const specs = (item.specs as Record<string, string>) ?? {};
 const hasSpecs = Object.keys(specs).length > 0;
+
+// NEU: Zufällige Empfehlung – ein anderes Produkt
+const allOthers = await db.select().from(Item).where(ne(Item.id, Number(id)));
+const recommendation = allOthers[Math.floor(Math.random() * allOthers.length)];
+const recImages = (recommendation?.images as string[]) ?? [];
+const recThumbnail = recImages[0] ?? '/products/placeholder.jpg';
 ---
 
 <Layout title={item.name}>
   <main class="detail-page">
 
-    <!-- BREADCRUMB -->
     <nav class="breadcrumb">
       <a href="/">Shop</a>
       <span>›</span>
       <span>{item.name}</span>
     </nav>
 
-    <!-- HAUPTBEREICH: Bilder links, Info rechts -->
     <div class="detail-grid">
 
-      <!-- LINKE SEITE: Bildergalerie -->
+      <!-- LINKE SEITE -->
       <div class="gallery">
-        <!-- Großes Hauptbild -->
         <ImageGallery client:load images={images} alt={item.name} />
       </div>
 
-      <!-- RECHTE SEITE: Produktinfo -->
+      <!-- RECHTE SEITE -->
       <div class="detail-info">
         <span class="boredom-badge">😴 Langeweile-Faktor: {item.boredom}/10</span>
         <h1 class="detail-title">{item.name}</h1>
         <p class="detail-desc">{item.description}</p>
-
         <div class="detail-divider"></div>
-
         <p class="detail-price">{item.price.toFixed(2)} €</p>
-
         <div class="detail-stock">
           {item.stock > 0
             ? <span class="in-stock">✓ Auf Lager ({item.stock} Stück)</span>
             : <span class="out-of-stock">✗ Ausverkauft</span>
           }
         </div>
-
         <AddToCart client:load itemId={item.id} initialStock={item.stock} />
 
-        <!-- Features als Accordion-Liste -->
         {features.length > 0 && (
           <div class="detail-features">
             <p class="features-label">Produkthighlights</p>
@@ -73,31 +68,98 @@ const hasSpecs = Object.keys(specs).length > 0;
             ))}
           </div>
         )}
+
+        <!-- EMPFEHLUNG – innerhalb detail-info -->
+        {recommendation && (
+          <a href={`/product/${recommendation.id}`} class="rec-card-small">
+            <img src={recThumbnail} alt={recommendation.name} class="rec-card-small-img" />
+            <div class="rec-card-small-info">
+              <p class="rec-card-small-eyebrow">Das könnte Sie auch langweilen</p>
+              <p class="rec-card-small-name">{recommendation.name}</p>
+              <p class="rec-card-small-price">{recommendation.price.toFixed(2)} €</p>
+            </div>
+          </a>
+        )}
       </div>
 
-      <!-- TECHNISCHE DATEN -->
-        {hasSpecs && (
+      <!-- TECHNISCHE DATEN – außerhalb detail-info aber innerhalb detail-grid -->
+      {hasSpecs && (
         <div class="specs-section">
-            <h2 class="specs-title">Technische Daten</h2>
-            <table class="specs-table">
+          <h2 class="specs-title">Technische Daten</h2>
+          <table class="specs-table">
             <tbody>
-                {Object.entries(specs).map(([key, value]) => (
+              {Object.entries(specs).map(([key, value]) => (
                 <tr>
-                    <td class="specs-key">{key}</td>
-                    <td class="specs-value">{value}</td>
+                  <td class="specs-key">{key}</td>
+                  <td class="specs-value">{value}</td>
                 </tr>
-                ))}
+              ))}
             </tbody>
-            </table>
+          </table>
         </div>
-        )}
+      )}
 
     </div>
+
+    <!-- ZULETZT BESUCHT – unterhalb des Grids -->
+    <RecentlyViewed client:load currentId={Number(id)} />
 
   </main>
 </Layout>
 
 <style>
+
+  .rec-card-small {
+  display: flex;
+  gap: 0.75rem;
+  background: #f5f5f7;
+  border-radius: 12px;
+  padding: 0.75rem;
+  text-decoration: none;
+  color: var(--color-text);
+  transition: background 0.2s;
+  margin-top: 0.5rem;
+}
+
+.rec-card-small:hover {
+  background: #ebebef;
+}
+
+.rec-card-small-img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.rec-card-small-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+}
+
+.rec-card-small-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-subtext);
+  margin: 0;
+}
+
+.rec-card-small-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.rec-card-small-price {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin: 0;
+}
   .detail-page {
     padding-top: var(--nav-height);
     max-width: 1200px;
@@ -279,6 +341,150 @@ const hasSpecs = Object.keys(specs).length > 0;
 .specs-value {
   padding: 0.6rem 0;
   font-weight: 500;
+}
+
+/* Empfehlung */
+.recommendation {
+  margin-top: 4rem;
+  padding-top: 3rem;
+  border-top: 1px solid #e8e8e8;
+}
+
+.section-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-subtext);
+  margin: 0 0 1.5rem;
+}
+
+.rec-card {
+  display: flex;
+  gap: 2rem;
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  text-decoration: none;
+  color: var(--color-text);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.rec-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+}
+
+.rec-img-wrapper {
+  width: 180px;
+  height: 180px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.rec-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rec-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.rec-boredom {
+  font-size: 0.8rem;
+  background: #f0f0f5;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.rec-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.rec-desc {
+  color: var(--color-subtext);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.rec-price {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Zuletzt besucht */
+.recently-viewed {
+  margin-top: 3rem;
+  padding-top: 3rem;
+  border-top: 1px solid #e8e8e8;
+}
+
+.recent-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.recent-card {
+  text-decoration: none;
+  color: var(--color-text);
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.recent-card:hover {
+  transform: translateY(-2px);
+}
+
+.recent-img-wrapper {
+  aspect-ratio: 4/3;
+  overflow: hidden;
+}
+
+.recent-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.recent-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0.75rem 0.75rem 0.25rem;
+}
+
+.recent-price {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0 0.75rem 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .rec-card {
+    flex-direction: column;
+  }
+
+  .rec-img-wrapper {
+    width: 100%;
+    height: 200px;
+  }
+
+  .recent-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 </style>
