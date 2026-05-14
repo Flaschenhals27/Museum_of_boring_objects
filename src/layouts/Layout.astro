@@ -530,6 +530,63 @@ const { title } = Astro.props
   color: var(--color-subtext);
   margin: 0 0 1.5rem;
 }
+
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nav-user-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.nav-logout-btn {
+  background: none;
+  border: 1px solid #e0e0e0;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  color: var(--color-subtext);
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.nav-logout-btn:hover {
+  border-color: var(--color-text);
+  color: var(--color-text);
+}
+
+.nav-login-btn {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--color-text);
+  border: 1px solid #e0e0e0;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  transition: all 0.2s;
+}
+
+.nav-login-btn:hover {
+  border-color: var(--color-text);
+}
+
+.nav-mobile-logout {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: var(--color-text);
+  padding: 0.75rem 2rem;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  opacity: 0.8;
+}
 </style>
 
 <script>

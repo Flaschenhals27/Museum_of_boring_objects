@@ -1,0 +1,305 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getUserFromCookie } from '../lib/auth';
+
+const user = await getUserFromCookie(Astro.cookies);
+if (user) {
+  return Astro.redirect('/');
+} else {
+  // Token existiert aber ist ungültig → löschen
+  Astro.cookies.delete('auth_token', { path: '/' });
+}
+---
+
+<Layout title="Login">
+  <main class="login-page">
+    <div class="login-card">
+      <h1 class="login-title" id="form-title">Login</h1>
+      <p class="login-sub" id="form-sub">Willkommen zurück im Reich der Langeweile.</p>
+
+      <div id="error-msg" class="login-error" style="display:none"></div>
+
+      <div class="login-form" id="login-form">
+        <div class="form-field">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="max@mustermann.de" />
+        </div>
+        <div class="form-field">
+          <label>Passwort</label>
+          <input type="password" id="login-password" placeholder="••••••••" />
+        </div>
+        <button class="submit-btn" id="login-btn">Einloggen</button>
+      </div>
+
+      <div class="register-form" id="register-form" style="display:none">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Vorname</label>
+            <input type="text" id="reg-prename" placeholder="Max" />
+          </div>
+          <div class="form-field">
+            <label>Nachname</label>
+            <input type="text" id="reg-surname" placeholder="Mustermann" />
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Benutzername</label>
+          <input type="text" id="reg-username" placeholder="maxmuster" />
+        </div>
+        <div class="form-field">
+          <label>Email</label>
+          <input type="email" id="reg-email" placeholder="max@mustermann.de" />
+        </div>
+        <div class="form-field">
+          <label>Passwort</label>
+          <input type="password" id="reg-password" placeholder="••••••••" />
+        </div>
+        <button class="submit-btn" id="register-btn">Registrieren</button>
+      </div>
+
+      <div class="login-toggle">
+        <span id="toggle-text">Noch keinen Account?</span>
+        <a href="#" id="toggle-btn">Registrieren</a>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const loginForm = document.getElementById('login-form')!;
+  const registerForm = document.getElementById('register-form')!;
+  const toggleBtn = document.getElementById('toggle-btn')!;
+  const toggleText = document.getElementById('toggle-text')!;
+  const formTitle = document.getElementById('form-title')!;
+  const formSub = document.getElementById('form-sub')!;
+  const errorMsg = document.getElementById('error-msg')!;
+
+  let isRegister = false;
+
+  // Zwischen Login und Register wechseln
+  toggleBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    isRegister = !isRegister;
+    loginForm.style.display = isRegister ? 'none' : 'flex';
+    registerForm.style.display = isRegister ? 'flex' : 'none';
+    formTitle.textContent = isRegister ? 'Registrieren' : 'Login';
+    formSub.textContent = isRegister 
+      ? 'Werde Teil der Gemeinschaft des Gewöhnlichen.' 
+      : 'Willkommen zurück im Reich der Langeweile.';
+    toggleText.textContent = isRegister ? 'Schon registriert?' : 'Noch keinen Account?';
+    toggleBtn.textContent = isRegister ? 'Zum Login' : 'Registrieren';
+    errorMsg.style.display = 'none';
+  });
+
+  // Hilfsfunktion – Feld als invalid markieren
+const markInvalid = (id: string) => {
+  (document.getElementById(id) as HTMLInputElement).classList.add('invalid');
+};
+const clearInvalid = () => {
+  document.querySelectorAll('.form-field input').forEach(el => el.classList.remove('invalid'));
+};
+
+// Login
+document.getElementById('login-btn')!.addEventListener('click', async () => {
+  clearInvalid();
+  const emailEl = document.getElementById('login-email') as HTMLInputElement;
+  const passwordEl = document.getElementById('login-password') as HTMLInputElement;
+
+  let valid = true;
+  if (!emailEl.value) { markInvalid('login-email'); valid = false; }
+  if (!passwordEl.value) { markInvalid('login-password'); valid = false; }
+
+  if (!valid) {
+    errorMsg.textContent = 'Bitte alle Felder ausfüllen.';
+    errorMsg.style.display = 'block';
+    return;
+  }
+
+  const res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: emailEl.value, password: passwordEl.value }),
+  });
+
+  const data = await res.json();
+  if (res.ok) {
+    window.location.href = '/';
+  } else {
+    markInvalid('login-email');
+    markInvalid('login-password');
+    errorMsg.textContent = data.error;
+    errorMsg.style.display = 'block';
+  }
+});
+
+// Registrieren
+document.getElementById('register-btn')!.addEventListener('click', async () => {
+  clearInvalid();
+  const prename = document.getElementById('reg-prename') as HTMLInputElement;
+  const surname = document.getElementById('reg-surname') as HTMLInputElement;
+  const username = document.getElementById('reg-username') as HTMLInputElement;
+  const email = document.getElementById('reg-email') as HTMLInputElement;
+  const password = document.getElementById('reg-password') as HTMLInputElement;
+
+  let valid = true;
+  if (!prename.value) { markInvalid('reg-prename'); valid = false; }
+  if (!surname.value) { markInvalid('reg-surname'); valid = false; }
+  if (!username.value) { markInvalid('reg-username'); valid = false; }
+  if (!email.value) { markInvalid('reg-email'); valid = false; }
+  if (!password.value) { markInvalid('reg-password'); valid = false; }
+
+  if (!valid) {
+    errorMsg.textContent = 'Bitte alle Felder ausfüllen.';
+    errorMsg.style.display = 'block';
+    return;
+  }
+
+  if (password.value.length < 8) {
+    markInvalid('reg-password');
+    errorMsg.textContent = 'Passwort muss mindestens 8 Zeichen lang sein.';
+    errorMsg.style.display = 'block';
+    return;
+  }
+
+  const res = await fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: email.value,
+      username: username.value,
+      password: password.value,
+      prename: prename.value,
+      surname: surname.value,
+    }),
+  });
+
+  const data = await res.json();
+  if (res.ok) {
+    window.location.href = '/';
+  } else {
+    errorMsg.textContent = data.error;
+    errorMsg.style.display = 'block';
+  }
+});
+</script>
+
+<style>
+  .login-page {
+    padding-top: var(--nav-height);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: calc(var(--nav-height) + 2rem) 2rem 4rem;
+  }
+
+  .login-card {
+    background: white;
+    border-radius: 32px;
+    padding: 3rem;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .login-title {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0;
+  }
+
+  .login-sub {
+    color: var(--color-subtext);
+    margin: 0;
+    margin-top: -1rem;
+  }
+
+  .login-error {
+    background: #fff0f0;
+    color: #c0392b;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+  }
+
+  .login-form,
+  .register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .form-field label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-subtext);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .form-field input {
+    padding: 0.65rem 0.85rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-field input:focus {
+    border-color: var(--color-text);
+  }
+
+  .submit-btn {
+    background: var(--color-text);
+    color: white;
+    border: none;
+    padding: 0.85rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    font-family: inherit;
+    margin-top: 0.5rem;
+  }
+
+  .submit-btn:hover {
+    opacity: 0.85;
+  }
+
+  .login-toggle {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--color-subtext);
+  }
+
+  .login-toggle a {
+    color: var(--color-text);
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 0.25rem;
+  }
+
+  .form-field input.invalid {
+    border-color: #c0392b;
+    background: #fff0f0;
+  }
+</style>

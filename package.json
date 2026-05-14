@@ -16,10 +16,13 @@
     "@astrojs/node": "^10.0.5",
     "@astrojs/solid-js": "^6.0.1",
     "astro": "^6.1.8",
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.3",
     "resend": "^6.12.2",
     "solid-js": "^1.9.12"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^25.6.0",
     "dotenv": "^17.4.2"
   }

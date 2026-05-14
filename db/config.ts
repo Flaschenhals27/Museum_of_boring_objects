@@ -17,7 +17,8 @@ const Item = defineTable({
 const Cart = defineTable({
   columns: {
     id: column.number({ primaryKey: true, autoIncrement: true }),
-    sessionId: column.text({ unique: true }), // zufälliger Cookie-Wert
+    sessionId: column.text({ unique: true }),
+    userId: column.number({ optional: true }), // references entfernt
     createdAt: column.date(),
   }
 });
@@ -32,6 +33,16 @@ const CartItem = defineTable({
   }
 });
 
-export default defineDb({
-  tables: { Item, Cart, CartItem },
+const User = defineTable({
+  columns: {
+    id: column.number({ primaryKey: true, autoIncrement: true }),
+    email: column.text({ unique: true }),
+    username: column.text({ unique: true }),
+    password: column.text(), // gehasht
+    prename: column.text(),
+    surname: column.text(),
+    createdAt: column.date(),
+  }
 });
+
+export default defineDb({ tables: { Item, Cart, CartItem, User } });

@@ -1,26 +1,32 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { db, Cart, CartItem, Item, eq } from 'astro:db';
+import { getUserFromCookie } from '../lib/auth';
 
-// Session-ID aus Cookie holen
 const sessionId = Astro.cookies.get('cart_session')?.value;
+const userPayload = await getUserFromCookie(Astro.cookies);
 
 let cartItems: any[] = [];
 let total = 0;
 
-if (sessionId) {
-  const cartRecord = (await db.select().from(Cart).where(eq(Cart.sessionId, sessionId)))[0];
+// NEU: eingeloggte User per userId suchen, sonst per sessionId
+let cartRecord;
+if (userPayload) {
+  cartRecord = (await db.select().from(Cart).where(eq(Cart.userId, userPayload.userId)))[0];
+}
+if (!cartRecord && sessionId) {
+  cartRecord = (await db.select().from(Cart).where(eq(Cart.sessionId, sessionId)))[0];
+}
 
-  if (cartRecord) {
-    const rawItems = await db.select().from(CartItem).where(eq(CartItem.cartId, cartRecord.id));
-    cartItems = await Promise.all(
-      rawItems.map(async (cartItem) => {
-        const product = (await db.select().from(Item).where(eq(Item.id, cartItem.itemId)))[0];
-        return { cartItemId: cartItem.id, quantity: cartItem.quantity, product };
-      })
-    );
-    total = cartItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
-  }
+if (cartRecord) {
+  const rawItems = await db.select().from(CartItem).where(eq(CartItem.cartId, cartRecord.id));
+  cartItems = await Promise.all(
+    rawItems.map(async (cartItem) => {
+      const product = (await db.select().from(Item).where(eq(Item.id, cartItem.itemId)))[0];
+      return { cartItemId: cartItem.id, quantity: cartItem.quantity, product };
+    })
+  );
+  total = cartItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
 }
 
 const isEmpty = cartItems.length === 0;
@@ -56,11 +62,30 @@ const isEmpty = cartItems.length === 0;
                 <div class="cart-item-info">
                   <p class="cart-item-name">{item.product.name}</p>
                   <p class="cart-item-desc">{item.product.description}</p>
-                  <p class="cart-item-qty">Menge: {item.quantity}</p>
                 </div>
                 <div class="cart-item-price">
                   <p>{(item.product.price * item.quantity).toFixed(2)} €</p>
-                  <!-- Entfernen-Button -->
+                  <!-- NEU: Menge anpassen -->
+                  <div class="cart-item-qty-control">
+                    <input
+                      type="number"
+                      min="1"
+                      value={item.quantity}
+                      class="cart-qty-input"
+                      data-cart-item-id={item.cartItemId}
+                      data-item-id={item.product.id}
+                      data-old-quantity={item.quantity}
+                      data-price={item.product.price}
+                    />
+                    <button
+                      class="cart-update-btn"
+                      data-cart-item-id={item.cartItemId}
+                      data-item-id={item.product.id}
+                      data-old-quantity={item.quantity}
+                    >
+                      Aktualisieren
+                    </button>
+                  </div>
                   <button
                     class="cart-remove-btn"
                     data-cart-item-id={item.cartItemId}
@@ -104,8 +129,8 @@ const isEmpty = cartItems.length === 0;
   </main>
 </Layout>
 
-<!-- Entfernen-Button Script -->
 <script>
+  // Entfernen
   document.querySelectorAll('.cart-remove-btn').forEach((btn) => {
     btn.addEventListener('click', async () => {
       const cartItemId = Number((btn as HTMLElement).dataset.cartItemId);
@@ -117,9 +142,37 @@ const isEmpty = cartItems.length === 0;
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cartItemId, itemId, quantity }),
       });
-
-      // Seite neu laden damit Warenkorb aktuell ist
       window.location.reload();
+    });
+  });
+
+  // NEU: Menge aktualisieren
+  document.querySelectorAll('.cart-update-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const cartItemId = Number((btn as HTMLElement).dataset.cartItemId);
+      const itemId = Number((btn as HTMLElement).dataset.itemId);
+      const oldQuantity = Number((btn as HTMLElement).dataset.oldQuantity);
+
+      // Zugehöriges Input-Feld finden
+      const input = document.querySelector(
+        `.cart-qty-input[data-cart-item-id="${cartItemId}"]`
+      ) as HTMLInputElement;
+      const newQuantity = Number(input.value);
+
+      if (newQuantity === oldQuantity) return;
+
+      const res = await fetch('/api/cart/update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cartItemId, itemId, oldQuantity, newQuantity }),
+      });
+
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        const data = await res.json();
+        alert(data.error);
+      }
     });
   });
 </script>
@@ -327,4 +380,37 @@ const isEmpty = cartItems.length === 0;
       position: static;
     }
   }
+
+  .cart-item-qty-control {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.cart-qty-input {
+  width: 60px;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-align: center;
+  font-family: inherit;
+}
+
+.cart-update-btn {
+  background: var(--color-text);
+  color: white;
+  border: none;
+  padding: 0.3rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s;
+}
+
+.cart-update-btn:hover {
+  opacity: 0.8;
+}
 </style>

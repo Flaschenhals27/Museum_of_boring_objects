@@ -1,28 +1,48 @@
 import type { APIRoute } from 'astro';
-import { db, Cart, CartItem, eq, and, Item } from 'astro:db';
+import { db, Cart, CartItem, Item, eq, and } from 'astro:db';
+import { getUserFromCookie } from '../../../lib/auth';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   const { itemId, quantity = 1 } = await request.json();
 
-  // Session-ID aus Cookie holen oder neue erstellen
+  // User prüfen
+  const userPayload = await getUserFromCookie(cookies);
+
   let sessionId = cookies.get('cart_session')?.value;
   if (!sessionId) {
     sessionId = crypto.randomUUID();
     cookies.set('cart_session', sessionId, {
       path: '/',
-      maxAge: 60 * 60 * 24 * 30, // 30 Tage
+      maxAge: 60 * 60 * 24 * 30,
       httpOnly: true,
     });
   }
 
-  // Warenkorb für diese Session holen oder erstellen
-  let cart = (await db.select().from(Cart).where(eq(Cart.sessionId, sessionId)))[0];
+  // Warenkorb suchen – zuerst per userId wenn eingeloggt, sonst per sessionId
+  let cart;
+  if (userPayload) {
+    cart = (await db.select().from(Cart).where(eq(Cart.userId, userPayload.userId)))[0];
+  }
   if (!cart) {
-    await db.insert(Cart).values({ sessionId, createdAt: new Date() });
     cart = (await db.select().from(Cart).where(eq(Cart.sessionId, sessionId)))[0];
   }
 
-  // Prüfen ob das Item schon im Warenkorb ist
+  // Warenkorb erstellen falls nicht vorhanden
+  if (!cart) {
+    await db.insert(Cart).values({
+      sessionId,
+      userId: userPayload?.userId ?? null,
+      createdAt: new Date(),
+    });
+    cart = (await db.select().from(Cart).where(eq(Cart.sessionId, sessionId)))[0];
+  }
+
+  // Falls User eingeloggt und Cart noch keine userId hat → verknüpfen
+  if (userPayload && !cart.userId) {
+    await db.update(Cart).set({ userId: userPayload.userId }).where(eq(Cart.id, cart.id));
+  }
+
+  // Item hinzufügen oder Menge erhöhen
   const existingItem = (await db.select().from(CartItem).where(
     and(eq(CartItem.cartId, cart.id), eq(CartItem.itemId, itemId))
   ))[0];
@@ -37,7 +57,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     await db.insert(CartItem).values({ cartId: cart.id, itemId, quantity });
   }
 
-  // NEU: Stock immer reduzieren, egal ob neu oder erhöht
   await db.update(Item)
     .set({ stock: product.stock - quantity })
     .where(eq(Item.id, itemId));
