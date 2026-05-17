@@ -3,17 +3,17 @@ import { createSignal } from 'solid-js';
 interface Props {
   itemId: number;
   initialStock: number;
+  variant?: 'inline' | 'block';
 }
 
 export default function AddToCart(props: Props) {
   const [stock, setStock] = createSignal(props.initialStock);
   const [isAdded, setIsAdded] = createSignal(false);
   const [isLoading, setIsLoading] = createSignal(false);
-  const [quantity, setQuantity] = createSignal(1); // NEU
+  const [quantity, setQuantity] = createSignal(1);
 
   const handleBuy = async () => {
     if (stock() <= 0 || isLoading()) return;
-    // NEU: Menge validieren
     const qty = Math.min(quantity(), stock());
     if (qty <= 0) return;
 
@@ -28,7 +28,7 @@ export default function AddToCart(props: Props) {
       if (res.ok) {
         setStock(stock() - qty);
         setIsAdded(true);
-        setQuantity(1); // NEU: zurücksetzen
+        setQuantity(1);
         setTimeout(() => setIsAdded(false), 2000);
         window.dispatchEvent(new CustomEvent('cart-updated'));
       }
@@ -37,62 +37,130 @@ export default function AddToCart(props: Props) {
     }
   };
 
+  const variant = props.variant ?? 'block';
+  const outOfStock = stock() === 0;
+
+  const label = () =>
+    isLoading()
+      ? '…'
+      : outOfStock
+      ? 'Gähnend ausverkauft'
+      : isAdded()
+      ? 'Vermerkt im Bordereau'
+      : 'In den Warenkorb';
+
+  if (variant === 'inline') {
+    // Kompakte Variante für Listen — nur Button, Menge=1
+    return (
+      <button
+        onClick={handleBuy}
+        disabled={outOfStock || isLoading()}
+        class={'addcart-btn-inline ' + (outOfStock ? 'is-out' : isAdded() ? 'is-added' : '')}
+      >
+        {outOfStock ? 'Auf Wunschliste' : isAdded() ? '✓ Vermerkt' : 'In den Warenkorb'}
+      </button>
+    );
+  }
+
   return (
-    <div style={{ "margin-top": "auto", "padding-top": "1rem" }}>
-      <p style={{ color: "#666", "font-size": "0.9rem", "margin-bottom": "0.75rem" }}>
-        Live-Bestand: {stock()} Stück
+    <div class="addcart-block">
+      <p class="addcart-stock">
+        Vermerkter Restbestand: <strong>{stock()} {stock() === 1 ? 'Exemplar' : 'Exemplare'}</strong>
       </p>
 
-      {/* NEU: Menge + Button nebeneinander */}
-      <div style={{ display: "flex", gap: "0.75rem" }}>
+      <div class="addcart-row">
         <input
           type="number"
           min="1"
           max={stock()}
           value={quantity()}
-          disabled={stock() === 0}
+          disabled={outOfStock}
           onInput={(e) => {
             const val = parseInt(e.currentTarget.value);
             if (!isNaN(val) && val >= 1 && val <= stock()) {
               setQuantity(val);
             }
           }}
-          style={{
-            width: "70px",
-            padding: "0.75rem 0.5rem",
-            border: "1px solid #e0e0e0",
-            "border-radius": "8px",
-            "font-size": "1rem",
-            "text-align": "center",
-            "font-family": "inherit",
-          }}
+          class="addcart-qty"
+          aria-label="Menge"
         />
         <button
           onClick={handleBuy}
-          disabled={stock() === 0 || isLoading()}
-          style={{
-            flex: "1",
-            padding: "0.75rem",
-            "background-color": stock() === 0 ? "#ccc" : isAdded() ? "#e2e8f0" : "#333",
-            color: isAdded() ? "#333" : "#fff",
-            border: "none",
-            "border-radius": "8px",
-            cursor: stock() === 0 ? "not-allowed" : "pointer",
-            transition: "all 0.2s ease",
-            "font-family": "inherit",
-            "font-size": "0.95rem",
-            "font-weight": "600",
-          }}
+          disabled={outOfStock || isLoading()}
+          class={'addcart-btn ' + (outOfStock ? 'is-out' : isAdded() ? 'is-added' : '')}
         >
-          {isLoading()
-            ? "..."
-            : stock() === 0
-              ? "Gähnend ausverkauft"
-              : isAdded()
-                ? "🥱 Im Warenkorb gelandet"
-                : "In den Warenkorb"}
+          {label()}
         </button>
       </div>
+
+      <style>{`
+        .addcart-block {
+          display: flex;
+          flex-direction: column;
+          gap: 0.7rem;
+          margin-top: 1rem;
+        }
+        .addcart-stock {
+          font-family: var(--font-meta);
+          font-size: 0.78rem;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--ink-mute);
+          margin: 0;
+        }
+        .addcart-stock strong {
+          color: var(--ink);
+          font-weight: 600;
+        }
+        .addcart-row {
+          display: flex;
+          gap: 0;
+          align-items: stretch;
+        }
+        .addcart-qty {
+          width: 70px;
+          padding: 0.85rem 0.5rem;
+          border: 1px solid var(--ink);
+          border-right: none;
+          background: var(--paper);
+          color: var(--ink);
+          font-family: var(--font-display);
+          font-size: 1.1rem;
+          text-align: center;
+          font-weight: 600;
+        }
+        .addcart-qty:focus {
+          outline: 2px solid var(--red);
+          outline-offset: -1px;
+        }
+        .addcart-btn {
+          flex: 1;
+          padding: 0.85rem 1.2rem;
+          background: var(--ochre);
+          color: var(--ink);
+          border: 1px solid var(--ink);
+          font-family: var(--font-meta);
+          font-size: 0.85rem;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.15s;
+        }
+        .addcart-btn:hover:not(:disabled) {
+          background: var(--ochre-deep);
+        }
+        .addcart-btn.is-added {
+          background: var(--ink);
+          color: var(--paper);
+        }
+        .addcart-btn.is-out,
+        .addcart-btn:disabled {
+          background: var(--paper-3);
+          color: var(--ink-mute);
+          cursor: not-allowed;
+        }
+      `}</style>
     </div>
   );
 }

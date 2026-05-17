@@ -1,0 +1,505 @@
+---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+
+// Werte aus env (genauso wie im Impressum), mit Fallbacks
+const firma  = import.meta.env.IMPRESSUM_NAME    ?? 'The Ordinary Emporium GmbH';
+const street = import.meta.env.IMPRESSUM_STREET  ?? 'Musterstraße 1';
+const postal = import.meta.env.IMPRESSUM_POSTAL  ?? '12345';
+const city   = import.meta.env.IMPRESSUM_CITY    ?? 'Musterstadt';
+const email  = import.meta.env.IMPRESSUM_EMAIL   ?? 'info@ordinary-emporium.de';
+const tel    = import.meta.env.IMPRESSUM_TEL     ?? '+49 000 000000';
+const boss   = import.meta.env.IMPRESSUM_BOSS    ?? 'Max Mustermann';
+const vatId  = import.meta.env.IMPRESSUM_VAT_ID  ?? 'DE123456789';
+
+const stand = '14. Mai 2026';
+const version = '1.0';
+
+// Inhaltsverzeichnis — wird sowohl im Sidebar als auch zum Rendern der Sections benutzt
+const sections = [
+  { id: 'paragraph-1',  no: '§ 1',  title: 'Geltungsbereich, Vertragspartner' },
+  { id: 'paragraph-2',  no: '§ 2',  title: 'Vertragsschluss' },
+  { id: 'paragraph-3',  no: '§ 3',  title: 'Preise und Versandkosten' },
+  { id: 'paragraph-4',  no: '§ 4',  title: 'Lieferung, Versand, Verfügbarkeit' },
+  { id: 'paragraph-5',  no: '§ 5',  title: 'Zahlung' },
+  { id: 'paragraph-6',  no: '§ 6',  title: 'Eigentumsvorbehalt' },
+  { id: 'paragraph-7',  no: '§ 7',  title: 'Widerrufsrecht für Verbraucher' },
+  { id: 'paragraph-8',  no: '§ 8',  title: 'Folgen des Widerrufs' },
+  { id: 'paragraph-9',  no: '§ 9',  title: 'Gewährleistung und Garantie' },
+  { id: 'paragraph-10', no: '§ 10', title: 'Haftung' },
+  { id: 'paragraph-11', no: '§ 11', title: 'Datenschutz' },
+  { id: 'paragraph-12', no: '§ 12', title: 'Streitbeilegung' },
+  { id: 'paragraph-13', no: '§ 13', title: 'Schlussbestimmungen' },
+];
+---
+
+<Layout title="Allgemeine Geschäftsbedingungen">
+  <main class="page agb">
+
+    {/* Header — bewusst nüchtern, keine Ironie */}
+    <header class="agb-head">
+      <p class="agb-head__rubrik">Rechtliches</p>
+      <h1 class="agb-head__title">Allgemeine Geschäftsbedingungen</h1>
+      <dl class="agb-head__meta">
+        <div><dt>Stand</dt><dd>{stand}</dd></div>
+        <div><dt>Version</dt><dd>{version}</dd></div>
+        <div><dt>Anbieter</dt><dd>{firma}</dd></div>
+      </dl>
+    </header>
+
+    <div class="rule-thick" style="margin: 1.5rem 0 2.5rem;"></div>
+
+    <div class="agb-layout">
+
+      {/* Inhaltsverzeichnis */}
+      <aside class="agb-toc">
+        <p class="agb-toc__heading">Inhaltsverzeichnis</p>
+        <ol class="agb-toc__list">
+          {sections.map(s => (
+            <li><a href={`#${s.id}`}><span class="agb-toc__no">{s.no}</span> {s.title}</a></li>
+          ))}
+        </ol>
+      </aside>
+
+      {/* Haupttext */}
+      <article class="agb-body">
+
+        <p class="agb-praeambel">
+          Die nachfolgenden Allgemeinen Geschäftsbedingungen (nachfolgend „AGB") regeln
+          die Vertragsbeziehung zwischen der {firma} (nachfolgend „Anbieter") und dem
+          Kunden bei Bestellungen über den Online-Shop des Anbieters unter
+          <code>www.ordinary-emporium.de</code>.
+        </p>
+
+        {/* § 1 */}
+        <section id="paragraph-1" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 1</span> Geltungsbereich, Vertragspartner</h2>
+          <ol class="agb-list">
+            <li>Für alle Bestellungen über den Online-Shop des Anbieters durch Verbraucher und Unternehmer gelten die nachfolgenden AGB in ihrer zum Zeitpunkt der Bestellung gültigen Fassung.</li>
+            <li>Verbraucher ist jede natürliche Person, die ein Rechtsgeschäft zu Zwecken abschließt, die überwiegend weder ihrer gewerblichen noch ihrer selbständigen beruflichen Tätigkeit zugerechnet werden können (§ 13 BGB).</li>
+            <li>Unternehmer im Sinne dieser AGB ist eine natürliche oder juristische Person oder eine rechtsfähige Personengesellschaft, die bei Abschluss eines Rechtsgeschäfts in Ausübung ihrer gewerblichen oder selbständigen beruflichen Tätigkeit handelt (§ 14 BGB).</li>
+            <li>Abweichende, entgegenstehende oder ergänzende Allgemeine Geschäftsbedingungen des Kunden werden nicht Vertragsbestandteil, es sei denn, ihrer Geltung wird ausdrücklich schriftlich zugestimmt.</li>
+            <li>Vertragspartner des Kunden ist:
+              <div class="agb-contact-card">
+                <p><strong>{firma}</strong></p>
+                <p>{street}</p>
+                <p>{postal} {city}, Deutschland</p>
+                <p>Vertretungsberechtigter Geschäftsführer: {boss}</p>
+                <p>Telefon: {tel}</p>
+                <p>E-Mail: <a href={`mailto:${email}`}>{email}</a></p>
+                <p>USt-IdNr.: {vatId}</p>
+              </div>
+            </li>
+          </ol>
+        </section>
+
+        {/* § 2 */}
+        <section id="paragraph-2" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 2</span> Vertragsschluss</h2>
+          <ol class="agb-list">
+            <li>Die Darstellung der Produkte im Online-Shop stellt kein rechtlich bindendes Angebot, sondern eine unverbindliche Aufforderung an den Kunden dar, eine Bestellung abzugeben (invitatio ad offerendum).</li>
+            <li>Der Kunde kann aus dem Sortiment Produkte auswählen und diese über die Schaltfläche „In den Warenkorb" in einem virtuellen Warenkorb sammeln. Über die Schaltfläche „Bestellung aufgeben" gibt er einen verbindlichen Antrag zum Kauf der im Warenkorb befindlichen Waren ab.</li>
+            <li>Der Anbieter bestätigt den Eingang der Bestellung unverzüglich durch eine automatisch generierte E-Mail („Eingangsbestätigung"). Diese Eingangsbestätigung stellt noch keine Annahme des Vertragsangebots dar.</li>
+            <li>Ein Kaufvertrag kommt erst zustande, wenn der Anbieter das Angebot des Kunden ausdrücklich annimmt oder die bestellte Ware ohne weitere Erklärung versendet. Die Annahmeerklärung erfolgt in der Regel durch eine gesonderte E-Mail („Versandbestätigung").</li>
+            <li>Der Vertragstext wird vom Anbieter gespeichert und dem Kunden zusammen mit den zum Zeitpunkt des Vertragsschlusses gültigen AGB per E-Mail zugesandt. Die AGB können zudem jederzeit auf dieser Seite eingesehen werden.</li>
+            <li>Die Vertragssprache ist Deutsch.</li>
+          </ol>
+        </section>
+
+        {/* § 3 */}
+        <section id="paragraph-3" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 3</span> Preise und Versandkosten</h2>
+          <ol class="agb-list">
+            <li>Alle Preise im Online-Shop verstehen sich in Euro (€) und sind Endpreise einschließlich der gesetzlichen Umsatzsteuer.</li>
+            <li>Zusätzlich zu den angegebenen Preisen können Versandkosten anfallen. Die jeweils geltenden Versandkosten werden dem Kunden vor Abgabe seiner Bestellung deutlich mitgeteilt und sind in der Bestellübersicht gesondert ausgewiesen.</li>
+            <li>Bei einer Lieferung in Länder außerhalb der Europäischen Union können im Einzelfall weitere Kosten anfallen (z. B. Zölle, Einfuhrabgaben), die der Anbieter nicht zu vertreten hat und die vom Kunden zu tragen sind.</li>
+          </ol>
+        </section>
+
+        {/* § 4 */}
+        <section id="paragraph-4" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 4</span> Lieferung, Versand, Verfügbarkeit</h2>
+          <ol class="agb-list">
+            <li>Die Lieferung erfolgt an die vom Kunden angegebene Lieferadresse, sofern nichts anderes vereinbart ist.</li>
+            <li>Die voraussichtliche Lieferzeit beträgt, sofern in der Artikelbeschreibung nicht abweichend angegeben, drei (3) bis sieben (7) Werktage ab Versandbestätigung.</li>
+            <li>Sollte ein bestelltes Produkt nicht verfügbar sein, weil der Anbieter mit diesem Produkt von seinem Zulieferer ohne eigenes Verschulden nicht beliefert wird, kann der Anbieter vom Vertrag zurücktreten. In diesem Fall wird der Anbieter den Kunden unverzüglich informieren und ihm gegebenenfalls die Lieferung eines vergleichbaren Produkts vorschlagen. Bereits geleistete Zahlungen werden unverzüglich erstattet.</li>
+            <li>Das Risiko des zufälligen Untergangs und der zufälligen Verschlechterung der verkauften Sache geht bei Verbrauchern mit Übergabe der Sache auf den Kunden über. Bei Unternehmern geht das Risiko mit der Übergabe an das Transportunternehmen über.</li>
+          </ol>
+        </section>
+
+        {/* § 5 */}
+        <section id="paragraph-5" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 5</span> Zahlung</h2>
+          <ol class="agb-list">
+            <li>Die Zahlung erfolgt nach Wahl des Kunden über die im Bestellprozess angebotenen Zahlungsmethoden.</li>
+            <li>Der Kaufpreis ist mit Vertragsschluss fällig. Bei Zahlung per Vorkasse hat der Kunde den Kaufpreis innerhalb von sieben (7) Tagen nach Vertragsschluss zu zahlen.</li>
+            <li>Bei Zahlungsverzug ist der Anbieter berechtigt, Verzugszinsen in gesetzlicher Höhe zu verlangen. Gegenüber Verbrauchern beträgt der Verzugszinssatz fünf (5) Prozentpunkte über dem Basiszinssatz, gegenüber Unternehmern neun (9) Prozentpunkte über dem Basiszinssatz.</li>
+            <li>Der Kunde ist nur dann zur Aufrechnung berechtigt, wenn seine Gegenansprüche rechtskräftig festgestellt oder vom Anbieter anerkannt sind.</li>
+          </ol>
+        </section>
+
+        {/* § 6 */}
+        <section id="paragraph-6" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 6</span> Eigentumsvorbehalt</h2>
+          <ol class="agb-list">
+            <li>Bis zur vollständigen Bezahlung des Kaufpreises bleibt die gelieferte Ware Eigentum des Anbieters.</li>
+            <li>Gegenüber Unternehmern behält sich der Anbieter das Eigentum an der Ware bis zur vollständigen Begleichung aller Forderungen aus der laufenden Geschäftsbeziehung vor.</li>
+          </ol>
+        </section>
+
+        {/* § 7 */}
+        <section id="paragraph-7" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 7</span> Widerrufsrecht für Verbraucher</h2>
+
+          <div class="agb-callout">
+            <p class="agb-callout__title">Widerrufsbelehrung</p>
+            <p><strong>Widerrufsrecht.</strong> Sie haben das Recht, binnen vierzehn (14) Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen.</p>
+            <p>Die Widerrufsfrist beträgt vierzehn Tage ab dem Tag, an dem Sie oder ein von Ihnen benannter Dritter, der nicht der Beförderer ist, die Ware in Besitz genommen haben bzw. hat.</p>
+            <p>Um Ihr Widerrufsrecht auszuüben, müssen Sie uns ({firma}, {street}, {postal} {city}, E-Mail: <a href={`mailto:${email}`}>{email}</a>, Telefon: {tel}) mittels einer eindeutigen Erklärung (z. B. ein mit der Post versandter Brief oder E-Mail) über Ihren Entschluss, diesen Vertrag zu widerrufen, informieren.</p>
+            <p>Sie können dafür das beigefügte Muster-Widerrufsformular verwenden, das jedoch nicht vorgeschrieben ist.</p>
+            <p>Zur Wahrung der Widerrufsfrist reicht es aus, dass Sie die Mitteilung über die Ausübung des Widerrufsrechts vor Ablauf der Widerrufsfrist absenden.</p>
+          </div>
+        </section>
+
+        {/* § 8 */}
+        <section id="paragraph-8" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 8</span> Folgen des Widerrufs</h2>
+          <ol class="agb-list">
+            <li>Wenn Sie diesen Vertrag widerrufen, haben wir Ihnen alle Zahlungen, die wir von Ihnen erhalten haben, einschließlich der Lieferkosten (mit Ausnahme der zusätzlichen Kosten, die sich daraus ergeben, dass Sie eine andere Art der Lieferung als die von uns angebotene, günstigste Standardlieferung gewählt haben), unverzüglich und spätestens binnen vierzehn (14) Tagen ab dem Tag zurückzuzahlen, an dem die Mitteilung über Ihren Widerruf dieses Vertrags bei uns eingegangen ist.</li>
+            <li>Für die Rückzahlung verwenden wir dasselbe Zahlungsmittel, das Sie bei der ursprünglichen Transaktion eingesetzt haben, es sei denn, mit Ihnen wurde ausdrücklich etwas anderes vereinbart; in keinem Fall werden Ihnen wegen dieser Rückzahlung Entgelte berechnet.</li>
+            <li>Wir können die Rückzahlung verweigern, bis wir die Waren wieder zurückerhalten haben oder bis Sie den Nachweis erbracht haben, dass Sie die Waren zurückgesandt haben, je nachdem, welches der frühere Zeitpunkt ist.</li>
+            <li>Sie haben die Waren unverzüglich und in jedem Fall spätestens binnen vierzehn Tagen ab dem Tag, an dem Sie uns über den Widerruf dieses Vertrags unterrichten, an uns zurückzusenden oder zu übergeben.</li>
+            <li>Sie tragen die unmittelbaren Kosten der Rücksendung der Waren.</li>
+            <li>Sie müssen für einen etwaigen Wertverlust der Waren nur aufkommen, wenn dieser Wertverlust auf einen zur Prüfung der Beschaffenheit, Eigenschaften und Funktionsweise der Waren nicht notwendigen Umgang mit ihnen zurückzuführen ist.</li>
+          </ol>
+        </section>
+
+        {/* § 9 */}
+        <section id="paragraph-9" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 9</span> Gewährleistung und Garantie</h2>
+          <ol class="agb-list">
+            <li>Es gelten die gesetzlichen Gewährleistungsrechte. Die Gewährleistungsfrist beträgt für Verbraucher zwei (2) Jahre ab Ablieferung der Ware, für gebrauchte Sachen ein (1) Jahr.</li>
+            <li>Gegenüber Unternehmern beträgt die Gewährleistungsfrist ein (1) Jahr ab Ablieferung der Ware. Im Übrigen bleiben die gesetzlichen Mängelansprüche unberührt.</li>
+            <li>Eine darüber hinausgehende Garantie besteht bei den vom Anbieter gelieferten Waren nur, wenn diese ausdrücklich in der Bestellbestätigung zu dem jeweiligen Artikel abgegeben wurde.</li>
+          </ol>
+        </section>
+
+        {/* § 10 */}
+        <section id="paragraph-10" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 10</span> Haftung</h2>
+          <ol class="agb-list">
+            <li>Der Anbieter haftet unbeschränkt für Schäden aus der Verletzung des Lebens, des Körpers oder der Gesundheit, die auf einer vorsätzlichen oder fahrlässigen Pflichtverletzung des Anbieters, seiner gesetzlichen Vertreter oder seiner Erfüllungsgehilfen beruhen.</li>
+            <li>Für sonstige Schäden haftet der Anbieter nur, soweit diese auf vorsätzlichem oder grob fahrlässigem Handeln oder auf der Verletzung einer wesentlichen Vertragspflicht (Kardinalpflicht) durch den Anbieter, seine gesetzlichen Vertreter oder Erfüllungsgehilfen beruhen.</li>
+            <li>Bei der Verletzung wesentlicher Vertragspflichten durch leichte Fahrlässigkeit ist die Haftung des Anbieters auf den vertragstypischen, vorhersehbaren Schaden begrenzt.</li>
+            <li>Die Haftung nach dem Produkthaftungsgesetz bleibt unberührt.</li>
+            <li>Eine darüber hinausgehende Haftung des Anbieters besteht nicht.</li>
+          </ol>
+        </section>
+
+        {/* § 11 */}
+        <section id="paragraph-11" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 11</span> Datenschutz</h2>
+          <ol class="agb-list">
+            <li>Der Anbieter verarbeitet personenbezogene Daten des Kunden zweckgebunden und unter Beachtung der gesetzlichen Vorschriften, insbesondere der Datenschutz-Grundverordnung (DSGVO) und des Bundesdatenschutzgesetzes (BDSG).</li>
+            <li>Die zur Bestellabwicklung erforderlichen personenbezogenen Daten werden ausschließlich zur Vertragsabwicklung verwendet und nicht an Dritte weitergegeben, soweit dies nicht zur Vertragserfüllung erforderlich ist (z. B. an das mit der Lieferung beauftragte Versandunternehmen).</li>
+            <li>Weitergehende Informationen zur Verarbeitung personenbezogener Daten enthält die Datenschutzerklärung des Anbieters.</li>
+          </ol>
+        </section>
+
+        {/* § 12 */}
+        <section id="paragraph-12" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 12</span> Streitbeilegung</h2>
+          <ol class="agb-list">
+            <li>Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit, die unter <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener">https://ec.europa.eu/consumers/odr/</a> aufrufbar ist.</li>
+            <li>Der Anbieter ist weder bereit noch verpflichtet, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</li>
+          </ol>
+        </section>
+
+        {/* § 13 */}
+        <section id="paragraph-13" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 13</span> Schlussbestimmungen</h2>
+          <ol class="agb-list">
+            <li>Es gilt das Recht der Bundesrepublik Deutschland unter Ausschluss des UN-Kaufrechts. Bei Verbrauchern, die den Vertrag nicht zu beruflichen oder gewerblichen Zwecken abschließen, gilt diese Rechtswahl nur insoweit, als nicht der gewährte Schutz durch zwingende Bestimmungen des Rechts des Staates, in dem der Verbraucher seinen gewöhnlichen Aufenthalt hat, entzogen wird.</li>
+            <li>Sofern es sich beim Kunden um einen Kaufmann, eine juristische Person des öffentlichen Rechts oder ein öffentlich-rechtliches Sondervermögen handelt, ist Gerichtsstand für alle Streitigkeiten aus Vertragsverhältnissen zwischen dem Kunden und dem Anbieter der Sitz des Anbieters.</li>
+            <li>Sollten einzelne Bestimmungen dieser AGB unwirksam oder undurchführbar sein oder werden, so wird die Wirksamkeit der übrigen Bestimmungen hiervon nicht berührt. An die Stelle der unwirksamen oder undurchführbaren Bestimmung tritt die gesetzliche Regelung.</li>
+          </ol>
+        </section>
+
+        <div class="rule-thick" style="margin: 3rem 0 1.5rem;"></div>
+
+        <p class="agb-footer">
+          {firma} · {city}, {stand}
+        </p>
+
+      </article>
+    </div>
+
+  </main>
+</Layout>
+
+<style>
+  .agb {
+    max-width: 1100px;
+  }
+
+  /* HEADER */
+  .agb-head {
+    padding-top: 1rem;
+  }
+  .agb-head__rubrik {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0 0 0.8rem;
+  }
+  .agb-head__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin: 0 0 1.5rem;
+    color: var(--ink);
+  }
+  .agb-head__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin: 0;
+  }
+  .agb-head__meta > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .agb-head__meta dt {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0;
+  }
+  .agb-head__meta dd {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  /* LAYOUT */
+  .agb-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  /* INHALTSVERZEICHNIS */
+  .agb-toc {
+    position: sticky;
+    top: 2rem;
+    padding-right: 1rem;
+    border-right: var(--rule-soft);
+  }
+  .agb-toc__heading {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0 0 1rem;
+    font-weight: 600;
+  }
+  .agb-toc__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .agb-toc__list a {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.35rem 0;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-bottom: 1px dotted transparent;
+  }
+  .agb-toc__list a:hover {
+    color: var(--ink);
+    border-bottom-color: var(--paper-3);
+  }
+  .agb-toc__no {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    color: var(--ink-mute);
+    flex-shrink: 0;
+    min-width: 2.6em;
+  }
+
+  /* HAUPTTEXT */
+  .agb-body {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--ink);
+    max-width: 720px;
+  }
+  .agb-praeambel {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--ink-soft);
+    margin: 0 0 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: var(--rule-soft);
+  }
+  .agb-praeambel code {
+    font-family: var(--font-meta);
+    font-size: 0.92em;
+    background: var(--paper-2);
+    padding: 0.1em 0.35em;
+    color: var(--ink);
+  }
+
+  .agb-section {
+    margin-bottom: 2.5rem;
+    scroll-margin-top: 2rem;
+  }
+  .agb-section__title {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0 0 1rem;
+    color: var(--ink);
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+  .agb-section__no {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--ink-mute);
+    font-weight: 400;
+    min-width: 2.6em;
+  }
+
+  /* LISTEN */
+  .agb-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: agb-counter;
+  }
+  .agb-list > li {
+    counter-increment: agb-counter;
+    position: relative;
+    padding-left: 2.4rem;
+    margin-bottom: 1rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+  .agb-list > li::before {
+    content: "(" counter(agb-counter) ")";
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-family: var(--font-meta);
+    font-size: 0.82rem;
+    color: var(--ink-mute);
+    font-weight: 500;
+    width: 2rem;
+  }
+
+  /* Kontakt-Kasten */
+  .agb-contact-card {
+    margin: 1rem 0 0;
+    padding: 1rem 1.2rem;
+    background: var(--paper-2);
+    border-left: 2px solid var(--ink);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+  .agb-contact-card p { margin: 0.15rem 0; }
+  .agb-contact-card a { color: var(--ink); text-decoration: underline; }
+  .agb-contact-card a:hover { color: var(--red); }
+
+  /* Widerrufsbelehrungs-Kasten */
+  .agb-callout {
+    padding: 1.5rem 1.5rem;
+    background: var(--paper-2);
+    border: 1px solid var(--ink);
+    margin-top: 0.5rem;
+  }
+  .agb-callout__title {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    font-weight: 600;
+    margin: 0 0 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--ink);
+  }
+  .agb-callout p {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    margin: 0 0 0.8rem;
+  }
+  .agb-callout p:last-child { margin-bottom: 0; }
+  .agb-callout strong { color: var(--ink); font-weight: 600; }
+  .agb-callout a { color: var(--ink); text-decoration: underline; }
+  .agb-callout a:hover { color: var(--red); }
+
+  .agb-body a {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+  .agb-body a:hover { color: var(--red); }
+
+  .agb-footer {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    text-align: center;
+    margin: 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .agb-layout { grid-template-columns: 1fr; gap: 2rem; }
+    .agb-toc {
+      position: static;
+      padding-right: 0;
+      border-right: none;
+      border-bottom: var(--rule-soft);
+      padding-bottom: 1.5rem;
+    }
+    .agb-toc__list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.3rem 1rem;
+    }
+  }
+  @media (max-width: 540px) {
+    .agb-toc__list { grid-template-columns: 1fr; }
+    .agb-section__title {
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+  }
+</style>

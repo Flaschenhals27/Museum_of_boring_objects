@@ -8,300 +8,346 @@ const countResult = await db.select({ value: count() }).from(Item);
 const itemCount = countResult[0].value;
 ---
 
-<Layout title="Über uns">
-  <main class="about-page">
+<Layout title="Die Redaktion">
+  <main class="page redaktion">
 
-    <!-- HERO -->
-    <section class="about-hero">
-      <span class="eyebrow">Unsere Philosophie</span>
-      <h1>Hinter der Langeweile.</h1>
-      <p class="about-hero-sub">
-        Wir glauben, dass die Welt laut genug ist. Das Emporium ist ein Ort der Stille
-        und der absoluten Durchschnittlichkeit.
+    {/* HERO */}
+    <section class="redaktion-hero reveal">
+      <div class="section-marker">
+        <span class="section-marker__no">N° 01</span>
+        <span class="section-marker__line"></span>
+        <span class="section-marker__label">Die Redaktion · Unsere Philosophie</span>
+      </div>
+
+      <h1 class="display-headline">
+        Hinter <br/><em>der Langeweile.</em>
+      </h1>
+      <p class="redaktion-hero__sub">
+        Die Welt, so meinen wir, ist laut genug. Unsere Redaktion ist ein Ort der<br/>
+        Stille — und der absoluten Mittelmäßigkeit.
       </p>
-    </section>
 
-    <!-- DREI WERTE-KACHELN -->
-    <section class="values-grid">
-      <div class="value-card">
-        <span class="value-icon">🪨</span>
-        <h3>Kompromisslose Mittelmäßigkeit</h3>
-        <p>Wir kuratieren nur Objekte, die niemand wirklich braucht. Das ist unsere Stärke.</p>
-      </div>
-      <div class="value-card">
-        <span class="value-icon">😴</span>
-        <h3>Zertifizierte Langeweile</h3>
-        <p>Jedes Produkt wird sorgfältig auf sein Langweile-Potential geprüft. Unter 7/10 kommt es nicht ins Sortiment.</p>
-      </div>
-      <div class="value-card">
-        <span class="value-icon">📦</span>
-        <h3>Nachhaltige Bedeutungslosigkeit</h3>
-        <p>Unsere Objekte hinterlassen keinen Eindruck – und damit eine minimale CO₂-Bilanz im kollektiven Gedächtnis.</p>
+      <div class="redaktion-img reveal">
+        <img src="/newsroom.jpg" alt="Redaktionsraum" />
+        <span class="redaktion-img__caption">Redaktionsraum, eigene Aufnahme</span>
       </div>
     </section>
 
-    <!-- GROSSES ZITAT -->
-    <section class="quote-section">
-      <blockquote>
-        "In einer Welt voller Neonlichter sind wir das visuelle Äquivalent
-        einer lauwarmen Tasse Wasser."
-      </blockquote>
-      <cite>— Der Gründer, vermutlich</cite>
+    {/* DREI WERTE */}
+    <div class="rule-thick"></div>
+
+    <section class="values">
+      <div class="value reveal">
+        <p class="value__num">01</p>
+        <h3>Mittelmäßigkeit ohne Kompromiss.</h3>
+        <p>Wir kuratieren ausschließlich Gegenstände, die niemand wirklich braucht. Das ist unsere redaktionelle Grundlage.</p>
+      </div>
+      <div class="value reveal">
+        <p class="value__num">02</p>
+        <h3>Zertifizierte Langeweile.</h3>
+        <p>Jedes Stück wird auf sein Langeweile-Potenzial geprüft. Unter 7/10 erscheint es nicht im Katalog.</p>
+      </div>
+      <div class="value reveal">
+        <p class="value__num">03</p>
+        <h3>Nachhaltige Bedeutungslosigkeit.</h3>
+        <p>Unsere Artikel hinterlassen keinen Eindruck — und damit nur eine minimale Spur im kollektiven Gedächtnis.</p>
+      </div>
     </section>
 
-    <!-- GESCHICHTE -->
-    <section class="story-section">
-      <div class="story-text">
-        <span class="eyebrow">Unsere Geschichte</span>
-        <h2>Wie alles begann.</h2>
-        <p>
-          Es war ein grauer Dienstagmorgen. Eine Büroklammer lag auf dem Schreibtisch.
-          Niemand beachtete sie. In diesem Moment wurde das Ordinary Emporium geboren –
+    <div class="rule-thick"></div>
+
+    {/* GRÜNDUNGSBERICHT */}
+    <section class="founding reveal">
+      <div class="founding__head">
+        <div class="section-marker">
+          <span class="section-marker__no">N° 02</span>
+          <span class="section-marker__line"></span>
+          <span class="section-marker__label">Wie alles begann</span>
+        </div>
+
+        <h2 class="founding__title">
+          Ein grauer Dienstag, wie jeder andere.
+        </h2>
+
+        <p class="founding__meta">Gründungsbericht · Lesedauer ca. 3 Minuten (entspannt gelesen).</p>
+        <div class="founding__stamps">
+          <span class="stamp stamp--red">Aktenkundig</span>
+          <span class="stamp stamp--neutral stamp--open">Vorgang 2026/0001</span>
+        </div>
+      </div>
+
+      <div class="founding__body">
+        <p class="founding__lead">
+          <span class="dropcap">E</span>s war ein grauer Dienstagmorgen. Eine Büroklammer lag auf dem Schreibtisch.
+          Niemand beachtete sie. In genau diesem Moment wurde The Ordinary Emporium gegründet —
           als stiller Protest gegen die Tyrannei des Interessanten.
         </p>
         <p>
-          Seitdem kuratieren wir unermüdlich Objekte, die normalerweise übersehen werden.
-          Vom ausgetrockneten Textmarker bis zur leicht verbogenen Büroklammer –
-          jedes Stück erzählt die Geschichte seiner eigenen Unrelevanz.
+          Seither dokumentieren wir unermüdlich Gegenstände, die für gewöhnlich übersehen werden.
+          Vom ausgetrockneten Textmarker bis zum leicht verbogenen Lineal — jedes Stück erzählt
+          die lange Geschichte seiner eigenen Unwichtigkeit, und wir drucken sie ab.
         </p>
-      </div>
-      <div class="story-stats">
-        <div class="stat">
-          <!-- GEÄNDERT: hardcoded "2" → dynamisch aus DB -->
-          <span class="stat-number" data-target={itemCount}>0</span>
-          <span class="stat-label">Produkte</span>
-        </div>
-        <div class="stat">
-          <span class="stat-number" data-target="0">0</span>
-          <span class="stat-label">Auszeichnungen</span>
-        </div>
-        <div class="stat">
-          <span class="stat-number" data-target="999999">∞</span>
-          <span class="stat-label">Langeweile</span>
-        </div>
-        <div class="stat">
-          <span class="stat-number" data-target="1">1</span>
-          <span class="stat-label">grauer Dienstag</span>
-        </div>
+        <p>
+          Unser fünfköpfiges Lektorat liest jede Ausgabe leise vor, auf der Suche nach jenem
+          einen Satz, der wirklich überhaupt nichts mehr sagt. Sobald er auftaucht, setzen wir
+          ihn auf die Titelseite.
+        </p>
       </div>
     </section>
 
-    <!-- CTA -->
-    <section class="about-cta">
-      <h2>Bereit für das Gewöhnliche?</h2>
-      <p>Entdecken Sie unsere Kollektion. Sie werden underwhelmed sein.</p>
-      <a href="/" class="cta-button">Zum Shop</a>
+    {/* STATS */}
+    <div class="rule-thick"></div>
+
+    <section class="redaktion-stats">
+      <div class="stat reveal">
+        <span class="stat__num" data-target={itemCount}>{itemCount.toString().padStart(2, '0')}</span>
+        <span class="stat__label">Einträge im Katalog</span>
+      </div>
+      <div class="stat reveal">
+        <span class="stat__num" data-target="0">00</span>
+        <span class="stat__label">Erhaltene Auszeichnungen</span>
+      </div>
+      <div class="stat reveal">
+        <span class="stat__num">∞</span>
+        <span class="stat__label">Zertifizierte Langeweile</span>
+      </div>
+      <div class="stat reveal">
+        <span class="stat__num">01</span>
+        <span class="stat__label">Grauer Gründungs-Dienstag</span>
+      </div>
+    </section>
+
+    {/* CTA */}
+    <section class="redaktion-cta reveal">
+      <div class="redaktion-cta__inner">
+        <p class="eyebrow" style="color: var(--ink);">Bereit für das Gewöhnliche?</p>
+        <h2 class="redaktion-cta__title">Entdecken Sie unseren Katalog.</h2>
+        <p class="redaktion-cta__sub">Sie werden moderat enttäuscht sein. So muss es sein.</p>
+      </div>
+      <a href="/" class="redaktion-cta__btn">Zum Katalog →</a>
     </section>
 
   </main>
 </Layout>
 
 <style>
-  .about-page {
-    padding-top: var(--nav-height);
-    max-width: 1200px;
-    margin: 0 auto;
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
+  .redaktion { padding-top: 2rem; }
 
-  /* Hero */
-  .about-hero {
+  /* HERO */
+  .redaktion-hero {
     text-align: center;
-    padding: 8rem 2rem 5rem;
+    padding: 2rem 0 3rem;
   }
-
-  .eyebrow {
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
+  .redaktion-hero .section-marker { justify-content: center; }
+  .redaktion-hero__sub {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--ink-soft);
+    max-width: 640px;
+    margin: 1rem auto 3rem;
+    line-height: 1.6;
+  }
+  .redaktion-img {
+    width: 100%;
+    aspect-ratio: 16/8;
+    border: 1px solid var(--paper-3);
+    position: relative;
+  }
+  .redaktion-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: sepia(0.12) contrast(0.95);
+    mix-blend-mode: multiply;
+  }
+  .redaktion-img__caption {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--paper);
+    padding: 0.4rem 0.9rem;
+    font-family: var(--font-meta);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--color-subtext);
+    color: var(--ink-soft);
+    border: 1px solid var(--paper-3);
   }
 
-  .about-hero h1 {
-    font-size: clamp(2.5rem, 6vw, 5rem);
+  /* WERTE */
+  .values {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    padding: 2.5rem 0;
+  }
+  .value {
+    padding: 1rem 2rem 1rem 0;
+    border-right: var(--rule-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  .value:last-child { border-right: none; }
+  .value:not(:first-child) { padding-left: 2rem; }
+  .value__num {
+    font-family: var(--font-display);
+    font-size: 3rem;
     font-weight: 700;
-    letter-spacing: -0.03em;
+    color: var(--red);
+    margin: 0;
+    line-height: 1;
+  }
+  .value h3 {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .value p {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  /* GRÜNDUNGSBERICHT */
+  .founding {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 4rem;
+    padding: 3rem 0;
+  }
+  .founding__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2rem, 4vw, 3.4rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
     margin: 0.5rem 0 1.5rem;
   }
-
-  .about-hero-sub {
-    font-size: 1.2rem;
-    color: var(--color-subtext);
-    max-width: 560px;
-    margin: 0 auto;
-    line-height: 1.6;
-  }
-
-  /* Werte-Grid */
-  .values-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
-    padding: 2rem 0 5rem;
-  }
-
-  .value-card {
-    background: white;
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .value-icon {
-    font-size: 2rem;
-  }
-
-  .value-card h3 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin: 0;
-    letter-spacing: -0.01em;
-  }
-
-  .value-card p {
-    font-size: 0.95rem;
-    color: var(--color-subtext);
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  /* Zitat */
-  .quote-section {
-    text-align: center;
-    padding: 4rem 2rem;
-    border-top: 1px solid #e8e8e8;
-    border-bottom: 1px solid #e8e8e8;
-    margin-bottom: 5rem;
-  }
-
-  blockquote {
-    font-size: clamp(1.3rem, 3vw, 2rem);
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    line-height: 1.4;
-    margin: 0 0 1rem;
+  .founding__meta {
+    font-family: var(--font-body);
     font-style: italic;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    margin: 0 0 1rem;
   }
-
-  cite {
-    font-size: 0.9rem;
-    color: var(--color-subtext);
-    font-style: normal;
-  }
-
-  /* Geschichte */
-  .story-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 5rem;
-    align-items: center;
-    padding-bottom: 5rem;
-  }
-
-  .story-text {
+  .founding__stamps {
     display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
   }
-
-  .story-text h2 {
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    margin: 0;
-  }
-
-  .story-text p {
+  .founding__body {
+    column-count: 2;
+    column-gap: 2.5rem;
+    column-rule: 1px solid var(--paper-3);
+    font-family: var(--font-body);
     font-size: 1rem;
-    color: var(--color-subtext);
-    line-height: 1.7;
-    margin: 0;
+    line-height: 1.75;
+    color: var(--ink-soft);
+  }
+  .founding__body p { margin: 0 0 1.2rem; }
+  .founding__lead {
+    color: var(--ink) !important;
+  }
+  .dropcap {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 4rem;
+    line-height: 0.85;
+    float: left;
+    padding: 0.1rem 0.5rem 0 0;
+    color: var(--red);
   }
 
-  /* Stats */
-  .story-stats {
+  /* STATS */
+  .redaktion-stats {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    padding: 2.5rem 0;
   }
-
   .stat {
-    background: white;
-    border-radius: 16px;
-    padding: 1.5rem;
-    text-align: center;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-right: var(--rule-soft);
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.4rem;
   }
-
-  .stat-number {
-    font-size: 2.5rem;
-    font-weight: 700;
-    letter-spacing: -0.03em;
+  .stat:last-child { border-right: none; }
+  .stat__num {
+    font-family: var(--font-display);
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: -0.02em;
   }
-
-  .stat-label {
-    font-size: 0.8rem;
-    color: var(--color-subtext);
+  .stat__label {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    color: var(--ink-mute);
   }
 
   /* CTA */
-  .about-cta {
-    background: var(--color-text);
-    color: #f5f5f7;
-    border-radius: 32px;
-    text-align: center;
-    padding: 4rem 2rem;
-    margin-bottom: 4rem;
-    display: flex;
-    flex-direction: column;
+  .redaktion-cta {
+    background: var(--ochre);
+    color: var(--ink);
+    padding: 3rem 2.5rem;
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: 1.6fr auto;
+    gap: 2rem;
     align-items: center;
-    gap: 1rem;
   }
-
-  .about-cta h2 {
-    font-size: clamp(1.5rem, 3vw, 2.5rem);
-    font-weight: 700;
-    letter-spacing: -0.03em;
+  .redaktion-cta__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.4vw, 2.6rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 0.5rem 0 0.5rem;
+    color: var(--ink);
+  }
+  .redaktion-cta__sub {
+    font-family: var(--font-body);
+    font-style: italic;
     margin: 0;
+    color: rgba(26,22,18,0.7);
   }
-
-  .about-cta p {
-    opacity: 0.6;
-    margin: 0;
-  }
-
-  .cta-button {
-    margin-top: 0.5rem;
-    background: white;
-    color: var(--color-text);
+  .redaktion-cta__btn {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--font-meta);
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 1.1rem 1.6rem;
     text-decoration: none;
-    padding: 0.75rem 2rem;
-    border-radius: 999px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: opacity 0.2s;
+    border: none;
+    transition: background 0.15s;
   }
-
-  .cta-button:hover {
-    opacity: 0.85;
-  }
+  .redaktion-cta__btn:hover { background: var(--red); color: var(--paper); }
 
   /* Responsive */
-  @media (max-width: 768px) {
-    .story-section {
-      grid-template-columns: 1fr;
-      gap: 3rem;
-    }
+  @media (max-width: 900px) {
+    .values, .redaktion-stats { grid-template-columns: repeat(2, 1fr); }
+    .value, .stat { border-right: none; padding-left: 0 !important; padding-right: 0; }
+    .founding { grid-template-columns: 1fr; gap: 2rem; }
+    .founding__body { column-count: 1; }
+    .redaktion-cta { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 540px) {
+    .values, .redaktion-stats { grid-template-columns: 1fr; }
   }
 </style>
 
@@ -309,35 +355,26 @@ const itemCount = countResult[0].value;
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (!entry.isIntersecting) return;
-
       const el = entry.target as HTMLElement;
       const target = parseInt(el.dataset.target || '0');
-      const duration = 1500; // ms
-      const steps = 60;
-      const increment = target / steps;
-      let current = 0;
-      let step = 0;
+      if (isNaN(target)) return;
 
+      const duration = 1200;
+      const steps = 50;
+      let step = 0;
       const timer = setInterval(() => {
         step++;
-        // Easing – am Anfang schnell, am Ende langsam
         const progress = step / steps;
         const eased = 1 - Math.pow(1 - progress, 3);
-        current = Math.round(target * eased);
-        el.textContent = current.toString();
-
+        const current = Math.round(target * eased);
+        el.textContent = current.toString().padStart(2, '0');
         if (step >= steps) {
-          el.textContent = target.toString();
+          el.textContent = target.toString().padStart(2, '0');
           clearInterval(timer);
         }
       }, duration / steps);
-
       observer.unobserve(el);
     });
   }, { threshold: 0.5 });
-
-  // Alle stat-numbers mit data-target beobachten
-  document.querySelectorAll('.stat-number[data-target]').forEach(el => {
-    observer.observe(el);
-  });
+  document.querySelectorAll('.stat__num[data-target]').forEach(el => observer.observe(el));
 </script>

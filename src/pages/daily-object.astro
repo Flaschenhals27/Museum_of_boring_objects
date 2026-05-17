@@ -5,56 +5,162 @@ import AddToCart from '../components/AddToChart.tsx';
 
 const countResult = await db.select({ value: count() }).from(Item);
 const itemCount = countResult[0].value;
-const randomOffset = Math.floor(Math.random() * itemCount);
+const randomOffset = Math.floor(Math.random() * Math.max(itemCount, 1));
 const randomItems = await db.select().from(Item).limit(1).offset(randomOffset);
 const randomItem = randomItems[0];
 
-// Features aus JSON holen, Fallback auf leeres Array
 const features = (randomItem.features as Array<{ headline: string; subtext: string }>) ?? [];
 const images = (randomItem.images as string[]) ?? [];
-const getImageSrc = (index: number) => images[index] || 'products/placeholder.jpg';
+const getImageSrc = (index: number) => images[index] ?? null;
+
+// Datum heute (für "Donnerstag, 14. Mai 2026" im Section-Marker)
+const now = new Date();
+const weekdays = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+const months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const datumLang = `${weekdays[now.getDay()]}, ${now.getDate()}. ${months[now.getMonth()]} ${now.getFullYear()}`;
+const isBegehrt = randomItem.boredom >= 9;
 ---
 
 <Layout title={randomItem.name}>
-  <main class="product-page">
+  <main class="page tagesobjekt">
 
-    <!-- HERO-SEKTION -->
-    <section class="section section-hero reveal">
-      <div class="section-inner">
-        <p class="eyebrow">Objekt des Tages</p>
-        <h1 class="hero-title">{randomItem.name}</h1>
-        <p class="hero-sub">{randomItem.description}</p>
+    {/* HERO */}
+    <section class="tageshero reveal">
+      <div class="section-marker">
+        <span class="section-marker__no">N° 01</span>
+        <span class="section-marker__line"></span>
+        <span class="section-marker__label">Objekt des Tages · {datumLang}</span>
       </div>
-      <div class="product-visual">
-        <div class="img-wrapper">
-          <img src={getImageSrc(0)} alt={randomItem.name} class="product-img">
+
+      <h1 class="display-headline tageshero__title">
+        {randomItem.name.split(' ').slice(0, Math.ceil(randomItem.name.split(' ').length / 2)).join(' ')}<br/>
+        <em>{randomItem.name.split(' ').slice(Math.ceil(randomItem.name.split(' ').length / 2)).join(' ') || '.'}</em>
+      </h1>
+
+      <p class="tageshero__sub">
+        Eine Würdigung des Objekts — <em>{randomItem.description.toLowerCase()}</em>
+      </p>
+
+      <p class="tageshero__meta">
+        Von der Redaktion · Kolumnen · Lesedauer 8 min.
+      </p>
+
+      <div class="tageshero__media bg-stripes">
+        {getImageSrc(0)
+          ? <img src={getImageSrc(0)} alt={randomItem.name} />
+          : null
+        }
+        <span class="tageshero__caption">{randomItem.name} — Studio Berlin, {months[now.getMonth()]} {now.getFullYear()}</span>
+      </div>
+    </section>
+
+    {/* LEAD-TEXT */}
+    <section class="lead reveal">
+      <p class="lead__body">
+        <span class="dropcap">{randomItem.name.charAt(0)}</span>
+        {randomItem.description} Er war einmal funktional, möglicherweise sogar elegant —
+        in einer Zeit, in der niemand auf solche Dinge achtete. Heute aber, gerade jetzt,
+        ist er etwas anderes geworden. Stiller. Bedächtiger. Vielleicht sogar nachdenklich,
+        wenn man Gegenständen so etwas zuschreiben möchte.
+      </p>
+      <p>
+        Wir haben ihn drei Stunden lang betrachtet. Er sagt nach wie vor nichts. Das ist,
+        unseres Erachtens, das Ehrlichste, was ein Büroartikel je vollbracht hat.
+      </p>
+    </section>
+
+    {/* GROSSES ZITAT */}
+    <section class="tageszitat reveal">
+      <blockquote>
+        <em>„Ein Gegenstand ohne Funktion</em> ist kein Müll.<br/>
+        Er ist ein <em>Thema.</em>"
+      </blockquote>
+      <cite>— Die Redaktion</cite>
+    </section>
+
+    {/* DIE ZAHLEN, KURZ */}
+    <div class="rule-thick"></div>
+
+    <section class="zahlen reveal">
+      <div class="section-marker">
+        <span class="section-marker__no">N° 02</span>
+        <span class="section-marker__line"></span>
+        <span class="section-marker__label">Die Zahlen, kurz</span>
+      </div>
+      <div class="zahlen__grid">
+        <div class="zahl">
+          <span class="zahl__num">2017</span>
+          <span class="zahl__label">Vermutetes Anschaffungsjahr</span>
+        </div>
+        <div class="zahl">
+          <span class="zahl__num">0 %</span>
+          <span class="zahl__label">Aktueller Tintenstand</span>
+        </div>
+        <div class="zahl">
+          <span class="zahl__num">{randomItem.boredom}/10</span>
+          <span class="zahl__label">Index der Langeweile</span>
+        </div>
+        <div class="zahl">
+          <span class="zahl__num">{randomItem.stock}</span>
+          <span class="zahl__label">Verbleibende Exemplare</span>
         </div>
       </div>
     </section>
 
-    <!-- DYNAMISCHE FEATURE-SEKTIONEN -->
-    {features.map((feature, i) => (
-      <section class={`section section-feature ${i % 2 === 1 ? 'section-feature--reverse' : ''}` + ' reveal'}>
-        <div class="section-inner">
-          <h2 class="feature-headline">{feature.headline}</h2>
-          <p class="feature-subtext">{feature.subtext}</p>
-        </div>
-        <div class="product-visual">
-          <div class="img-wrapper">
-            <img src={getImageSrc(i+1)} alt={randomItem.name} class="product-img">
-          </div>
-        </div>
-      </section>
-    ))}
+    {/* IN DREI KAPITELN */}
+    <div class="rule-thick"></div>
 
-    <!-- KAUF-SEKTION (immer ganz unten) -->
-    <section class="section section-buy reveal">
-      <div class="buy-card">
-        <p class="buy-eyebrow">Bereit für das Unvermeidliche?</p>
-        <h2 class="buy-title">{randomItem.name}</h2>
-        <p class="buy-desc">{randomItem.description}</p>
-        <p class="buy-price">{randomItem.price.toFixed(2)} €</p>
-        <AddToCart client:load itemId={randomItem.id} initialStock={randomItem.stock} />
+    <section class="kapitel reveal">
+      <div class="section-marker">
+        <span class="section-marker__no">N° 03</span>
+        <span class="section-marker__line"></span>
+        <span class="section-marker__label">In drei Kapiteln</span>
+      </div>
+
+      <div class="kapitel__grid">
+        {features.length > 0 ? features.slice(0, 3).map((f, i) => (
+          <div class="kapitel-item">
+            <p class="kapitel-item__num">{String(i + 1).padStart(2, '0')}</p>
+            <h3 class="kapitel-item__head">{f.headline}</h3>
+            <p class="kapitel-item__body">{f.subtext}</p>
+          </div>
+        )) : (
+          <>
+            <div class="kapitel-item">
+              <p class="kapitel-item__num">01</p>
+              <h3 class="kapitel-item__head">Strahlend, einst.</h3>
+              <p class="kapitel-item__body">Er war einmal leuchtend. Heute ist er trocken — und gerade deshalb unvergesslich.</p>
+            </div>
+            <div class="kapitel-item">
+              <p class="kapitel-item__num">02</p>
+              <h3 class="kapitel-item__head">Geräusch als Geste.</h3>
+              <p class="kapitel-item__body">Das Kratzen erinnert an Kreide auf einer Tafel, jedoch zu deutlich höheren Anschaffungskosten.</p>
+            </div>
+            <div class="kapitel-item">
+              <p class="kapitel-item__num">03</p>
+              <h3 class="kapitel-item__head">Seltenheit als Feature.</h3>
+              <p class="kapitel-item__body">Nur noch wenige Exemplare. Nicht weil wir wenig bestellten — sondern weil die Nachfrage uns überraschte.</p>
+            </div>
+          </>
+        )}
+      </div>
+    </section>
+
+    {/* KAUF-SEKTION */}
+    <section class="erwerb reveal">
+      <div class="erwerb__left">
+        <p class="eyebrow" style="color: var(--ochre);">Das heutige Objekt erwerben</p>
+        <h2 class="erwerb__title">{randomItem.name}.</h2>
+        <p class="erwerb__sub">
+          <em>{randomItem.stock} {randomItem.stock === 1 ? 'Exemplar' : 'Exemplare'} verbleibend. Eine Nachbestellung ist nicht geplant — auch nicht aus konzeptionellen Gründen.</em>
+        </p>
+      </div>
+      <div class="erwerb__right">
+        <p class="erwerb__price">{randomItem.price.toFixed(2)} €</p>
+        <div class="erwerb__cta">
+          {isBegehrt && <span class="stamp stamp--red" style="color: var(--ochre);">Sehr begehrt</span>}
+          <a href={`/product/${randomItem.id}`} class="btn-ochre">Wunschliste</a>
+        </div>
       </div>
     </section>
 
@@ -62,171 +168,245 @@ const getImageSrc = (index: number) => images[index] || 'products/placeholder.jp
 </Layout>
 
 <style>
-  .product-page {
-    padding-top: var(--nav-height);
-  }
+  .tagesobjekt { padding-top: 2rem; }
 
-  /* Basis-Sektion */
-  .section {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4rem;
-    padding: 6rem 4rem;
-    max-width: 1200px;
-    margin: 0 auto;
+  /* HERO */
+  .tageshero { text-align: center; margin-bottom: 3rem; }
+  .tageshero .section-marker { justify-content: center; }
+  .tageshero__title {
+    font-size: clamp(3rem, 9vw, 7rem);
+    margin: 1rem 0 1.5rem;
   }
-
-  /* Hero */
-  .section-hero {
-    flex-direction: column;
-    text-align: center;
-    gap: 3rem;
-    padding-top: 8rem;
-  }
-
-  .eyebrow {
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-subtext);
-    margin: 0;
-  }
-
-  .hero-title {
-    font-size: clamp(2.5rem, 6vw, 5rem);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1.05;
-    margin: 0.5rem 0;
-  }
-
-  .hero-sub {
-    font-size: 1.3rem;
-    color: var(--color-subtext);
-    max-width: 600px;
-    margin: 0 auto;
-  }
-
-  /* Feature-Sektionen */
-  .section-feature {
-    flex-direction: row;
-  }
-
-  .section-feature--reverse {
-    flex-direction: row-reverse;
-  }
-
-  .section-inner {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 1.5rem;
-  }
-
-  .feature-headline {
-    font-size: clamp(2rem, 4vw, 3.5rem);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-    margin: 0;
-  }
-
-  .feature-subtext {
+  .tageshero__sub {
+    font-family: var(--font-body);
+    font-style: italic;
     font-size: 1.2rem;
-    color: var(--color-subtext);
-    line-height: 1.6;
-    margin: 0;
-    max-width: 480px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    max-width: 720px;
+    margin: 0 auto 1rem;
   }
-
-  /* Produktbild-Platzhalter */
-  .product-visual {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .img-wrapper {
-    border-radius: 24px;
-    overflow: hidden;  /* schneidet das Bild an den abgerundeten Ecken ab */
-    max-width: 420px;
-    width: 100%;
-  }
-
-  .product-img {
-    width: 100%;
-    display: block;   /* verhindert kleinen Lücken unter dem Bild */
-    object-fit: cover;
-  }
-
-  .placeholder-img span {
-    font-size: 3rem;
-    opacity: 0.4;
-  }
-
-  .placeholder-img small {
-    font-size: 0.8rem;
-    letter-spacing: 0.05em;
+  .tageshero__sub em { color: var(--ink); font-style: italic; }
+  .tageshero__meta {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0 0 2.5rem;
+  }
+  .tageshero__media {
+    width: 100%;
+    aspect-ratio: 16/9;
+    position: relative;
+    border: 1px solid var(--paper-3);
+    overflow: hidden;
+  }
+  .tageshero__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: sepia(0.1) contrast(0.95);
+    mix-blend-mode: multiply;
+  }
+  .tageshero__caption {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+    background: var(--paper);
+    padding: 0.4rem 0.9rem;
+    font-family: var(--font-meta);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    border: 1px solid var(--paper-3);
   }
 
-  /* Kauf-Sektion */
-  .section-buy {
-    flex-direction: column;
-    background: var(--color-text);
-    color: #f5f5f7;
-    border-radius: 32px;
+  /* LEAD */
+  .lead {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 3rem 0 2rem;
+  }
+  .lead__body {
+    font-family: var(--font-body);
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: var(--ink);
+    margin: 0 0 1.2rem;
+  }
+  .lead p {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    margin: 0 0 1.2rem;
+  }
+  .dropcap {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 4.5rem;
+    line-height: 0.85;
+    float: left;
+    padding: 0.2rem 0.5rem 0 0;
+    color: var(--red);
+  }
+
+  /* ZITAT */
+  .tageszitat {
     text-align: center;
-    margin: 2rem auto 3rem; /* GEÄNDERT: 6rem → 3rem */
-    min-height: unset;
-    padding: 3rem 2rem;     /* GEÄNDERT: 6rem 4rem → 3rem 2rem */
+    padding: 3rem 1rem;
+    border-top: var(--rule);
+    border-bottom: var(--rule);
+    margin: 2rem 0 0;
+  }
+  .tageszitat blockquote {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.6vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0 0 1rem;
+    color: var(--ink);
+  }
+  .tageszitat blockquote em {
+    font-style: italic;
+    color: var(--red);
+  }
+  .tageszitat cite {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    font-style: normal;
   }
 
-  .buy-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.2rem;
-    max-width: 600px;
+  /* ZAHLEN */
+  .zahlen { padding: 2.5rem 0; }
+  .zahlen__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-top: 1.5rem;
   }
-
-  .buy-eyebrow {
-    font-size: 0.85rem;
-    font-weight: 600;
+  .zahl {
+    padding: 1rem 1.5rem;
+    border-right: var(--rule-soft);
+    text-align: left;
+  }
+  .zahl:last-child { border-right: none; }
+  .zahl__num {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--red);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.6rem;
+  }
+  .zahl__label {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    opacity: 0.5;
-    margin: 0;
+    color: var(--ink-mute);
   }
 
-  .buy-title {
-    font-size: clamp(1.2rem, 2vw, 1.8rem); /* GEÄNDERT: kleiner */
+  /* KAPITEL */
+  .kapitel { padding: 2.5rem 0; }
+  .kapitel__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    margin-top: 1.5rem;
+  }
+  .kapitel-item {
+    padding: 0 2rem 0 0;
+    border-right: var(--rule-soft);
+  }
+  .kapitel-item:nth-child(3n) { border-right: none; }
+  .kapitel-item:not(:first-child) { padding-left: 2rem; }
+  .kapitel-item__num {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 2.5rem;
     font-weight: 700;
-    letter-spacing: -0.03em;
-    margin: 0;
+    color: var(--red);
+    margin: 0 0 0.5rem;
+    line-height: 1;
   }
-
-  .buy-desc {
-    opacity: 0.6;
-    font-size: 1rem;
-    margin: 0;
-  }
-
-  .buy-price {
-    font-size: 1.4rem;  /* GEÄNDERT: 2rem → 1.4rem */
+  .kapitel-item__head {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
     font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 0.75rem;
+  }
+  .kapitel-item__body {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
     margin: 0;
+  }
+
+  /* ERWERB */
+  .erwerb {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 2.5rem 3rem;
+    margin-top: 3rem;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+  .erwerb__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.6vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1;
+    margin: 0.5rem 0 1rem;
+    color: var(--paper);
+  }
+  .erwerb__sub {
+    font-family: var(--font-body);
+    font-style: italic;
+    color: rgba(243,237,225,0.7);
+    margin: 0;
+  }
+  .erwerb__right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1rem;
+  }
+  .erwerb__price {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--paper);
+    margin: 0;
+    line-height: 1;
+  }
+  .erwerb__cta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
   }
 
   /* Responsive */
-  @media (max-width: 768px) {
-    .section {
-      flex-direction: column !important;
-      padding: 4rem 1.5rem;
-    }
+  @media (max-width: 900px) {
+    .zahlen__grid, .kapitel__grid { grid-template-columns: repeat(2, 1fr); }
+    .zahl:nth-child(2), .kapitel-item:nth-child(2) { border-right: none; }
+    .kapitel-item, .zahl { padding-left: 0 !important; }
+    .erwerb { grid-template-columns: 1fr; padding: 2rem 1.5rem; }
+    .erwerb__right { align-items: flex-start; }
+  }
+  @media (max-width: 600px) {
+    .zahlen__grid, .kapitel__grid { grid-template-columns: 1fr; }
+    .zahl, .kapitel-item { border-right: none; padding: 1rem 0 !important; border-bottom: var(--rule-soft); }
   }
 </style>

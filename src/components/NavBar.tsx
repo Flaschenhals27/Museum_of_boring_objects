@@ -1,9 +1,9 @@
 import { For, createSignal, onMount } from 'solid-js';
 
-const links = [
+const sections = [
+  { href: '/', label: 'Katalog' },
   { href: '/daily-object', label: 'Objekt des Tages' },
-  { href: '/', label: 'Shop' },
-  { href: '/about', label: 'About' },
+  { href: '/about', label: 'Die Redaktion' },
 ];
 
 interface User {
@@ -19,15 +19,19 @@ export default function NavBar() {
   const [user, setUser] = createSignal<User | null>(null);
 
   const loadCartCount = async () => {
-    const res = await fetch('/api/cart');
-    const data = await res.json();
-    setCartCount(data.items.reduce((sum: number, i: any) => sum + i.quantity, 0));
+    try {
+      const res = await fetch('/api/cart');
+      const data = await res.json();
+      setCartCount(data.items.reduce((sum: number, i: any) => sum + i.quantity, 0));
+    } catch (e) { /* still */ }
   };
 
   const loadUser = async () => {
-    const res = await fetch('/api/auth/me');
-    const data = await res.json();
-    setUser(data.user);
+    try {
+      const res = await fetch('/api/auth/me');
+      const data = await res.json();
+      setUser(data.user);
+    } catch (e) { /* still */ }
   };
 
   const handleLogout = async () => {
@@ -43,70 +47,54 @@ export default function NavBar() {
     window.addEventListener('cart-updated', loadCartCount);
   });
 
+  const isActive = (href: string) => {
+    if (href === '/') return currentPath() === '/';
+    return currentPath().startsWith(href);
+  };
+
   return (
-    <nav class="nav-container">
-      <div class="nav-blur-bg"></div>
-      <div class="nav-content">
+    <>
+      <div class="nav-container">
 
-        {/* Logo */}
-        <a href="/" class="nav-logo">🪨 The Ordinary Emporium</a>
-
-        {/* Desktop Links */}
-        <ul class="nav-links">
-          <For each={links}>
-            {(link) => (
-              <li>
-                <a href={link.href} class={`nav-link ${currentPath() === link.href ? 'nav-link--active' : ''}`}>
-                  {link.label}
-                </a>
-              </li>
-            )}
-          </For>
-        </ul>
-
-        {/* Rechte Seite */}
-        <div class="nav-right">
-
-          {/* Eingeloggt */}
+        {/* LINKS: Anmelden bzw. User-Chip */}
+        <div class="nav-left">
           {user() ? (
-            <div class="nav-user">
-              <span class="nav-user-name">👤 {user()!.prename}</span>
+            <>
+              <span class="nav-user-chip">▸ {user()!.prename.toUpperCase()}</span>
               <button class="nav-logout-btn" onClick={handleLogout}>Abmelden</button>
-            </div>
+            </>
           ) : (
-            <a href="/login" class="nav-login-btn">Anmelden</a>
+            <a href="/login" class="nav-anmelden">Anmelden ⟵</a>
           )}
+        </div>
 
-          {/* Warenkorb */}
+        {/* MITTE: Zeitungs-Logo */}
+        <a href="/" class="nav-logo">
+          <span class="nav-logo__title">The Ordinary Emporium</span>
+          <span class="nav-logo__sub">Das Wochenblatt für vollkommen belanglose Gegenstände.</span>
+        </a>
+
+        {/* RECHTS: Warenkorb */}
+        <div class="nav-right">
           <a href="/cart" class="nav-cart">
-            🛒
-            {cartCount() > 0 && (
-              <span class="nav-cart-badge">{cartCount()}</span>
-            )}
+            Warenkorb · {cartCount()}
           </a>
-
-          <button class="hamburger" id="hamburger-btn" aria-label="Menü öffnen">☰</button>
         </div>
 
       </div>
 
-      {/* Mobile Menü */}
-      <ul class="nav-mobile" id="nav-mobile">
-        <For each={links}>
-          {(link) => (
+      {/* SECTION-TABS */}
+      <ul class="nav-sections">
+        <For each={sections}>
+          {(s) => (
             <li>
-              <a href={link.href} class={currentPath() === link.href ? 'nav-link--active' : ''}>
-                {link.label}
+              <a href={s.href} class={isActive(s.href) ? 'is-active' : ''}>
+                {s.label}
               </a>
             </li>
           )}
         </For>
-        <li><a href="/cart">🛒 Warenkorb {cartCount() > 0 ? `(${cartCount()})` : ''}</a></li>
-        {user()
-          ? <li><button class="nav-mobile-logout" onClick={handleLogout}>Abmelden ({user()!.prename})</button></li>
-          : <li><a href="/login">Anmelden</a></li>
-        }
       </ul>
-    </nav>
+    </>
   );
 }

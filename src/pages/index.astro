@@ -4,188 +4,419 @@ import { db, Item, desc } from 'astro:db';
 import AddToCart from '../components/AddToChart.tsx';
 
 const items = await db.select().from(Item).orderBy(desc(Item.boredom));
+
+// Kategorien für die Signatur-Nummer (Rubrik · Klassifikation · SIGN. XX.YYY)
+const klassifikationen = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache', 'Apparat', 'Utensil'];
+const sehrBegehrtCount = items.filter(i => i.boredom >= 9).length;
+const verfuegbarCount = items.filter(i => i.stock > 0).length;
+
+// Hilfs-Funktion: Signatur-Nummer aus ID generieren (deterministisch)
+function makeSignatur(id: number, boredom: number) {
+  const a = String(boredom).padStart(2, '0');
+  const b = String((id * 137) % 1000).padStart(3, '0');
+  return `${a}.${b}`;
+}
+function makeKlassifikation(id: number) {
+  return klassifikationen[id % klassifikationen.length];
+}
 ---
 
-<Layout title="The Ordinary Emporium">
-  <main class="shop-page">
+<Layout title="Katalog">
+  <main class="page katalog">
 
-    <!-- HERO -->
-    <section class="shop-hero">
-      <span class="eyebrow">Exklusive Belanglosigkeit</span>
-      <h1>The Ordinary Emporium</h1>
-      <p class="shop-subtitle">Willkommen im Archiv des Alltäglichen. Entdecken Sie unsere absolut unspektakuläre Kollektion.</p>
-    </section>
+    {/* Section Header */}
+    <div class="katalog-head">
+      <div class="section-marker">
+        <span class="section-marker__no">N° 02</span>
+        <span class="section-marker__line"></span>
+        <span class="section-marker__label">Katalog · Sämtliche Einträge</span>
+      </div>
 
-    <!-- PRODUKT-GRID -->
-    <section class="product-grid">
-      {items.map((item) => {
-        // Erstes Bild aus dem images-Array holen, Fallback auf Platzhalter
+      <ul class="filter-tabs">
+        <li><a href="#" class="is-active">Alle ({items.length})</a></li>
+        <li><a href="#">Verfügbar ({verfuegbarCount})</a></li>
+        <li><a href="#">Sehr begehrt ({sehrBegehrtCount})</a></li>
+      </ul>
+    </div>
+
+    <div class="rule-thick" style="margin: 0 0 1.2rem;"></div>
+
+    <div class="katalog-meta">
+      <span class="katalog-count">{items.length} Einträge · Gefiltert: alle</span>
+      <label class="katalog-sort">
+        Sortierung:
+        <select>
+          <option>Langeweile ↓</option>
+          <option>Langeweile ↑</option>
+          <option>Preis ↓</option>
+          <option>Preis ↑</option>
+        </select>
+      </label>
+    </div>
+
+    {/* GRID */}
+    <section class="katalog-grid">
+      {items.map((item, idx) => {
         const images = (item.images as string[]) ?? [];
-        const thumbnail = images[0] ?? '/products/placeholder.jpg';
+        const thumbnail = images[0];
+        const signum = String(idx + 2).padStart(2, '0');
+        const klass = makeKlassifikation(item.id);
+        const sign = makeSignatur(item.id, item.boredom);
+        const isBegehrt = item.boredom >= 9;
+        const isOut = item.stock === 0;
 
         return (
-          <div class="product-card">
+          <article class="katalog-card reveal">
 
-            <!-- Bild-Bereich -->
-            <a href={`/product/${item.id}`} class="card-img-link">
-              <div class="card-img-wrapper">
-                <img src={thumbnail} alt={item.name} class="card-img" />
-                <span class="boredom-badge">😴 {item.boredom}/10</span>
-              </div>
+            <a href={`/product/${item.id}`} class="katalog-card__media bg-stripes">
+              {thumbnail
+                ? <img src={thumbnail} alt={item.name} />
+                : <span class="katalog-card__caption">Tafel-Aufnahme folgt</span>
+              }
+
+              <span class="katalog-card__no">N° {signum}</span>
+              <span class="katalog-card__boredom">Langeweile {item.boredom}/10</span>
+
+              {isBegehrt && (
+                <span class="katalog-card__stamp">
+                  <span class="stamp stamp--red">Sehr begehrt</span>
+                </span>
+              )}
             </a>
 
-            <!-- Text-Bereich -->
-            <div class="card-body">
-              <h2 class="card-title">{item.name}</h2>
-              <p class="card-desc">{item.description}</p>
-              <div class="card-footer">
-                <p class="card-price">{item.price.toFixed(2)} €</p>
-                <AddToCart client:load itemId={item.id} initialStock={item.stock} />
+            <div class="katalog-card__body">
+              <p class="katalog-card__rubrik">
+                Schreibwaren · {klass} · Sign. {sign}
+              </p>
+              <h3 class="katalog-card__name">
+                <a href={`/product/${item.id}`}>{item.name}</a>
+              </h3>
+              <p class="katalog-card__desc">{item.description}</p>
+
+              <div class="katalog-card__footer">
+                <span class="katalog-card__price">{item.price.toFixed(2)} €</span>
+                {isOut
+                  ? <span class="btn-outline" style="cursor:default; opacity:0.65;">Auf Wunschliste</span>
+                  : <AddToCart client:load itemId={item.id} initialStock={item.stock} variant="inline" />
+                }
               </div>
             </div>
-
-          </div>
+          </article>
         );
       })}
+    </section>
+
+    {/* Schluss-Zitat */}
+    <section class="katalog-quote reveal">
+      <blockquote>
+        „Wir verkaufen nicht, was Sie brauchen. <em>Wir verkaufen, was Sie schon vergessen hatten.</em>"
+      </blockquote>
+      <cite>— Die Redaktion</cite>
+    </section>
+
+    <div class="rule-thick"></div>
+
+    {/* Newsletter-CTA */}
+    <section class="katalog-cta reveal">
+      <div class="katalog-cta__left">
+        <p class="eyebrow">Der wöchentliche Bestandsbericht</p>
+        <h2>Erfahren Sie zuerst, was Sie ohnehin nicht brauchen.</h2>
+        <p class="katalog-cta__note">Einmal pro Woche. Nichts Dringendes. Versprochen.</p>
+      </div>
+      <form class="katalog-cta__form" onsubmit="event.preventDefault();">
+        <input type="email" placeholder="ihre.adresse@beispiel.de" />
+        <button type="submit" class="btn-ochre">Abonnieren</button>
+      </form>
     </section>
 
   </main>
 </Layout>
 
 <style>
-  .shop-page {
-    padding-top: var(--nav-height);
-    max-width: 1200px;
-    margin: 0 auto;
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
+  .katalog { padding-top: 2rem; }
 
-  /* Hero */
-  .shop-hero {
-    text-align: center;
-    padding: 6rem 0 4rem;
-  }
-
-  .eyebrow {
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-subtext);
-  }
-
-  .shop-hero h1 {
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    margin: 0.5rem 0;
-  }
-
-  .shop-subtitle {
-    font-size: 1.1rem;
-    color: var(--color-subtext);
-    max-width: 500px;
-    margin: 0 auto;
-  }
-
-  /* Grid */
-  .product-grid {
-    display: grid;
-    /* 3 Spalten auf Desktop, passt sich automatisch an */
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  .katalog-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
     gap: 2rem;
-    padding-bottom: 6rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
   }
 
-  /* Kachel */
-  .product-card {
-    background: white;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-    transition: transform 0.2s, box-shadow 0.2s;
+  .filter-tabs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 1.5rem;
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .filter-tabs a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    padding-bottom: 0.3rem;
+    border-bottom: 2px solid transparent;
+  }
+  .filter-tabs a:hover { color: var(--ink); }
+  .filter-tabs a.is-active {
+    color: var(--red);
+    border-bottom-color: var(--red);
+  }
+
+  .katalog-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .katalog-count {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .katalog-sort {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .katalog-sort select {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    padding: 0.3rem 0.5rem;
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  /* GRID */
+  .katalog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border-top: var(--rule-soft);
+  }
+
+  .katalog-card {
+    padding: 1.5rem;
+    border-bottom: var(--rule-soft);
+    border-right: var(--rule-soft);
     display: flex;
     flex-direction: column;
+    gap: 1rem;
+    background: transparent;
   }
+  .katalog-card:nth-child(3n) { border-right: none; }
 
-  .product-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-  }
-
-  /* Bild */
-  .card-img-link {
-    text-decoration: none;
-  }
-
-  .card-img-wrapper {
+  .katalog-card__media {
     position: relative;
     aspect-ratio: 4/3;
+    width: 100%;
+    display: block;
     overflow: hidden;
-    background: #e8e8ed;
+    text-decoration: none;
   }
-
-  .card-img {
+  .katalog-card__media img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s;
+    display: block;
+    filter: sepia(0.15) contrast(0.95);
+    mix-blend-mode: multiply;
   }
-
-  .product-card:hover .card-img {
-    transform: scale(1.03); /* leichter Zoom beim Hovern */
-  }
-
-  /* Langeweile-Badge oben rechts auf dem Bild */
-  .boredom-badge {
+  .katalog-card__caption {
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
-    background: rgba(255,255,255,0.9);
-    backdrop-filter: blur(8px);
-    padding: 0.25rem 0.6rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 600;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    padding: 0.3rem 0.7rem;
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    max-width: 80%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .katalog-card__no {
+    position: absolute;
+    top: 0.6rem;
+    left: 0.6rem;
+    background: var(--paper);
+    padding: 0.2rem 0.55rem;
+    font-family: var(--font-meta);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .katalog-card__boredom {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0.2rem 0.55rem;
+    font-family: var(--font-meta);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .katalog-card__stamp {
+    position: absolute;
+    bottom: 0.6rem;
+    right: 0.6rem;
   }
 
-  /* Text */
-  .card-body {
-    padding: 1.25rem;
+  .katalog-card__body {
     display: flex;
     flex-direction: column;
-    flex: 1; /* füllt restlichen Platz damit Footer immer unten ist */
-  }
-
-  .card-title {
-    font-size: 1rem;
-    font-weight: 600;
-    margin: 0 0 0.5rem;
-    letter-spacing: -0.01em;
-  }
-
-  .card-desc {
-    font-size: 0.85rem;
-    color: var(--color-subtext);
-    line-height: 1.5;
-    margin: 0;
+    gap: 0.5rem;
     flex: 1;
   }
+  .katalog-card__rubrik {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin: 0;
+    font-weight: 500;
+  }
+  .katalog-card__name {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .katalog-card__name a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .katalog-card__name a:hover { color: var(--red); }
+  .katalog-card__desc {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    margin: 0;
+    line-height: 1.5;
+    flex: 1;
+  }
+  .katalog-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+  .katalog-card__price {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
 
-  /* Footer der Kachel */
-  .card-footer {
-  display: flex;
-  flex-direction: column; /* GEÄNDERT: column statt row */
-  gap: 0.75rem;
-  margin-top: 1.25rem;
-  padding-top: 1rem;
-  border-top: 1px solid #f0f0f0;
-}
+  /* QUOTE */
+  .katalog-quote {
+    text-align: center;
+    padding: 4rem 1rem;
+    border-top: var(--rule);
+    border-bottom: var(--rule);
+    margin: 3rem 0 0;
+  }
+  .katalog-quote blockquote {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 3vw, 2.1rem);
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0 0 1rem;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    color: var(--ink);
+  }
+  .katalog-quote blockquote em {
+    font-style: italic;
+    color: var(--red);
+  }
+  .katalog-quote cite {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    font-style: normal;
+  }
 
-.card-price {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin: 0;
-}
+  /* CTA */
+  .katalog-cta {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 3rem 2.5rem;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+  .katalog-cta .eyebrow { color: var(--ochre); }
+  .katalog-cta h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0.5rem 0 1rem;
+    color: var(--paper);
+  }
+  .katalog-cta__note {
+    font-family: var(--font-body);
+    font-style: italic;
+    color: rgba(243,237,225,0.6);
+    margin: 0;
+    font-size: 0.95rem;
+  }
+  .katalog-cta__form {
+    display: flex;
+    gap: 0;
+  }
+  .katalog-cta__form input {
+    flex: 1;
+    background: transparent;
+    border: 1px solid rgba(243,237,225,0.3);
+    color: var(--paper);
+    padding: 0.9rem 1rem;
+    font-family: var(--font-body);
+    font-size: 1rem;
+  }
+  .katalog-cta__form input::placeholder { color: rgba(243,237,225,0.4); font-style: italic; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .katalog-grid { grid-template-columns: repeat(2, 1fr); }
+    .katalog-card:nth-child(3n) { border-right: var(--rule-soft); }
+    .katalog-card:nth-child(2n) { border-right: none; }
+    .katalog-cta { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .katalog-grid { grid-template-columns: 1fr; }
+    .katalog-card { border-right: none !important; }
+  }
 </style>

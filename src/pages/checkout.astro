@@ -21,26 +21,40 @@ if (sessionId) {
   }
 }
 
-// Falls Warenkorb leer → zurück zum Shop
 if (cartItems.length === 0) {
   return Astro.redirect('/');
 }
+
+const versand = 12.00;
+const gesamt = total + versand;
 ---
 
 <Layout title="Kasse">
-  <main class="checkout-page">
+  <main class="page checkout">
 
-    <h1 class="checkout-title">Kasse</h1>
-    <p class="checkout-sub">Fast geschafft. Oder auch nicht.</p>
+    <div class="section-marker">
+      <span class="section-marker__no">N° 02</span>
+      <span class="section-marker__line"></span>
+      <span class="section-marker__label">Zur Kasse · Bordereau-Bestätigung</span>
+    </div>
+
+    <div class="checkout-head">
+      <h1 class="display-headline">Kasse.</h1>
+      <p class="checkout-head__motto"><em>Fast vollbracht. Oder auch nicht.</em></p>
+    </div>
+
+    <div class="rule-thick" style="margin: 1rem 0 0;"></div>
 
     <div class="checkout-layout">
 
-      <!-- LINKE SEITE: Formular -->
       <div class="checkout-form">
 
-        <!-- Lieferadresse -->
-        <div class="form-section">
-          <h2 class="form-title">Lieferadresse</h2>
+        <section class="form-section">
+          <h2 class="form-title">
+            <span class="form-title__no">01.</span> Lieferadresse
+          </h2>
+          <p class="form-meta">Postzustellung erfolgt werktags, in der Reihenfolge der Eingänge.</p>
+
           <div class="form-grid">
             <div class="form-field">
               <label>Vorname</label>
@@ -59,73 +73,67 @@ if (cartItems.length === 0) {
               <input type="text" placeholder="12345" />
             </div>
             <div class="form-field">
-              <label>Stadt</label>
+              <label>Ort</label>
               <input type="text" placeholder="Musterstadt" />
             </div>
             <div class="form-field form-field--full">
-              <label>E-Mail</label>
-              <input type="email" placeholder="max@mustermann.de" />
+              <label>E-Mail (für die Eingangsbestätigung)</label>
+              <input type="email" id="customer-email" placeholder="ihre.adresse@beispiel.de" />
             </div>
           </div>
-        </div>
+        </section>
 
-        <!-- Zahlungsmethode -->
-        <div class="form-section">
-          <h2 class="form-title">Zahlungsmethode</h2>
+        <section class="form-section">
+          <h2 class="form-title">
+            <span class="form-title__no">02.</span> Zahlungsmethode
+          </h2>
+          <p class="form-meta">Wir akzeptieren ausschließlich das Belanglose — aber wohlwollend.</p>
+
           <div class="payment-options">
-
             <label class="payment-option">
               <input type="radio" name="payment" value="elon" checked />
               <div class="payment-card">
-                <span class="payment-icon">🤵</span>
-                <div>
-                  <p class="payment-name">Elon Musk zahlt</p>
-                  <p class="payment-desc">Er hat genug. Wir fragen ihn gar nicht erst.</p>
-                </div>
-                <span class="payment-badge">Empfohlen</span>
+                <span class="payment-name">Auf Kosten eines weltbekannten Milliardärs.</span>
+                <span class="payment-desc"><em>Er hat genug. Wir fragen ihn gar nicht erst.</em></span>
+                <span class="stamp stamp--red">Empfohlen</span>
               </div>
             </label>
-
             <label class="payment-option payment-option--disabled">
               <input type="radio" name="payment" value="card" disabled />
               <div class="payment-card">
-                <span class="payment-icon">💳</span>
-                <div>
-                  <p class="payment-name">Kreditkarte</p>
-                  <p class="payment-desc">Wozu, wenn Elon zahlt?</p>
-                </div>
-                <span class="payment-badge payment-badge--unavailable">Nicht verfügbar</span>
+                <span class="payment-name">Kreditkarte</span>
+                <span class="payment-desc"><em>Wozu, wenn ein anderer zahlt?</em></span>
+                <span class="stamp stamp--neutral stamp--open">Nicht verfügbar</span>
               </div>
             </label>
-
             <label class="payment-option payment-option--disabled">
               <input type="radio" name="payment" value="paypal" disabled />
               <div class="payment-card">
-                <span class="payment-icon">🅿️</span>
-                <div>
-                  <p class="payment-name">PayPal</p>
-                  <p class="payment-desc">Elon hat PayPal gegründet. Er zahlt trotzdem.</p>
-                </div>
-                <span class="payment-badge payment-badge--unavailable">Nicht verfügbar</span>
+                <span class="payment-name">PayPal</span>
+                <span class="payment-desc"><em>Auch hier: nicht erforderlich.</em></span>
+                <span class="stamp stamp--neutral stamp--open">Nicht verfügbar</span>
               </div>
             </label>
-
           </div>
-        </div>
+        </section>
 
       </div>
 
-      <!-- RECHTE SEITE: Bestellübersicht -->
-      <div class="checkout-summary">
-        <h2 class="summary-title">Ihre Bestellung</h2>
+      <aside class="checkout-summary">
+        <p class="checkout-summary__eyebrow">Ihre Bestellung</p>
+        <h2 class="checkout-summary__title">Der Vorgang.</h2>
+
+        <div class="rule-thin" style="margin: 0.5rem 0 1rem;"></div>
 
         {cartItems.map((item) => {
           const images = (item.product.images as string[]) ?? [];
-          const thumbnail = images[0] ?? '/products/placeholder.jpg';
+          const thumbnail = images[0];
           return (
             <div class="summary-item">
-              <img src={thumbnail} alt={item.product.name} class="summary-img" />
-              <div class="summary-item-info">
+              <div class="summary-img bg-stripes">
+                {thumbnail ? <img src={thumbnail} alt={item.product.name} /> : null}
+              </div>
+              <div class="summary-info">
                 <p class="summary-item-name">{item.product.name}</p>
                 <p class="summary-item-qty">× {item.quantity}</p>
               </div>
@@ -134,311 +142,303 @@ if (cartItems.length === 0) {
           );
         })}
 
-        <div class="summary-divider"></div>
+        <div class="rule-thin" style="margin: 1rem 0;"></div>
 
-        <div class="summary-total">
-          <span>Gesamt</span>
+        <div class="summary-line">
+          <span>Zwischensumme</span>
           <span>{total.toFixed(2)} €</span>
         </div>
-
-        <div class="summary-elon">
-          <p>💸 Wird von Elon Musk übernommen</p>
+        <div class="summary-line">
+          <span>Versand <em>(langsam)</em></span>
+          <span>{versand.toFixed(2)} €</span>
+        </div>
+        <div class="summary-line">
+          <span>Symbolische Steuer</span>
+          <span>0,00 €</span>
         </div>
 
-        <!-- BESTELLEN BUTTON -->
-        <!-- GEÄNDERT: kein einfacher Link mehr -->
-        <button class="order-btn" id="order-btn">
-          Jetzt bestellen – auf Elons Kosten
+        <div class="rule-thick" style="margin: 1rem 0; border-top-color: var(--ink);"></div>
+
+        <div class="summary-total">
+          <span class="summary-total__label">Gesamt</span>
+          <span class="summary-total__value">{gesamt.toFixed(2)} €</span>
+        </div>
+
+        <div class="summary-uebernahme">
+          <p>Wird übernommen — siehe oben.</p>
+        </div>
+
+        <button class="checkout-cta" id="order-btn">
+          Bestellung aufgeben →
         </button>
 
-        <script>
-          document.getElementById('order-btn')?.addEventListener('click', async () => {
-            // Email aus dem Formular lesen
-            const customerEmail = (document.querySelector('input[type="email"]') as HTMLInputElement)?.value;
-            
-            if (!customerEmail) {
-              alert('Bitte gib eine Email-Adresse ein!');
-              return;
-            }
-
-            // Email in Cookie speichern damit order-confirmed sie lesen kann
-            document.cookie = `customer_email=${encodeURIComponent(customerEmail)}; path=/`;
-            document.cookie = 'order_placed=true; path=/';
-            window.location.href = '/order-confirmed';
-          });
-        </script>
         <p class="checkout-disclaimer">
-          Mit dem Klick auf "Jetzt bestellen" bestätigen Sie, dass Elon Musk
-          für diese Transaktion verantwortlich ist. Er wurde nicht gefragt.
+          <em>Mit dem Klick bestätigen Sie, dass der oben genannte Dritte ungefragt
+          für diese Transaktion in Anspruch genommen wird. Wir bedauern nichts.</em>
         </p>
-      </div>
+      </aside>
 
     </div>
 
   </main>
 </Layout>
 
+<script>
+  document.getElementById('order-btn')?.addEventListener('click', async () => {
+    const customerEmail = (document.getElementById('customer-email') as HTMLInputElement)?.value;
+    if (!customerEmail) {
+      alert('Bitte tragen Sie eine E-Mail-Adresse ein.');
+      return;
+    }
+    document.cookie = `customer_email=${encodeURIComponent(customerEmail)}; path=/`;
+    document.cookie = 'order_placed=true; path=/';
+    window.location.href = '/order-confirmed';
+  });
+</script>
+
 <style>
-  .checkout-page {
-    padding-top: var(--nav-height);
-    max-width: 1200px;
-    margin: 0 auto;
-    padding-left: 2rem;
-    padding-right: 2rem;
-    padding-bottom: 6rem;
-  }
+  .checkout { padding-top: 2rem; }
 
-  .checkout-title {
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    margin: 3rem 0 0.5rem;
+  .checkout-head {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+    gap: 2rem;
+    margin-top: 2rem;
   }
-
-  .checkout-sub {
-    color: var(--color-subtext);
-    margin: 0 0 3rem;
+  .checkout-head__motto {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--ink-soft);
+    margin: 0;
+    text-align: right;
   }
 
   .checkout-layout {
     display: grid;
-    grid-template-columns: 1fr 380px;
+    grid-template-columns: 1.6fr 1fr;
     gap: 3rem;
     align-items: start;
+    margin-top: 2rem;
   }
 
-  /* Formular */
+  /* FORM SECTIONS */
   .form-section {
-    background: white;
-    border-radius: 20px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    padding: 1.8rem 0;
+    border-bottom: var(--rule-soft);
   }
-
+  .form-section:first-child { padding-top: 0; }
   .form-title {
-    font-size: 1.1rem;
+    font-family: var(--font-display);
+    font-size: 1.6rem;
     font-weight: 700;
-    margin: 0 0 1.25rem;
+    margin: 0 0 0.4rem;
+    line-height: 1.1;
   }
-
+  .form-title__no {
+    color: var(--red);
+    font-style: italic;
+    margin-right: 0.4rem;
+  }
+  .form-meta {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 0.95rem;
+    color: var(--ink-mute);
+    margin: 0 0 1.2rem;
+  }
   .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
   }
-
   .form-field {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
   }
-
-  .form-field--full {
-    grid-column: 1 / -1;
-  }
-
+  .form-field--full { grid-column: 1 / -1; }
   .form-field label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--color-subtext);
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .form-field input {
-    padding: 0.65rem 0.85rem;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.2s;
-    background: #fafafa;
-  }
-
-  .form-field input:focus {
-    border-color: var(--color-text);
-    background: white;
-  }
-
-  /* Zahlungsoptionen */
-  .payment-options {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .payment-option {
-    cursor: pointer;
-  }
-
-  .payment-option input {
-    display: none;
-  }
-
-  .payment-card {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    transition: border-color 0.2s;
-  }
-
-  .payment-option input:checked + .payment-card {
-    border-color: var(--color-text);
-    background: #fafafa;
-  }
-
-  .payment-option--disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .payment-icon {
-    font-size: 1.5rem;
-    flex-shrink: 0;
-  }
-
-  .payment-name {
-    font-weight: 600;
-    font-size: 0.95rem;
-    margin: 0;
-  }
-
-  .payment-desc {
-    font-size: 0.8rem;
-    color: var(--color-subtext);
-    margin: 0;
-  }
-
-  .payment-badge {
-    margin-left: auto;
-    font-size: 0.7rem;
-    font-weight: 600;
-    background: var(--color-text);
-    color: white;
-    padding: 0.2rem 0.5rem;
-    border-radius: 999px;
-    flex-shrink: 0;
-  }
-
-  .payment-badge--unavailable {
-    background: #e0e0e0;
-    color: var(--color-subtext);
-  }
-
-  /* Zusammenfassung */
-  .checkout-summary {
-    background: white;
-    border-radius: 20px;
-    padding: 1.5rem;
-    position: sticky;
-    top: calc(var(--nav-height) + 2rem);
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .summary-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem;
-  }
-
-  .summary-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .summary-img {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    border-radius: 8px;
-    flex-shrink: 0;
-  }
-
-  .summary-item-info {
-    flex: 1;
-  }
-
-  .summary-item-name {
-    font-size: 0.85rem;
+    color: var(--ink-mute);
     font-weight: 500;
-    margin: 0;
+  }
+  .form-field input {
+    padding: 0.85rem 0.9rem;
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 1rem;
   }
 
+  /* PAYMENT */
+  .payment-options { display: flex; flex-direction: column; gap: 0.75rem; }
+  .payment-option { cursor: pointer; display: block; }
+  .payment-option input { display: none; }
+  .payment-card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "name stamp" "desc stamp";
+    gap: 0.2rem 1rem;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    border: 1px solid var(--paper-3);
+    background: var(--paper);
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .payment-option input:checked + .payment-card {
+    border-color: var(--ink);
+    background: var(--paper-2);
+  }
+  .payment-option--disabled { opacity: 0.55; cursor: not-allowed; }
+  .payment-name {
+    grid-area: name;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .payment-desc {
+    grid-area: desc;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+  }
+  .payment-card .stamp { grid-area: stamp; }
+
+  /* SUMMARY */
+  .checkout-summary {
+    position: sticky;
+    top: 2rem;
+    border-top: var(--rule);
+    padding-top: 1.5rem;
+  }
+  .checkout-summary__eyebrow {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0 0 0.3rem;
+  }
+  .checkout-summary__title {
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1;
+    margin: 0 0 1rem;
+  }
+  .summary-item {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 0.9rem;
+    align-items: center;
+    padding: 0.6rem 0;
+  }
+  .summary-img {
+    width: 56px;
+    height: 56px;
+    overflow: hidden;
+  }
+  .summary-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: sepia(0.12) contrast(0.95);
+    mix-blend-mode: multiply;
+  }
+  .summary-item-name {
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+  }
   .summary-item-qty {
-    font-size: 0.8rem;
-    color: var(--color-subtext);
-    margin: 0;
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0.2rem 0 0;
   }
-
   .summary-item-price {
-    font-weight: 600;
-    font-size: 0.9rem;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
     margin: 0;
   }
-
-  .summary-divider {
-    height: 1px;
-    background: #e8e8e8;
-  }
-
-  .summary-total {
+  .summary-line {
     display: flex;
     justify-content: space-between;
-    font-weight: 700;
-    font-size: 1.1rem;
+    padding: 0.4rem 0;
+    font-family: var(--font-body);
+    color: var(--ink-soft);
   }
-
-  .summary-elon {
-    background: #f0f0f5;
-    border-radius: 10px;
-    padding: 0.75rem;
-    text-align: center;
-    font-size: 0.85rem;
-    font-weight: 500;
+  .summary-line em { font-style: italic; color: var(--ink-mute); font-size: 0.9em; }
+  .summary-total { display: flex; justify-content: space-between; align-items: baseline; }
+  .summary-total__label {
+    font-family: var(--font-meta);
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
   }
-
-  .summary-elon p {
+  .summary-total__value {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 800;
+  }
+  .summary-uebernahme {
+    background: var(--paper-2);
+    padding: 0.8rem 1rem;
+    border-left: 3px solid var(--ochre);
+    margin: 1rem 0;
+  }
+  .summary-uebernahme p {
+    font-family: var(--font-body);
+    font-style: italic;
     margin: 0;
+    font-size: 0.92rem;
   }
-
-  .order-btn {
-    background: var(--color-text);
-    color: white;
-    text-decoration: none;
-    padding: 0.9rem;
-    border-radius: 12px;
-    font-weight: 600;
-    text-align: center;
-    transition: opacity 0.2s;
-    font-size: 0.95rem;
+  .checkout-cta {
+    width: 100%;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 1.1rem;
+    margin-top: 0.5rem;
+    font-family: var(--font-meta);
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s;
   }
-
-  .order-btn:hover {
-    opacity: 0.85;
-  }
-
+  .checkout-cta:hover { background: var(--red); }
   .checkout-disclaimer {
-    font-size: 0.75rem;
-    color: var(--color-subtext);
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 0.82rem;
+    color: var(--ink-mute);
     text-align: center;
     line-height: 1.5;
-    margin: 0;
+    margin: 1rem 0 0;
   }
 
-  @media (max-width: 768px) {
-    .checkout-layout {
-      grid-template-columns: 1fr;
-    }
-
-    .checkout-summary {
-      position: static;
-    }
+  /* Responsive */
+  @media (max-width: 900px) {
+    .checkout-layout { grid-template-columns: 1fr; }
+    .checkout-summary { position: static; }
+    .checkout-head { grid-template-columns: 1fr; }
+    .checkout-head__motto { text-align: left; }
+  }
+  @media (max-width: 540px) {
+    .form-grid { grid-template-columns: 1fr; }
   }
 </style>

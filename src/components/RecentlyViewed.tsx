@@ -40,7 +40,7 @@ export default function RecentlyViewed(props: Props) {
   <>
     {recent().length > 0 && (
       <section class="recently-viewed">
-        <p class="section-eyebrow">Zuletzt angesehen</p>
+        <p class="section-eyebrow">Zuletzt im Lesesaal</p>
         <div class="recent-grid">
           <For each={recent()}>
             {(product) => (
