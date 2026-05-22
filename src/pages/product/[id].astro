@@ -1,490 +1,382 @@
 ---
+// =====================================================================
+// pages/product/[id].astro — Produkt-Detailseite
+// =====================================================================
+// SSR-Seite. Validiert die ID strikt:
+//   - Muss eine positive Ganzzahl sein (keine "abc", keine "-5")
+//   - Item muss existieren
+// In allen anderen Fällen: 404-Seite mit korrektem HTTP-Status.
+//
+// Diese Datei wurde mit Hilfe von Claude (Anthropic) angepasst.
+// =====================================================================
+
 import Layout from '../../layouts/Layout.astro';
-import { db, Item, eq, ne, sql } from 'astro:db';
+import { db, Item, eq, ne } from 'astro:db';
 import AddToCart from '../../components/AddToChart.tsx';
 import ImageGallery from '../../components/ImageGallery.tsx';
 import RecentlyViewed from '../../components/RecentlyViewed.tsx';
+import WishlistButton from '../../components/WishlistButton.tsx';
 
-const { id } = Astro.params;
-const results = await db.select().from(Item).where(eq(Item.id, Number(id)));
+// --- 1) ID-Validierung ---
+const rawId = Astro.params.id ?? '';
+const parsedId = parseInt(rawId, 10);
+
+// Strict integer check: parseInt akzeptiert "5abc" als 5 — wir wollen das nicht.
+// String muss komplett aus Ziffern bestehen UND > 0 sein.
+const isValidId = /^[1-9]\d*$/.test(rawId);
+
+if (!isValidId) {
+  return new Response(null, { status: 404 });
+}
+
+// --- 2) Item laden ---
+const results = await db.select().from(Item).where(eq(Item.id, parsedId));
 const item = results[0];
 
 if (!item) {
-  return Astro.redirect('/404');
+  return new Response(null, { status: 404 });
 }
 
 const features = (item.features as Array<{ headline: string; subtext: string }>) ?? [];
 const images = (item.images as string[]) ?? [];
-const getImageSrc = (index: number) => images[index] || '/products/placeholder.jpg';
 const specs = (item.specs as Record<string, string>) ?? {};
 const hasSpecs = Object.keys(specs).length > 0;
 
-// NEU: Zufällige Empfehlung – ein anderes Produkt
-const allOthers = await db.select().from(Item).where(ne(Item.id, Number(id)));
-const recommendation = allOthers[Math.floor(Math.random() * allOthers.length)];
+const allOthers = await db.select().from(Item).where(ne(Item.id, parsedId));
+const recommendation = allOthers[Math.floor(Math.random() * Math.max(allOthers.length, 1))];
 const recImages = (recommendation?.images as string[]) ?? [];
-const recThumbnail = recImages[0] ?? '/products/placeholder.jpg';
+const recThumbnail = recImages[0];
+
+const klassifikationen = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache'];
+const klass = klassifikationen[item.id % klassifikationen.length];
+const sign = `${String(item.boredom).padStart(2,'0')}.${String((item.id * 137) % 1000).padStart(3,'0')}`;
+const isBegehrt = item.boredom >= 9;
 ---
 
 <Layout title={item.name}>
-  <main class="detail-page">
+  <main class="page produkt">
 
-    <nav class="breadcrumb">
-      <a href="/">Shop</a>
-      <span>›</span>
-      <span>{item.name}</span>
+    {/* BREADCRUMB */}
+    <nav class="produkt-breadcrumb">
+      <a href="/">Katalog</a>
+      <span class="produkt-breadcrumb__sep">·</span>
+      <span>Schreibwaren · {klass}</span>
+      <span class="produkt-breadcrumb__sep">·</span>
+      <span class="produkt-breadcrumb__active">Sign. {sign}</span>
     </nav>
 
-    <div class="detail-grid">
+    <div class="rule-thick" style="margin: 0.5rem 0 0;"></div>
 
-      <!-- LINKE SEITE -->
-      <div class="gallery">
+    {/* HAUPTBEREICH */}
+    <div class="produkt-layout">
+
+      {/* LINKS: Galerie */}
+      <div class="produkt-galerie">
         <ImageGallery client:load images={images} alt={item.name} />
+        <p class="produkt-galerie__caption">
+          Tafel 01 — {item.name}. Eigene Aufnahme, Studio Berlin.
+        </p>
       </div>
 
-      <!-- RECHTE SEITE -->
-      <div class="detail-info">
-        <span class="boredom-badge">😴 Langeweile-Faktor: {item.boredom}/10</span>
-        <h1 class="detail-title">{item.name}</h1>
-        <p class="detail-desc">{item.description}</p>
-        <div class="detail-divider"></div>
-        <p class="detail-price">{item.price.toFixed(2)} €</p>
-        <div class="detail-stock">
+      {/* RECHTS: Info */}
+      <div class="produkt-info">
+
+        <p class="produkt-info__rubrik">Schreibwaren · {klass} · Sign. {sign}</p>
+
+        <h1 class="produkt-info__title">{item.name}</h1>
+
+        <p class="produkt-info__desc">{item.description}</p>
+
+        <div class="produkt-info__stamps">
+          {isBegehrt && <span class="stamp stamp--red">Sehr begehrt</span>}
           {item.stock > 0
-            ? <span class="in-stock">✓ Auf Lager ({item.stock} Stück)</span>
-            : <span class="out-of-stock">✗ Ausverkauft</span>
+            ? <span class="stamp stamp--green stamp--open">Auf Lager · {item.stock} Stk.</span>
+            : <span class="stamp stamp--neutral stamp--open">Ausverkauft</span>
           }
+          <span class="stamp stamp--neutral stamp--open">Langeweile {item.boredom}/10</span>
         </div>
+
+        <div class="rule-thick" style="margin: 1.5rem 0;"></div>
+
+        <p class="produkt-info__price-label">Tagespreis</p>
+        <p class="produkt-info__price">{item.price.toFixed(2)} €</p>
+
         <AddToCart client:load itemId={item.id} initialStock={item.stock} />
 
+        <WishlistButton client:load itemId={item.id} variant="block" />
+
         {features.length > 0 && (
-          <div class="detail-features">
-            <p class="features-label">Produkthighlights</p>
+          <div class="produkt-info__features">
+            <p class="produkt-info__features-eyebrow">Produkthighlights</p>
             {features.map((f) => (
-              <div class="feature-item">
-                <p class="feature-item-headline">{f.headline}</p>
-                <p class="feature-item-subtext">{f.subtext}</p>
+              <div class="produkt-feature">
+                <p class="produkt-feature__head">{f.headline}</p>
+                <p class="produkt-feature__sub">{f.subtext}</p>
               </div>
             ))}
           </div>
         )}
 
-        <!-- EMPFEHLUNG – innerhalb detail-info -->
         {recommendation && (
-          <a href={`/product/${recommendation.id}`} class="rec-card-small">
-            <img src={recThumbnail} alt={recommendation.name} class="rec-card-small-img" />
-            <div class="rec-card-small-info">
-              <p class="rec-card-small-eyebrow">Das könnte Sie auch langweilen</p>
-              <p class="rec-card-small-name">{recommendation.name}</p>
-              <p class="rec-card-small-price">{recommendation.price.toFixed(2)} €</p>
+          <a href={`/product/${recommendation.id}`} class="produkt-rec">
+            <div class="produkt-rec__thumb bg-stripes">
+              {recThumbnail
+                ? <img src={recThumbnail} alt={recommendation.name} />
+                : null
+              }
+            </div>
+            <div>
+              <p class="produkt-rec__eyebrow">Das könnte Sie auch langweilen</p>
+              <p class="produkt-rec__name">{recommendation.name}</p>
+              <p class="produkt-rec__price">{recommendation.price.toFixed(2)} €</p>
             </div>
           </a>
         )}
       </div>
-
-      <!-- TECHNISCHE DATEN – außerhalb detail-info aber innerhalb detail-grid -->
-      {hasSpecs && (
-        <div class="specs-section">
-          <h2 class="specs-title">Technische Daten</h2>
-          <table class="specs-table">
-            <tbody>
-              {Object.entries(specs).map(([key, value]) => (
-                <tr>
-                  <td class="specs-key">{key}</td>
-                  <td class="specs-value">{value}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
     </div>
 
-    <!-- ZULETZT BESUCHT – unterhalb des Grids -->
-    <RecentlyViewed client:load currentId={Number(id)} />
+    {/* TECHNISCHE DATEN */}
+    {hasSpecs && (
+      <section class="produkt-specs reveal">
+        <div class="section-marker">
+          <span class="section-marker__no">N° 02</span>
+          <span class="section-marker__line"></span>
+          <span class="section-marker__label">Technisches Datenblatt</span>
+        </div>
+        <table class="specs-table">
+          <tbody>
+            {Object.entries(specs).map(([key, value]) => (
+              <tr>
+                <td class="specs-key">{key}</td>
+                <td class="specs-value">{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    )}
+
+    {/* ZULETZT BESUCHT */}
+    <RecentlyViewed client:load currentId={parsedId} />
 
   </main>
 </Layout>
 
 <style>
+  .produkt { padding-top: 2rem; }
 
-  .rec-card-small {
-  display: flex;
-  gap: 0.75rem;
-  background: #f5f5f7;
-  border-radius: 12px;
-  padding: 0.75rem;
-  text-decoration: none;
-  color: var(--color-text);
-  transition: background 0.2s;
-  margin-top: 0.5rem;
-}
-
-.rec-card-small:hover {
-  background: #ebebef;
-}
-
-.rec-card-small-img {
-  width: 64px;
-  height: 64px;
-  object-fit: cover;
-  border-radius: 8px;
-  flex-shrink: 0;
-}
-
-.rec-card-small-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.2rem;
-}
-
-.rec-card-small-eyebrow {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-subtext);
-  margin: 0;
-}
-
-.rec-card-small-name {
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.rec-card-small-price {
-  font-size: 0.85rem;
-  font-weight: 700;
-  margin: 0;
-}
-  .detail-page {
-    padding-top: var(--nav-height);
-    max-width: 1200px;
-    margin: 0 auto;
-    padding-left: 2rem;
-    padding-right: 2rem;
-    padding-bottom: 6rem;
-  }
-
-  /* Breadcrumb */
-  .breadcrumb {
+  .produkt-breadcrumb {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.75rem;
     align-items: center;
-    padding: 2rem 0 1rem;
-    font-size: 0.85rem;
-    color: var(--color-subtext);
+    font-family: var(--font-meta);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
   }
+  .produkt-breadcrumb a { color: var(--ink); text-decoration: none; }
+  .produkt-breadcrumb a:hover { color: var(--red); }
+  .produkt-breadcrumb__sep { color: var(--ink-mute); }
+  .produkt-breadcrumb__active { color: var(--red); }
 
-  .breadcrumb a {
-    color: var(--color-subtext);
-    text-decoration: none;
-  }
-
-  .breadcrumb a:hover {
-    color: var(--color-text);
-  }
-
-  /* Haupt-Grid: 55% Bilder, 45% Info */
-  .detail-grid {
+  /* LAYOUT */
+  .produkt-layout {
     display: grid;
-    grid-template-columns: 55fr 45fr;
+    grid-template-columns: 1.1fr 1fr;
     gap: 4rem;
     align-items: start;
-    padding-top: 1rem;
+    padding: 2rem 0;
   }
 
-  /* Info-Seite */
-  .detail-info {
+  /* GALERIE */
+  .produkt-galerie__caption {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 1rem 0 0;
+  }
+
+  /* INFO-SPALTE */
+  .produkt-info {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    position: sticky;  /* bleibt beim Scrollen sichtbar */
-    top: calc(var(--nav-height) + 2rem);
+    position: sticky;
+    top: 2rem;
   }
-
-  .boredom-badge {
-    font-size: 0.8rem;
-    font-weight: 600;
-    background: #f0f0f5;
-    padding: 0.3rem 0.75rem;
-    border-radius: 999px;
-    width: fit-content;
+  .produkt-info__rubrik {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin: 0;
+    font-weight: 500;
   }
-
-  .detail-title {
-    font-size: clamp(1.5rem, 3vw, 2.2rem);
-    font-weight: 700;
+  .produkt-info__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+    font-weight: 800;
+    line-height: 1;
     letter-spacing: -0.02em;
-    line-height: 1.2;
+    margin: 0;
+    color: var(--ink);
+  }
+  .produkt-info__desc {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 1.1rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
     margin: 0;
   }
-
-  .detail-desc {
-    color: var(--color-subtext);
-    font-size: 1rem;
-    line-height: 1.6;
+  .produkt-info__stamps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+  .produkt-info__price-label {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
     margin: 0;
   }
-
-  .detail-divider {
-    height: 1px;
-    background: #e8e8e8;
-  }
-
-  .detail-price {
-    font-size: 2rem;
-    font-weight: 700;
+  .produkt-info__price {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
     margin: 0;
+    color: var(--ink);
   }
 
-  .detail-stock {
-    font-size: 0.9rem;
-  }
-
-  .in-stock {
-    color: #1a7f4b;
-    font-weight: 500;
-  }
-
-  .out-of-stock {
-    color: #c0392b;
-    font-weight: 500;
-  }
-
-  /* Features */
-  .detail-features {
-    margin-top: 1rem;
-    border-top: 1px solid #e8e8e8;
-    padding-top: 1rem;
+  /* FEATURES */
+  .produkt-info__features {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: var(--rule-soft);
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.8rem;
+  }
+  .produkt-info__features-eyebrow {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0 0 0.3rem;
+  }
+  .produkt-feature {
+    padding: 0.85rem 1rem;
+    background: var(--paper-2);
+    border-left: 2px solid var(--red);
+  }
+  .produkt-feature__head {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0 0 0.3rem;
+  }
+  .produkt-feature__sub {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    margin: 0;
+    font-style: italic;
   }
 
-  .features-label {
-    font-size: 0.75rem;
-    font-weight: 600;
+  /* REC */
+  .produkt-rec {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--paper-2);
+    text-decoration: none;
+    color: var(--ink);
+    margin-top: 1rem;
+    border: 1px solid var(--paper-3);
+    transition: background 0.15s;
+  }
+  .produkt-rec:hover { background: var(--paper-3); }
+  .produkt-rec__thumb {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+  }
+  .produkt-rec__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: sepia(0.15) contrast(0.95);
+    mix-blend-mode: multiply;
+  }
+  .produkt-rec__eyebrow {
+    font-family: var(--font-meta);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin: 0 0 0.3rem;
+  }
+  .produkt-rec__name {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 0 0 0.3rem;
+  }
+  .produkt-rec__price {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  /* SPECS */
+  .produkt-specs {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: var(--rule);
+  }
+  .specs-table {
+    width: 100%;
+    margin-top: 1.5rem;
+    border-collapse: collapse;
+    font-family: var(--font-body);
+    font-size: 1rem;
+  }
+  .specs-table tr {
+    border-bottom: var(--rule-soft);
+  }
+  .specs-key {
+    padding: 0.9rem 0;
+    color: var(--ink-mute);
+    width: 35%;
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--color-subtext);
-    margin: 0;
+    vertical-align: top;
   }
-
-  .feature-item {
-    padding: 0.75rem;
-    background: #f5f5f7;
-    border-radius: 12px;
-  }
-
-  .feature-item-headline {
-    font-weight: 600;
-    font-size: 0.9rem;
-    margin: 0 0 0.25rem;
-  }
-
-  .feature-item-subtext {
-    font-size: 0.85rem;
-    color: var(--color-subtext);
-    margin: 0;
-    line-height: 1.5;
+  .specs-value {
+    padding: 0.9rem 0;
+    color: var(--ink);
+    font-weight: 500;
   }
 
   /* Responsive */
-  @media (max-width: 768px) {
-    .detail-grid {
-      grid-template-columns: 1fr;
-      gap: 2rem;
-    }
-
-    .detail-info {
-      position: static; /* kein sticky auf Mobile */
-    }
+  @media (max-width: 900px) {
+    .produkt-layout { grid-template-columns: 1fr; gap: 2.5rem; }
+    .produkt-info { position: static; }
   }
-
-  .specs-section {
-  margin-top: 2rem;
-  border-top: 1px solid #e8e8e8;
-  padding-top: 2rem;
-}
-
-.specs-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0 0 1rem;
-}
-
-.specs-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-}
-
-.specs-table tr {
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.specs-table tr:last-child {
-  border-bottom: none;
-}
-
-.specs-key {
-  padding: 0.6rem 0;
-  color: var(--color-subtext);
-  width: 45%;
-  vertical-align: top;
-}
-
-.specs-value {
-  padding: 0.6rem 0;
-  font-weight: 500;
-}
-
-/* Empfehlung */
-.recommendation {
-  margin-top: 4rem;
-  padding-top: 3rem;
-  border-top: 1px solid #e8e8e8;
-}
-
-.section-eyebrow {
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-subtext);
-  margin: 0 0 1.5rem;
-}
-
-.rec-card {
-  display: flex;
-  gap: 2rem;
-  background: white;
-  border-radius: 20px;
-  padding: 1.5rem;
-  text-decoration: none;
-  color: var(--color-text);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.rec-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-}
-
-.rec-img-wrapper {
-  width: 180px;
-  height: 180px;
-  border-radius: 12px;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.rec-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.rec-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  justify-content: center;
-}
-
-.rec-boredom {
-  font-size: 0.8rem;
-  background: #f0f0f5;
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  width: fit-content;
-}
-
-.rec-name {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin: 0;
-  letter-spacing: -0.02em;
-}
-
-.rec-desc {
-  color: var(--color-subtext);
-  font-size: 0.9rem;
-  margin: 0;
-}
-
-.rec-price {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-/* Zuletzt besucht */
-.recently-viewed {
-  margin-top: 3rem;
-  padding-top: 3rem;
-  border-top: 1px solid #e8e8e8;
-}
-
-.recent-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-}
-
-.recent-card {
-  text-decoration: none;
-  color: var(--color-text);
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  transition: transform 0.2s;
-}
-
-.recent-card:hover {
-  transform: translateY(-2px);
-}
-
-.recent-img-wrapper {
-  aspect-ratio: 4/3;
-  overflow: hidden;
-}
-
-.recent-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.recent-name {
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin: 0.75rem 0.75rem 0.25rem;
-}
-
-.recent-price {
-  font-size: 0.9rem;
-  font-weight: 700;
-  margin: 0 0.75rem 0.75rem;
-}
-
-@media (max-width: 768px) {
-  .rec-card {
-    flex-direction: column;
-  }
-
-  .rec-img-wrapper {
-    width: 100%;
-    height: 200px;
-  }
-
-  .recent-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
 </style>

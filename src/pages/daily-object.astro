@@ -1,13 +1,36 @@
 ---
+// =====================================================================
+// pages/daily-object.astro — Objekt des Tages
+// =====================================================================
+// SSR-Seite. Wählt deterministisch ein Item basierend auf dem aktuellen
+// Datum aus — sodass beim Reload am gleichen Tag dasselbe Objekt erscheint.
+//
+// Pseudo-Hash aus dem ISO-Datum als Seed -> deterministisch, simpel,
+// ausreichend für den Demo-Zweck.
+//
+// Diese Datei wurde mit Hilfe von Claude (Anthropic) angepasst.
+// =====================================================================
+
 import Layout from '../layouts/Layout.astro';
 import { db, Item, count } from 'astro:db';
 import AddToCart from '../components/AddToChart.tsx';
 
 const countResult = await db.select({ value: count() }).from(Item);
 const itemCount = countResult[0].value;
-const randomOffset = Math.floor(Math.random() * Math.max(itemCount, 1));
-const randomItems = await db.select().from(Item).limit(1).offset(randomOffset);
-const randomItem = randomItems[0];
+
+// Tagesseed: ISO-Datum -> einfacher Polynomial-Hash
+// Beispiel: "2026-05-19" -> 2026 * 31² + 5 * 31 + 19
+function dailyOffset(itemCount: number): number {
+  if (itemCount <= 0) return 0;
+  const iso = new Date().toISOString().slice(0, 10);            // "YYYY-MM-DD"
+  const [y, m, d] = iso.split('-').map(n => parseInt(n, 10));
+  const seed = (y * 31 * 31) + (m * 31) + d;
+  return seed % itemCount;
+}
+
+const offset = dailyOffset(itemCount);
+const items = await db.select().from(Item).limit(1).offset(offset);
+const randomItem = items[0];
 
 const features = (randomItem.features as Array<{ headline: string; subtext: string }>) ?? [];
 const images = (randomItem.images as string[]) ?? [];

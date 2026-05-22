@@ -1,0 +1,123 @@
+---
+// =====================================================================
+// pages/404.astro — Seite nicht gefunden
+// =====================================================================
+// Astro liefert diese Seite automatisch bei HTTP 404 aus.
+// Bei SSR mit Node-Adapter funktioniert es ebenfalls — Astro setzt
+// den Status-Code beim Rendern automatisch.
+//
+// Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
+// =====================================================================
+
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Seite nicht gefunden">
+  <main class="page notfound">
+
+    <div class="section-marker" style="justify-content: center;">
+      <span class="section-marker__no">N° 404</span>
+      <span class="section-marker__line"></span>
+      <span class="section-marker__label">Akte nicht auffindbar</span>
+    </div>
+
+    <p class="notfound__zahl">404</p>
+
+    <h1 class="display-headline notfound__title">
+      Diese Seite haben wir <em>noch nicht gedruckt.</em>
+    </h1>
+
+    <p class="notfound__sub">
+      Vermutlich wurde die Adresse falsch übertragen — oder das gewünschte Exemplar
+      wurde aus rein konzeptionellen Gründen zurückgehalten.
+    </p>
+
+    <div class="notfound__stamps">
+      <span class="stamp stamp--red">Vermerkt</span>
+      <span class="stamp stamp--neutral stamp--open">Vorgang nichtig</span>
+    </div>
+
+    <div class="notfound__actions">
+      <a href="/" class="btn-primary">← Zum Katalog</a>
+      <a href="/faq" class="btn-outline">Häufige Fragen</a>
+    </div>
+
+    <p class="notfound__motto">
+      <em>„Manche Dinge bleiben besser im Verborgenen."</em><br/>
+      <span class="notfound__cite">— Die Redaktion</span>
+    </p>
+
+  </main>
+</Layout>
+
+<style>
+  .notfound {
+    max-width: 720px;
+    text-align: center;
+    padding: 4rem 1.5rem;
+  }
+
+  .notfound__zahl {
+    font-family: var(--font-display);
+    font-size: clamp(7rem, 18vw, 12rem);
+    font-weight: 900;
+    line-height: 1;
+    margin: 1.5rem 0 0;
+    color: var(--red);
+    letter-spacing: -0.04em;
+    font-style: italic;
+  }
+
+  .notfound__title {
+    text-align: center;
+    margin: 0.5rem 0 1.5rem;
+    font-size: clamp(2rem, 4.5vw, 3rem);
+  }
+
+  .notfound__sub {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    max-width: 540px;
+    margin: 0 auto 2rem;
+  }
+
+  .notfound__stamps {
+    display: flex;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .notfound__actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+  }
+
+  .notfound__motto {
+    border-top: var(--rule-soft);
+    padding-top: 2rem;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--ink-soft);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .notfound__cite {
+    display: inline-block;
+    margin-top: 0.6rem;
+    font-family: var(--font-meta);
+    font-style: normal;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+</style>

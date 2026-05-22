@@ -14,5 +14,11 @@ export default defineConfig({
 
   adapter: node({
     mode: 'standalone'
-  })
+  }),
+
+  vite: { //Für Connection von externen Geräten, z.B. Handy
+    server: {
+      allowedHosts: true
+    }
+  }
 });

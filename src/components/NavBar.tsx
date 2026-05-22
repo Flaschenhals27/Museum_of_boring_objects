@@ -1,3 +1,11 @@
+// =====================================================================
+// components/NavBar.tsx — Hauptnavigation
+// =====================================================================
+// Solid-Insel, die auf jeder Seite mit client:load gehydratet wird.
+// Lädt Cart-Count, Wishlist-Count und User-Status.
+//
+// Diese Datei wurde mit Hilfe von Claude (Anthropic) angepasst.
+
 import { For, createSignal, onMount } from 'solid-js';
 
 const sections = [
@@ -14,21 +22,30 @@ interface User {
 }
 
 export default function NavBar() {
-  const [currentPath, setCurrentPath] = createSignal('');
-  const [cartCount, setCartCount] = createSignal(0);
-  const [user, setUser] = createSignal<User | null>(null);
+  const [currentPath,   setCurrentPath]   = createSignal('');
+  const [cartCount,     setCartCount]     = createSignal(0);
+  const [wishlistCount, setWishlistCount] = createSignal(0);
+  const [user,          setUser]          = createSignal<User | null>(null);
 
   const loadCartCount = async () => {
     try {
-      const res = await fetch('/api/cart');
+      const res  = await fetch('/api/cart');
       const data = await res.json();
       setCartCount(data.items.reduce((sum: number, i: any) => sum + i.quantity, 0));
     } catch (e) { /* still */ }
   };
 
+  const loadWishlistCount = async () => {
+    try {
+      const res  = await fetch('/api/wishlist');
+      const data = await res.json();
+      setWishlistCount(data.count ?? 0);
+    } catch (e) { /* still */ }
+  };
+
   const loadUser = async () => {
     try {
-      const res = await fetch('/api/auth/me');
+      const res  = await fetch('/api/auth/me');
       const data = await res.json();
       setUser(data.user);
     } catch (e) { /* still */ }
@@ -43,8 +60,10 @@ export default function NavBar() {
   onMount(() => {
     setCurrentPath(window.location.pathname);
     loadCartCount();
+    loadWishlistCount();
     loadUser();
-    window.addEventListener('cart-updated', loadCartCount);
+    window.addEventListener('cart-updated',     loadCartCount);
+    window.addEventListener('wishlist-updated', loadWishlistCount);
   });
 
   const isActive = (href: string) => {
@@ -56,11 +75,13 @@ export default function NavBar() {
     <>
       <div class="nav-container">
 
-        {/* LINKS: Anmelden bzw. User-Chip */}
+        {/* LINKS: Anmelden bzw. Konto-Link */}
         <div class="nav-left">
           {user() ? (
             <>
-              <span class="nav-user-chip">▸ {user()!.prename.toUpperCase()}</span>
+              <a href="/konto" class="nav-user-chip" title="Zum Konto">
+                ▸ {user()!.prename.toUpperCase()}
+              </a>
               <button class="nav-logout-btn" onClick={handleLogout}>Abmelden</button>
             </>
           ) : (
@@ -74,8 +95,11 @@ export default function NavBar() {
           <span class="nav-logo__sub">Das Wochenblatt für vollkommen belanglose Gegenstände.</span>
         </a>
 
-        {/* RECHTS: Warenkorb */}
+        {/* RECHTS: Wunschliste + Warenkorb */}
         <div class="nav-right">
+          <a href="/wunschliste" class="nav-wishlist" title="Wunschliste">
+            ♥ {wishlistCount()}
+          </a>
           <a href="/cart" class="nav-cart">
             Warenkorb · {cartCount()}
           </a>

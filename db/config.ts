@@ -1,48 +1,173 @@
+// =====================================================================
+// db/config.ts — Datenbank-Schema
+// =====================================================================
+// Erweitert um:
+//   - Address  (Wiederverwendbare Adressen pro Nutzer)
+//   - Order    (Bestellungen mit denormalisiertem Adress-Snapshot)
+//   - OrderItem (Positionen einer Bestellung, mit Preis-Snapshot)
+//   - Wishlist (Wunschliste — eingeloggte Nutzer ODER Session-Gäste)
+//
+// Hinweise zum Datenmodell-Verständnis:
+//   - References = Foreign Keys (Beziehung zwischen Tabellen)
+//   - "Snapshot"-Felder in Order/OrderItem speichern Werte zum Bestellzeitpunkt
+//     unabhängig vom späteren Verlauf (Preis ändert sich, Adresse wird umzogen).
+//   - astro:db nutzt darunter Drizzle ORM auf SQLite (lokal) bzw. libSQL/Turso (remote).
+//
+// Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt und manuell überprüft.
+
 import { defineDb, defineTable, column } from 'astro:db';
 
-const Item = defineTable({
+// ---------------------------------------------------------------------
+// User
+// ---------------------------------------------------------------------
+const User = defineTable({
   columns: {
-    id: column.number({ primaryKey: true }),
-    name: column.text(),
-    description: column.text(),
-    boredom: column.number(),
-    price: column.number(),
-    stock: column.number(),
-    features: column.json(),
-    specs: column.json({ optional: true }), // z.B. { "Material": "Stahl", "Länge": "32mm" }
-    images: column.json({optional: true}),
-  }
-});
-
-const Cart = defineTable({
-  columns: {
-    id: column.number({ primaryKey: true, autoIncrement: true }),
-    sessionId: column.text({ unique: true }),
-    userId: column.number({ optional: true }), // references entfernt
+    id:        column.number({ primaryKey: true, autoIncrement: true }),
+    email:     column.text({ unique: true }),
+    username:  column.text({ unique: true }),
+    password:  column.text(),              // gehasht mit bcryptjs
+    prename:   column.text(),
+    surname:   column.text(),
     createdAt: column.date(),
   }
 });
 
-// NEU: Jedes Item im Warenkorb
+// ---------------------------------------------------------------------
+// Item — der Katalog
+// ---------------------------------------------------------------------
+const Item = defineTable({
+  columns: {
+    id:          column.number({ primaryKey: true }),
+    name:        column.text(),
+    description: column.text(),
+    boredom:     column.number(),          // Langeweile-Index 1-10
+    price:       column.number(),
+    stock:       column.number(),
+    features:    column.json(),
+    specs:       column.json({ optional: true }),
+    images:      column.json({ optional: true }),
+  }
+});
+
+// ---------------------------------------------------------------------
+// Cart + CartItem — der aktive Warenkorb (vor Bestellung)
+// ---------------------------------------------------------------------
+const Cart = defineTable({
+  columns: {
+    id:        column.number({ primaryKey: true, autoIncrement: true }),
+    sessionId: column.text({ unique: true }),
+    userId:    column.number({ optional: true, references: () => User.columns.id }),
+    createdAt: column.date(),
+  }
+});
+
 const CartItem = defineTable({
   columns: {
-    id: column.number({ primaryKey: true, autoIncrement: true }),
-    cartId: column.number({ references: () => Cart.columns.id }),
-    itemId: column.number({ references: () => Item.columns.id }),
+    id:       column.number({ primaryKey: true, autoIncrement: true }),
+    cartId:   column.number({ references: () => Cart.columns.id }),
+    itemId:   column.number({ references: () => Item.columns.id }),
     quantity: column.number(),
   }
 });
 
-const User = defineTable({
+// ---------------------------------------------------------------------
+// Address — eingeloggte Nutzer können Adressen hinterlegen
+// ---------------------------------------------------------------------
+// Eine Adresse gehört genau einem Nutzer (n:1).
+// Bei der Bestellung wird der Inhalt der Adresse in die Order kopiert (Snapshot),
+// damit eine spätere Änderung der Adresse die Bestellhistorie nicht verfälscht.
+// ---------------------------------------------------------------------
+const Address = defineTable({
   columns: {
-    id: column.number({ primaryKey: true, autoIncrement: true }),
-    email: column.text({ unique: true }),
-    username: column.text({ unique: true }),
-    password: column.text(), // gehasht
-    prename: column.text(),
-    surname: column.text(),
+    id:        column.number({ primaryKey: true, autoIncrement: true }),
+    userId:    column.number({ references: () => User.columns.id }),
+    label:     column.text({ optional: true }),  // z.B. "Zuhause", "Büro"
+    prename:   column.text(),
+    surname:   column.text(),
+    street:    column.text(),
+    postal:    column.text(),
+    city:      column.text(),
+    country:   column.text({ default: 'Deutschland' }),
+    isDefault: column.boolean({ default: false }),
     createdAt: column.date(),
   }
 });
 
-export default defineDb({ tables: { Item, Cart, CartItem, User } });
+// ---------------------------------------------------------------------
+// Order — die abgeschlossene Bestellung
+// ---------------------------------------------------------------------
+// userId ist optional, weil Gäste auch bestellen können (sessionId hält sie zusammen).
+// Adresse, E-Mail und Versandkosten werden als Snapshot mitgespeichert.
+// Der Status durchläuft: 'eingegangen' -> 'versendet' -> 'abgeschlossen'.
+// ---------------------------------------------------------------------
+const Order = defineTable({
+  columns: {
+    id:           column.number({ primaryKey: true, autoIncrement: true }),
+    bordereauNr:  column.text({ unique: true }),  // z.B. "2026/00042" — fachlich sprechende ID
+    userId:       column.number({ optional: true, references: () => User.columns.id }),
+    sessionId:    column.text({ optional: true }),
+
+    // Snapshot der Kontaktdaten und Lieferadresse zum Bestellzeitpunkt
+    email:         column.text(),
+    addrPrename:   column.text(),
+    addrSurname:   column.text(),
+    addrStreet:    column.text(),
+    addrPostal:    column.text(),
+    addrCity:      column.text(),
+    addrCountry:   column.text({ default: 'Deutschland' }),
+
+    // Beträge
+    subtotal:     column.number(),                // Summe der Items
+    shippingCost: column.number(),                // Versandkosten zum Zeitpunkt der Bestellung
+    total:        column.number(),                // = subtotal + shippingCost
+
+    // Status & Meta
+    status:       column.text({ default: 'eingegangen' }),  // siehe oben
+    paymentMethod: column.text({ default: 'milliardaer' }), // bisher nur eine Option
+    notes:        column.text({ optional: true }),
+
+    createdAt:    column.date(),
+    updatedAt:    column.date(),
+  }
+});
+
+const OrderItem = defineTable({
+  columns: {
+    id:             column.number({ primaryKey: true, autoIncrement: true }),
+    orderId:        column.number({ references: () => Order.columns.id }),
+    itemId:         column.number({ references: () => Item.columns.id }),
+    quantity:       column.number(),
+    // Snapshots: Name & Preis zum Bestellzeitpunkt einfrieren
+    nameSnapshot:   column.text(),
+    priceSnapshot:  column.number(),
+  }
+});
+
+// ---------------------------------------------------------------------
+// Wishlist — Gäste UND eingeloggte Nutzer
+// ---------------------------------------------------------------------
+// Entweder userId ODER sessionId gesetzt — niemals beides leer.
+// Beim Login werden Gast-Einträge automatisch dem User zugeordnet (Merge-Logik in der API).
+// ---------------------------------------------------------------------
+const Wishlist = defineTable({
+  columns: {
+    id:        column.number({ primaryKey: true, autoIncrement: true }),
+    userId:    column.number({ optional: true, references: () => User.columns.id }),
+    sessionId: column.text({ optional: true }),
+    itemId:    column.number({ references: () => Item.columns.id }),
+    addedAt:   column.date(),
+  }
+});
+
+export default defineDb({
+  tables: {
+    User,
+    Item,
+    Cart,
+    CartItem,
+    Address,
+    Order,
+    OrderItem,
+    Wishlist,
+  }
+});

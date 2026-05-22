@@ -2,20 +2,20 @@
   {
     "id": 1,
     "name": "Standard-Büroklammer, grau",
-    "description": "Ein ca. 3 cm langes Stück gebogener Draht. Hält Papier zusammen. Manchmal.",
+    "description": "Ein kurzes Stück gebogener Draht. Hält Papier zusammen. Manchmal.",
     "boredom": 9,
     "price": 15.99,
     "stock": 42,
     "images": [
-      "/products/clip/hero.jpg",
-      "/products/clip/detail.jpg",
-      "/products/clip/lifestyle.jpg",
-      "/products/clip/closeup.jpg"
+      "/products/clip/hero.webp",
+      "/products/clip/detail.webp",
+      "/products/clip/lifestyle.webp",
+      "/products/clip/closeup.webp"
     ],
     "features": [
       {
         "headline": "Revolutionäre Biegung.",
-        "subtext": "Jahrzehntelange Forschung flossen in diesen präzisen 47°-Winkel. Papier hat keine Chance."
+        "subtext": "Jahrzehntelange Forschung flossen in diesen präzisen Winkel. Papier hat keine Chance."
       },
       {
         "headline": "Grau. Aber nicht irgendein Grau.",
@@ -32,7 +32,7 @@
       "Breite": "8 mm",
       "Gewicht": "0.5 g",
       "Farbe": "Grau",
-      "Tragkraft": "ca. 10 Blatt"
+      "Tragkraft": "Wenige Blatt"
     }
   },
   {
@@ -43,15 +43,15 @@
     "price": 24.50,
     "stock": 3,
     "images": [
-      "/products/highlighter/hero.jpg",
-      "/products/highlighter/detail.jpg",
-      "/products/highlighter/lifestyle.jpg",
-      "/products/highlighter/closeup.jpg"
+      "/products/highlighter/hero.webp",
+      "/products/highlighter/detail.webp",
+      "/products/highlighter/lifestyle.webp",
+      "/products/highlighter/closeup.webp"
     ],
     "features": [
       {
         "headline": "Das Ende des Lichts.",
-        "subtext": "Er war einmal leuchtend. Strahlend. Jetzt ist er trocken – und gerade deshalb unvergesslich."
+        "subtext": "Er war einmal leuchtend. Strahlend. Jetzt ist er trocken — und gerade deshalb unvergesslich."
       },
       {
         "headline": "Ein Geräusch, das bleibt.",
@@ -59,7 +59,7 @@
       },
       {
         "headline": "Seltenheit als Feature.",
-        "subtext": "Noch 3 auf Lager. Nicht weil wir wenig bestellt haben. Sondern weil die Nachfrage überwältigend war."
+        "subtext": "Begrenzte Auflage. Nicht weil wir wenig bestellt haben — sondern weil die Nachfrage uns selbst überrascht hat."
       }
     ],
     "specs": {
@@ -74,15 +74,15 @@
   {
     "id": 3,
     "name": "Leicht verbogenes Lineal, 30cm",
-    "description": "Misst Abstände mit einer Fehlertoleranz von ca. 2mm. Für alle die Perfektion überschätzen.",
+    "description": "Misst Abstände mit überschaubarer Fehlertoleranz. Für alle, die Perfektion ohnehin überschätzen.",
     "boredom": 8,
     "price": 18.50,
     "stock": 12,
     "images": [
-      "/products/ruler/hero.jpg",
-      "/products/ruler/detail.jpg",
-      "/products/ruler/lifestyle.jpg",
-      "/products/ruler/closeup.jpg"
+      "/products/ruler/hero.webp",
+      "/products/ruler/detail.webp",
+      "/products/ruler/lifestyle.webp",
+      "/products/ruler/closeup.webp"
     ],
     "features": [
       {
@@ -91,7 +91,7 @@
       },
       {
         "headline": "30 Zentimeter. Ungefähr.",
-        "subtext": "Je nach Biegungswinkel zwischen 29.8 und 30.3cm. Willkommen in der Welt der Näherungswerte."
+        "subtext": "Je nach Biegungswinkel etwas weniger oder etwas mehr. Willkommen in der Welt der Näherungswerte."
       },
       {
         "headline": "Transparent. Wie unsere Preispolitik.",
@@ -100,9 +100,9 @@
     ],
     "specs": {
       "Material": "Kunststoff, leicht gebogen",
-      "Länge": "~30 cm",
+      "Länge": "ca. 30 cm",
       "Farbe": "Durchsichtig",
-      "Biegungswinkel": "ca. 3°",
+      "Biegungswinkel": "Spürbar",
       "Skalierung": "Millimeter, meistens",
       "Zustand": "Charaktervoll"
     }
@@ -110,15 +110,15 @@
   {
     "id": 4,
     "name": "Radiergummi, fast aufgebraucht",
-    "description": "Noch ca. 1cm³ Radiermasse vorhanden. Für kleine Fehler – große sind ohnehin unverzeihlich.",
+    "description": "Letzte Radiermasse vorhanden. Für kleine Fehler — große sind ohnehin unverzeihlich.",
     "boredom": 9,
     "price": 12.99,
     "stock": 7,
     "images": [
-      "/products/eraser/hero.jpg",
-      "/products/eraser/detail.jpg",
-      "/products/eraser/lifestyle.jpg",
-      "/products/eraser/closeup.jpg"
+      "/products/eraser/hero.webp",
+      "/products/eraser/detail.webp",
+      "/products/eraser/lifestyle.webp",
+      "/products/eraser/closeup.webp"
     ],
     "features": [
       {
@@ -127,43 +127,43 @@
       },
       {
         "headline": "Knapp bemessen.",
-        "subtext": "Noch genug für ca. 12 Buchstaben oder 3 komplette Wörter. Nutzen Sie ihn weise."
+        "subtext": "Genug für einige Buchstaben, vielleicht ein paar Wörter. Nutzen Sie ihn weise."
       },
       {
         "headline": "Der Geruch der Nostalgie.",
-        "subtext": "Riecht nach Schule, Stress und besseren Zeiten. Ein Parfüm das kein Labor replizieren kann."
+        "subtext": "Riecht nach Schule, Stress und besseren Zeiten. Ein Parfum, das kein Labor replizieren kann."
       }
     ],
     "specs": {
       "Material": "Synthesekautschuk",
-      "Verbleibende Masse": "ca. 1 cm³",
+      "Verbleibende Masse": "Knapp",
       "Farbe": "Ehemals Pink",
       "Geruch": "Nostalgisch",
       "Radierleistung": "Nachlassend",
-      "Verbleibende Nutzungen": "Schätzungsweise 12"
+      "Verbleibende Nutzungen": "Überschaubar"
     }
   },
   {
     "id": 5,
     "name": "Kugelschreiber ohne Kappe",
-    "description": "Schreibt noch. Die Tinte trocknet vermutlich in 3-6 Wochen aus. Handeln Sie jetzt.",
+    "description": "Schreibt noch. Die Tinte trocknet vermutlich in den nächsten Wochen aus. Handeln Sie irgendwann.",
     "boredom": 8,
     "price": 9.99,
     "stock": 23,
     "images": [
-      "/products/ballpoint/hero.jpg",
-      "/products/ballpoint/detail.jpg",
-      "/products/ballpoint/lifestyle.jpg",
-      "/products/ballpoint/closeup.jpg"
+      "/products/ballpoint/hero.webp",
+      "/products/ballpoint/detail.webp",
+      "/products/ballpoint/lifestyle.webp",
+      "/products/ballpoint/closeup.webp"
     ],
     "features": [
       {
         "headline": "Die Kappe? Irrelevant.",
-        "subtext": "Kappen sind für Menschen die Dinge festhalten können. Dieser Stift hat sich befreit."
+        "subtext": "Kappen sind für Menschen, die Dinge festhalten können. Dieser Stift hat sich befreit."
       },
       {
         "headline": "Schreibt in Blau.",
-        "subtext": "Klassisch. Zeitlos. Unaufgeregt. Blau ist die Farbe der Vernunft – und der Langeweile."
+        "subtext": "Klassisch. Zeitlos. Unaufgeregt. Blau ist die Farbe der Vernunft — und der Langeweile."
       },
       {
         "headline": "Ein Wettlauf gegen die Zeit.",
@@ -173,29 +173,29 @@
     "specs": {
       "Tintenfarbe": "Blau",
       "Kappenstand": "Vermisst",
-      "Verbleibende Tinte": "ca. 60%",
-      "Schreibbreite": "0.7mm",
-      "Haltbarkeit": "3-6 Wochen (ohne Kappe)",
+      "Verbleibende Tinte": "Mehr als die Hälfte",
+      "Schreibbreite": "0.7 mm",
+      "Haltbarkeit": "Begrenzt (ohne Kappe)",
       "Hersteller": "Unbekannt"
     }
   },
   {
     "id": 6,
     "name": "Post-it Block, fast leer",
-    "description": "Noch 3 Zettel. Jeder einzelne trägt das Gewicht unzähliger vergessener Aufgaben.",
+    "description": "Wenige Zettel verbleibend. Jeder einzelne trägt das Gewicht unzähliger vergessener Aufgaben.",
     "boredom": 7,
     "price": 21.00,
     "stock": 5,
     "images": [
-      "/products/notes/hero.jpg",
-      "/products/notes/detail.jpg",
-      "/products/notes/lifestyle.jpg",
-      "/products/notes/closeup.jpg"
+      "/products/notes/hero.webp",
+      "/products/notes/detail.webp",
+      "/products/notes/lifestyle.webp",
+      "/products/notes/closeup.webp"
     ],
     "features": [
       {
-        "headline": "Drei Chancen.",
-        "subtext": "Drei Zettel. Drei Möglichkeiten etwas aufzuschreiben das man sowieso vergisst."
+        "headline": "Letzte Chancen.",
+        "subtext": "Wenige Zettel. Wenige Möglichkeiten, etwas aufzuschreiben, das man sowieso vergisst."
       },
       {
         "headline": "Klebt. Meistens.",
@@ -208,33 +208,33 @@
     ],
     "specs": {
       "Farbe": "Neongelb",
-      "Verbleibende Zettel": "3",
+      "Verbleibende Zettel": "Überschaubar",
       "Klebekraft": "Nachlassend",
-      "Format": "76 x 76mm",
+      "Format": "76 x 76 mm",
       "Beschreibbar": "Ja, aber wozu",
-      "Originalbestand": "100 Zettel"
+      "Originalbestand": "Vergangenheit"
     }
   },
   {
     "id": 7,
     "name": "Bleistift, stumpf",
-    "description": "HB-Bleistift, zuletzt gespitzt vermutlich 2019. Hinterlässt einen blassen, unentschlossenen Strich.",
+    "description": "HB-Bleistift, zuletzt gespitzt vor langer Zeit. Hinterlässt einen blassen, unentschlossenen Strich.",
     "boredom": 10,
     "price": 34.99,
     "stock": 1,
     "images": [
-      "/products/pencil/hero.jpg",
-      "/products/pencil/detail.jpg",
-      "/products/pencil/lifestyle.jpg",
-      "/products/pencil/closeup.jpg"
+      "/products/pencil/hero.webp",
+      "/products/pencil/detail.webp",
+      "/products/pencil/lifestyle.webp",
+      "/products/pencil/closeup.webp"
     ],
     "features": [
       {
         "headline": "HB. Die Farbe der Unentschlossenheit.",
-        "subtext": "Nicht zu hart, nicht zu weich. HB ist der Kompromiss den niemand wollte aber alle akzeptierten."
+        "subtext": "Nicht zu hart, nicht zu weich. HB ist der Kompromiss, den niemand wollte, aber alle akzeptierten."
       },
       {
-        "headline": "Stumpf seit 2019.",
+        "headline": "Stumpf seit Längerem.",
         "subtext": "Manche Dinge reifen mit der Zeit. Dieser Bleistift nicht. Er ist einfach stumpfer geworden."
       },
       {
@@ -245,10 +245,239 @@
     "specs": {
       "Härtegrad": "HB",
       "Zustand": "Stumpf",
-      "Länge": "16cm (ursprünglich 19cm)",
-      "Zuletzt gespitzt": "Ca. 2019",
-      "Strichstärke": "Ca. 2mm (stumpfbedingt)",
-      "Radiergummi am Ende": "Vorhanden, versteint"
+      "Länge": "Verkürzt",
+      "Zuletzt gespitzt": "Vor Jahren",
+      "Strichstärke": "Stumpfbedingt unscharf",
+      "Radiergummi am Ende": "Vorhanden, versteinert"
+    }
+  },
+  {
+    "id": 8,
+    "name": "Tackerklammern, halb verbraucht",
+    "description": "Eine Reihe metallener Soldaten. Wartet auf den nächsten Einsatz. Vermutlich vergeblich.",
+    "boredom": 9,
+    "price": 8.49,
+    "stock": 18,
+    "images": [
+      "/products/staples/hero.webp",
+      "/products/staples/detail.webp",
+      "/products/staples/lifestyle.webp",
+      "/products/staples/closeup.webp"
+    ],
+    "features": [
+      {
+        "headline": "Aufgereiht. Bereit. Vergessen.",
+        "subtext": "Sie standen einst stramm in formvollendeter Geschlossenheit. Heute fehlt die linke Flanke."
+      },
+      {
+        "headline": "Standardmaß. Was sonst.",
+        "subtext": "Passt in jeden gängigen Tacker. Auch in den, den Sie ohnehin nicht finden."
+      },
+      {
+        "headline": "Mehr Klammern als Sie brauchen werden.",
+        "subtext": "Statistisch gesehen reicht eine Packung für ein Berufsleben. Diese hat schon eines hinter sich."
+      }
+    ],
+    "specs": {
+      "Material": "Verzinkter Stahldraht",
+      "Norm": "24/6",
+      "Schenkellänge": "6 mm",
+      "Verbleib": "Etwa die Hälfte",
+      "Zustand": "Korrosionsfrei"
+    }
+  },
+  {
+    "id": 9,
+    "name": "Locher, schwergängig",
+    "description": "Erzeugt zwei perfekt runde Löcher. Mit Kraftaufwand. Und einem Geräusch, das niemand mag.",
+    "boredom": 8,
+    "price": 42.00,
+    "stock": 4,
+    "images": [
+      "/products/puncher/hero.webp",
+      "/products/puncher/detail.webp",
+      "/products/puncher/lifestyle.webp",
+      "/products/puncher/closeup.webp"
+    ],
+    "features": [
+      {
+        "headline": "Widerstand als Konzept.",
+        "subtext": "Wer drückt, der findet. Wer findet, der locht. Wer locht, der ahnt: es geht auch einfacher."
+      },
+      {
+        "headline": "Zwei Löcher. DIN-konform.",
+        "subtext": "Im Abstand von achtzig Millimetern. Eine Konstante, an der niemand zweifelt."
+      },
+      {
+        "headline": "Mit eingebauter Auffangschale.",
+        "subtext": "Sammelt die ausgestanzten Papierkreise. Manche nennen sie Konfetti. Wir nennen sie Sediment."
+      }
+    ],
+    "specs": {
+      "Lochdurchmesser": "5.5 mm",
+      "Lochabstand": "80 mm",
+      "Stanzleistung": "Eingeschränkt",
+      "Gewicht": "Spürbar",
+      "Geräuschpegel": "Hörbar"
+    }
+  },
+  {
+    "id": 10,
+    "name": "Kassenbon, verblasst",
+    "description": "Thermopapier aus einem Supermarkt, dessen Filialnetz nicht mehr vollständig ist. Beleg: nahezu unleserlich.",
+    "boredom": 10,
+    "price": 4.99,
+    "stock": 33,
+    "images": [
+      "/products/receipt/hero.webp",
+      "/products/receipt/detail.webp",
+      "/products/receipt/lifestyle.webp",
+      "/products/receipt/closeup.webp"
+    ],
+    "features": [
+      {
+        "headline": "Erinnerung an einen Einkauf.",
+        "subtext": "Was gekauft wurde, weiß niemand mehr. Was bleibt, ist der Beleg dafür, dass es geschah."
+      },
+      {
+        "headline": "Klimasensibel.",
+        "subtext": "Längeres Sonnenlicht löscht die letzten Zeichen. Eine Form der Vergänglichkeit zum Aufbewahren."
+      },
+      {
+        "headline": "Steuerlich nicht mehr absetzbar.",
+        "subtext": "Die Frist ist lange verstrichen. Aber der ideelle Wert: unverändert hoch."
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Heftklammer, halb geöffnet",
+    "description": "Eine einzelne, leicht aufgebogene Klammer. Hat einmal etwas zusammengehalten. Jetzt nicht mehr.",
+    "boredom": 10,
+    "price": 6.50,
+    "stock": 0,
+    "images": [
+      "/products/staple-bent/hero.webp",
+      "/products/staple-bent/detail.webp",
+      "/products/staple-bent/lifestyle.webp",
+      "/products/staple-bent/closeup.webp"
+    ],
+    "features": [
+      {
+        "headline": "Befreit. Nicht mehr funktional.",
+        "subtext": "Sie hat einen Bericht zusammengehalten, der niemanden interessiert hat. Ihre Aufgabe ist erfüllt."
+      },
+      {
+        "headline": "Verformung mit Geschichte.",
+        "subtext": "Der Winkel verrät den Moment der Trennung. Eilig, ungeduldig, unwiderruflich."
+      },
+      {
+        "headline": "Einzelstück.",
+        "subtext": "Niemand kauft einzelne Klammern. Genau deshalb."
+      }
+    ],
+    "specs": {
+      "Material": "Stahl, leicht angerostet",
+      "Zustand": "Geöffnet",
+      "Funktionsfähig": "Nein"
+    }
+  },
+  {
+    "id": 12,
+    "name": "Briefumschlag, ungeöffnet",
+    "description": "Weißer DIN-lang-Umschlag. Adresse unklar, Inhalt vermutlich uninteressant. Verschlossen wie ein Geheimnis, das keines ist.",
+    "boredom": 7,
+    "price": 13.00,
+    "stock": 8,
+    "images": [
+      "/products/envelope/hero.webp",
+      "/products/envelope/detail.webp",
+      "/products/envelope/lifestyle.webp",
+      "/products/envelope/closeup.webp"
+    ],
+    "features": [
+      {
+        "headline": "Geschlossen. Bleibt geschlossen.",
+        "subtext": "Wir öffnen ihn nicht. Sie sollten es auch nicht tun. Manchmal ist die Vorstellung schöner als die Wahrheit."
+      },
+      {
+        "headline": "Adressat unklar.",
+        "subtext": "Die Anschrift ist verwischt. Vielleicht für Sie. Vielleicht für niemanden. Vielleicht beides."
+      },
+      {
+        "headline": "Innenfutter blau.",
+        "subtext": "Diskretion in Lebensmittelfarbe. Man erahnt durchs Papier eine Form. Mehr nicht."
+      }
+    ],
+    "specs": {
+      "Format": "DIN lang",
+      "Farbe": "Weiß",
+      "Innenfutter": "Blau gemustert",
+      "Verschluss": "Selbstklebend, aktiviert",
+      "Inhalt": "Unbekannt"
+    }
+  },
+  {
+    "id": 13,
+    "name": "Reißzwecke, leicht verbogen",
+    "description": "Stahlspitze, Kunststoffkopf. Hielt ein Plakat. Das Plakat ist weg. Die Zwecke ist geblieben.",
+    "boredom": 9,
+    "price": 3.99,
+    "stock": 47,
+    "images": [
+      "/products/pin/hero.webp",
+      "/products/pin/detail.webp",
+      "/products/pin/lifestyle.webp",
+      "/products/pin/closeup.webp"
+    ],
+    "features": [
+      {
+        "headline": "Funktioniert noch.",
+        "subtext": "Trotz Biegung verrichtet sie ihren Dienst. Vielleicht nicht gerade. Aber zuverlässig."
+      },
+      {
+        "headline": "Sechs verschiedene Farben.",
+        "subtext": "Die Auswahl wird zufällig zugeteilt. Eine Form von Selbstverleugnung."
+      },
+      {
+        "headline": "Pinnwand-tauglich.",
+        "subtext": "Hält Plakate, Notizen und Erinnerungen, die man besser vergessen hätte."
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "name": "Heftpflaster, abgelaufen",
+    "description": "Einzelnes Pflaster aus einer Packung, deren Verfallsdatum vor einigen Jahren überschritten wurde. Klebkraft: erstaunlich.",
+    "boredom": 8,
+    "price": 7.49,
+    "stock": 6,
+    "images": [
+      "/products/plaster/hero.webp",
+      "/products/plaster/detail.webp",
+      "/products/plaster/lifestyle.webp",
+      "/products/plaster/closeup.webp"
+    ],
+    "features": [
+      {
+        "headline": "Hautfarben. Welche Haut auch immer gemeint war.",
+        "subtext": "Ein Beige, das niemandem zugeordnet werden kann. Universal — und damit niemandem ähnlich."
+      },
+      {
+        "headline": "Klebt überraschend gut.",
+        "subtext": "Obwohl es nicht mehr sollte. Vielleicht aus Trotz. Vielleicht aus Pflichtgefühl."
+      },
+      {
+        "headline": "Pharmazeutisch nicht mehr empfohlen.",
+        "subtext": "Aber juristisch noch nicht verboten. Ein Graubereich, in dem sich vieles abspielt."
+      }
+    ],
+    "specs": {
+      "Format": "19 x 72 mm",
+      "Material": "Vlies, beschichtet",
+      "Verfallsdatum": "Überschritten",
+      "Klebkraft": "Überraschend hoch",
+      "Sterilität": "Eher unwahrscheinlich"
     }
   }
 ]

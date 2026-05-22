@@ -1,0 +1,558 @@
+---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+
+const firma  = import.meta.env.IMPRESSUM_NAME    ?? 'The Ordinary Emporium GmbH';
+const street = import.meta.env.IMPRESSUM_STREET  ?? 'Musterstraße 1';
+const postal = import.meta.env.IMPRESSUM_POSTAL  ?? '12345';
+const city   = import.meta.env.IMPRESSUM_CITY    ?? 'Musterstadt';
+const email  = import.meta.env.IMPRESSUM_EMAIL   ?? 'info@ordinary-emporium.de';
+const tel    = import.meta.env.IMPRESSUM_TEL     ?? '+49 000 000000';
+const boss   = import.meta.env.IMPRESSUM_BOSS    ?? 'Max Mustermann';
+
+const stand = '14. Mai 2026';
+const version = '1.0';
+
+const sections = [
+  { id: 'paragraph-1',  no: '§ 1',  title: 'Verantwortlicher und Geltungsbereich' },
+  { id: 'paragraph-2',  no: '§ 2',  title: 'Begriffsbestimmungen' },
+  { id: 'paragraph-3',  no: '§ 3',  title: 'Rechtsgrundlagen der Verarbeitung' },
+  { id: 'paragraph-4',  no: '§ 4',  title: 'Bereitstellung der Website und Server-Logfiles' },
+  { id: 'paragraph-5',  no: '§ 5',  title: 'Cookies und ähnliche Technologien' },
+  { id: 'paragraph-6',  no: '§ 6',  title: 'Kundenkonto und Registrierung' },
+  { id: 'paragraph-7',  no: '§ 7',  title: 'Bestellabwicklung und Zahlungsabwicklung' },
+  { id: 'paragraph-8',  no: '§ 8',  title: 'Versand- und Lieferabwicklung' },
+  { id: 'paragraph-9',  no: '§ 9',  title: 'Newsletter und E-Mail-Werbung' },
+  { id: 'paragraph-10', no: '§ 10', title: 'Kontaktaufnahme' },
+  { id: 'paragraph-11', no: '§ 11', title: 'Empfänger und Auftragsverarbeiter' },
+  { id: 'paragraph-12', no: '§ 12', title: 'Speicherdauer' },
+  { id: 'paragraph-13', no: '§ 13', title: 'Rechte der betroffenen Person' },
+  { id: 'paragraph-14', no: '§ 14', title: 'Widerspruchsrecht' },
+  { id: 'paragraph-15', no: '§ 15', title: 'Datensicherheit' },
+  { id: 'paragraph-16', no: '§ 16', title: 'Änderungen dieser Datenschutzerklärung' },
+];
+---
+
+<Layout title="Datenschutzerklärung">
+  <main class="page agb">
+
+    <header class="agb-head">
+      <p class="agb-head__rubrik">Rechtliches</p>
+      <h1 class="agb-head__title">Datenschutzerklärung</h1>
+      <dl class="agb-head__meta">
+        <div><dt>Stand</dt><dd>{stand}</dd></div>
+        <div><dt>Version</dt><dd>{version}</dd></div>
+        <div><dt>Verantwortlicher</dt><dd>{firma}</dd></div>
+      </dl>
+    </header>
+
+    <div class="rule-thick" style="margin: 1.5rem 0 2.5rem;"></div>
+
+    <div class="agb-layout">
+
+      <aside class="agb-toc">
+        <p class="agb-toc__heading">Inhaltsverzeichnis</p>
+        <ol class="agb-toc__list">
+          {sections.map(s => (
+            <li><a href={`#${s.id}`}><span class="agb-toc__no">{s.no}</span> {s.title}</a></li>
+          ))}
+        </ol>
+      </aside>
+
+      <article class="agb-body">
+
+        <p class="agb-praeambel">
+          Mit dieser Datenschutzerklärung informieren wir Sie über die Verarbeitung
+          personenbezogener Daten bei der Nutzung dieser Website. Personenbezogene Daten
+          sind alle Informationen, die sich auf eine identifizierte oder identifizierbare
+          natürliche Person beziehen. Die Verarbeitung Ihrer personenbezogenen Daten
+          erfolgt stets im Einklang mit der Datenschutz-Grundverordnung (DSGVO) und den
+          ergänzenden nationalen Datenschutzgesetzen.
+        </p>
+
+        {/* § 1 */}
+        <section id="paragraph-1" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 1</span> Verantwortlicher und Geltungsbereich</h2>
+          <ol class="agb-list">
+            <li>Verantwortlicher im Sinne der Datenschutz-Grundverordnung (DSGVO) und sonstiger nationaler Datenschutzgesetze der Mitgliedsstaaten sowie sonstiger datenschutzrechtlicher Bestimmungen ist:
+              <div class="agb-contact-card">
+                <p><strong>{firma}</strong></p>
+                <p>{street}</p>
+                <p>{postal} {city}, Deutschland</p>
+                <p>Vertretungsberechtigter Geschäftsführer: {boss}</p>
+                <p>Telefon: {tel}</p>
+                <p>E-Mail: <a href={`mailto:${email}`}>{email}</a></p>
+              </div>
+            </li>
+            <li>Diese Datenschutzerklärung gilt für die Verarbeitung personenbezogener Daten im Rahmen unserer Website sowie der darüber angebotenen Leistungen.</li>
+            <li>Ein Datenschutzbeauftragter ist nicht bestellt, da die gesetzlichen Voraussetzungen hierfür nicht vorliegen. Anfragen zu datenschutzrechtlichen Themen können direkt an die oben genannten Kontaktdaten gerichtet werden.</li>
+          </ol>
+        </section>
+
+        {/* § 2 */}
+        <section id="paragraph-2" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 2</span> Begriffsbestimmungen</h2>
+          <p class="agb-paragraph">
+            Diese Datenschutzerklärung verwendet die Begriffsdefinitionen der Datenschutz-Grundverordnung (DSGVO). Insbesondere gelten die folgenden Definitionen:
+          </p>
+          <ol class="agb-list">
+            <li><strong>Personenbezogene Daten</strong> sind alle Informationen, die sich auf eine identifizierte oder identifizierbare natürliche Person beziehen (Art. 4 Nr. 1 DSGVO).</li>
+            <li><strong>Verarbeitung</strong> ist jeder mit oder ohne Hilfe automatisierter Verfahren ausgeführte Vorgang im Zusammenhang mit personenbezogenen Daten, wie das Erheben, Erfassen, Speichern, Verändern, Auslesen, Abfragen, Verwenden, Übermitteln, Verbreiten oder Löschen (Art. 4 Nr. 2 DSGVO).</li>
+            <li><strong>Verantwortlicher</strong> ist die natürliche oder juristische Person, Behörde, Einrichtung oder andere Stelle, die allein oder gemeinsam mit anderen über die Zwecke und Mittel der Verarbeitung von personenbezogenen Daten entscheidet (Art. 4 Nr. 7 DSGVO).</li>
+            <li><strong>Auftragsverarbeiter</strong> ist eine natürliche oder juristische Person, Behörde, Einrichtung oder andere Stelle, die personenbezogene Daten im Auftrag des Verantwortlichen verarbeitet (Art. 4 Nr. 8 DSGVO).</li>
+            <li><strong>Einwilligung</strong> ist jede freiwillig, für den bestimmten Fall, in informierter Weise und unmissverständlich abgegebene Willensbekundung in Form einer Erklärung oder einer sonstigen eindeutigen bestätigenden Handlung (Art. 4 Nr. 11 DSGVO).</li>
+          </ol>
+        </section>
+
+        {/* § 3 */}
+        <section id="paragraph-3" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 3</span> Rechtsgrundlagen der Verarbeitung</h2>
+          <p class="agb-paragraph">
+            Soweit wir für Verarbeitungsvorgänge personenbezogener Daten eine Einwilligung der betroffenen Person einholen, dient Art. 6 Abs. 1 Buchst. a DSGVO als Rechtsgrundlage. Im Übrigen verarbeiten wir personenbezogene Daten auf Grundlage der folgenden Vorschriften:
+          </p>
+          <ol class="agb-list">
+            <li><strong>Art. 6 Abs. 1 Buchst. b DSGVO</strong> für Verarbeitungen, die zur Erfüllung eines Vertrages oder zur Durchführung vorvertraglicher Maßnahmen erforderlich sind.</li>
+            <li><strong>Art. 6 Abs. 1 Buchst. c DSGVO</strong> für Verarbeitungen, die zur Erfüllung einer rechtlichen Verpflichtung erforderlich sind, der wir unterliegen.</li>
+            <li><strong>Art. 6 Abs. 1 Buchst. f DSGVO</strong> für Verarbeitungen, die zur Wahrung unserer berechtigten Interessen erforderlich sind, sofern nicht die Interessen, Grundrechte und Grundfreiheiten der betroffenen Person überwiegen.</li>
+          </ol>
+        </section>
+
+        {/* § 4 */}
+        <section id="paragraph-4" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 4</span> Bereitstellung der Website und Server-Logfiles</h2>
+          <ol class="agb-list">
+            <li>Bei jedem Aufruf unserer Website erfasst unser System automatisiert Daten und Informationen vom Computersystem des aufrufenden Rechners. Folgende Daten werden hierbei erhoben:
+              <ul class="agb-sublist">
+                <li>IP-Adresse des anfragenden Geräts (gekürzt gespeichert)</li>
+                <li>Datum und Uhrzeit des Zugriffs</li>
+                <li>Name und URL der abgerufenen Datei</li>
+                <li>Website, von der aus der Zugriff erfolgt (Referrer-URL)</li>
+                <li>Verwendeter Browser und ggf. das Betriebssystem Ihres Rechners</li>
+                <li>Status-Code des Servers (z. B. Erfolg oder Fehler)</li>
+              </ul>
+            </li>
+            <li>Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 Buchst. f DSGVO. Unser berechtigtes Interesse besteht in der Gewährleistung der Funktionsfähigkeit, der Sicherheit und der Stabilität unserer Website sowie der Aufklärung etwaiger Missbrauchsversuche.</li>
+            <li>Die Daten werden gelöscht, sobald sie für die Erreichung des Zweckes ihrer Erhebung nicht mehr erforderlich sind. Im Falle der Erfassung zur Bereitstellung der Website ist dies der Fall, wenn die jeweilige Sitzung beendet ist. Eine darüber hinausgehende Speicherung in Logfiles erfolgt für maximal sieben (7) Tage.</li>
+          </ol>
+        </section>
+
+        {/* § 5 */}
+        <section id="paragraph-5" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 5</span> Cookies und ähnliche Technologien</h2>
+          <ol class="agb-list">
+            <li>Unsere Website verwendet Cookies. Cookies sind kleine Textdateien, die im Browser auf dem Endgerät des Nutzers gespeichert werden. Cookies enthalten Informationen, die sich aus dem Zusammenhang mit dem konkret eingesetzten Endgerät ergeben.</li>
+            <li>Wir setzen ausschließlich technisch notwendige Cookies ein, die für den Betrieb der Website erforderlich sind. Dazu zählen insbesondere:
+              <ul class="agb-sublist">
+                <li>Sitzungs-Cookies zur Speicherung des Warenkorbinhalts</li>
+                <li>Authentifizierungs-Cookies bei eingeloggten Nutzern</li>
+                <li>Cookies zur Speicherung sicherheitsrelevanter Einstellungen</li>
+              </ul>
+            </li>
+            <li>Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 Buchst. f DSGVO. Unser berechtigtes Interesse besteht in der nutzerfreundlichen, effektiven und sicheren Bereitstellung unserer Website.</li>
+            <li>Sitzungs-Cookies werden gelöscht, sobald Sie Ihren Browser schließen. Persistente Cookies werden nach Ablauf ihrer jeweiligen Lebensdauer automatisch gelöscht. Sie können die Speicherung von Cookies in den Einstellungen Ihres Browsers verhindern oder bereits gesetzte Cookies jederzeit manuell löschen. Bei Deaktivierung von Cookies kann die Funktionalität unserer Website eingeschränkt sein.</li>
+          </ol>
+        </section>
+
+        {/* § 6 */}
+        <section id="paragraph-6" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 6</span> Kundenkonto und Registrierung</h2>
+          <ol class="agb-list">
+            <li>Sie haben die Möglichkeit, sich auf unserer Website unter Angabe personenbezogener Daten zu registrieren und ein Kundenkonto anzulegen.</li>
+            <li>Im Rahmen der Registrierung erheben wir folgende Daten: Vorname, Nachname, Benutzername, E-Mail-Adresse, Passwort (verschlüsselt gespeichert).</li>
+            <li>Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 Buchst. b DSGVO zur Durchführung vorvertraglicher Maßnahmen sowie zur Erfüllung des Nutzungsvertrags.</li>
+            <li>Sie können Ihr Kundenkonto jederzeit löschen. Die Löschung erfolgt nach entsprechender Aufforderung per E-Mail an die oben genannten Kontaktdaten, sofern keine gesetzlichen Aufbewahrungspflichten entgegenstehen.</li>
+          </ol>
+        </section>
+
+        {/* § 7 */}
+        <section id="paragraph-7" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 7</span> Bestellabwicklung und Zahlungsabwicklung</h2>
+          <ol class="agb-list">
+            <li>Im Rahmen der Bestellabwicklung verarbeiten wir folgende personenbezogene Daten: Anrede, Vorname, Nachname, Anschrift, E-Mail-Adresse, ggf. Telefonnummer sowie Angaben zur Zahlungsabwicklung.</li>
+            <li>Die Verarbeitung dieser Daten ist zur Vertragserfüllung erforderlich. Rechtsgrundlage ist Art. 6 Abs. 1 Buchst. b DSGVO.</li>
+            <li>Soweit wir gesetzlichen Aufbewahrungspflichten unterliegen (insbesondere nach §§ 147 AO, 257 HGB), werden die entsprechenden Daten für die Dauer dieser Aufbewahrungspflichten gespeichert. Rechtsgrundlage hierfür ist Art. 6 Abs. 1 Buchst. c DSGVO.</li>
+            <li>Zur Abwicklung des Zahlungsverkehrs werden die erforderlichen Daten an den jeweils gewählten Zahlungsdienstleister weitergegeben.</li>
+          </ol>
+        </section>
+
+        {/* § 8 */}
+        <section id="paragraph-8" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 8</span> Versand- und Lieferabwicklung</h2>
+          <ol class="agb-list">
+            <li>Zur Lieferung bestellter Waren geben wir Ihren Vor- und Nachnamen sowie Ihre Lieferadresse an das von uns beauftragte Versandunternehmen weiter.</li>
+            <li>Sofern Sie hierin ausdrücklich eingewilligt haben, übermitteln wir auch Ihre E-Mail-Adresse oder Telefonnummer an das Versandunternehmen zur Abstimmung eines Liefertermins oder zur Lieferankündigung.</li>
+            <li>Rechtsgrundlage für diese Verarbeitung ist Art. 6 Abs. 1 Buchst. b DSGVO bzw. im Falle der gesonderten Einwilligung Art. 6 Abs. 1 Buchst. a DSGVO. Eine erteilte Einwilligung kann jederzeit für die Zukunft widerrufen werden.</li>
+          </ol>
+        </section>
+
+        {/* § 9 */}
+        <section id="paragraph-9" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 9</span> Newsletter und E-Mail-Werbung</h2>
+          <ol class="agb-list">
+            <li>Sofern Sie sich für unseren Newsletter anmelden, verarbeiten wir Ihre E-Mail-Adresse zum Zweck der Übersendung des Newsletters. Rechtsgrundlage ist Art. 6 Abs. 1 Buchst. a DSGVO (Einwilligung).</li>
+            <li>Für die Anmeldung zum Newsletter setzen wir das sogenannte Double-Opt-in-Verfahren ein. Sie erhalten nach Ihrer Anmeldung eine E-Mail mit einem Bestätigungslink. Erst nach Bestätigung wird die E-Mail-Adresse in den Newsletter-Verteiler aufgenommen.</li>
+            <li>Sie können den Empfang des Newsletters jederzeit für die Zukunft widerrufen. Hierzu finden Sie in jedem Newsletter einen entsprechenden Abmeldelink. Alternativ können Sie uns Ihren Widerruf jederzeit per E-Mail an die oben genannte Kontaktadresse mitteilen.</li>
+            <li>Nach Widerruf wird Ihre E-Mail-Adresse unverzüglich aus dem Newsletter-Verteiler gelöscht, soweit Sie nicht ausdrücklich in eine weitere Verwendung Ihrer Daten eingewilligt haben.</li>
+          </ol>
+        </section>
+
+        {/* § 10 */}
+        <section id="paragraph-10" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 10</span> Kontaktaufnahme</h2>
+          <ol class="agb-list">
+            <li>Bei Kontaktaufnahme per E-Mail oder über ein etwaiges Kontaktformular werden die übermittelten Daten (Name, E-Mail-Adresse, Nachricht) zum Zweck der Bearbeitung Ihres Anliegens verarbeitet.</li>
+            <li>Rechtsgrundlage für die Verarbeitung ist Art. 6 Abs. 1 Buchst. b DSGVO, soweit Ihre Anfrage auf die Anbahnung oder Erfüllung eines Vertrages gerichtet ist. Im Übrigen erfolgt die Verarbeitung auf Grundlage unseres berechtigten Interesses an der Bearbeitung der an uns gerichteten Anfragen gemäß Art. 6 Abs. 1 Buchst. f DSGVO.</li>
+            <li>Die in diesem Zusammenhang anfallenden Daten löschen wir, nachdem die Speicherung nicht mehr erforderlich ist, oder schränken die Verarbeitung ein, falls gesetzliche Aufbewahrungspflichten bestehen.</li>
+          </ol>
+        </section>
+
+        {/* § 11 */}
+        <section id="paragraph-11" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 11</span> Empfänger und Auftragsverarbeiter</h2>
+          <ol class="agb-list">
+            <li>Eine Übermittlung Ihrer personenbezogenen Daten an Dritte findet nur statt, wenn dies zur Vertragserfüllung erforderlich ist, eine gesetzliche Verpflichtung besteht, Sie zuvor eingewilligt haben oder dies aufgrund berechtigter Interessen zulässig ist.</li>
+            <li>Im Rahmen der Auftragsverarbeitung gemäß Art. 28 DSGVO bedienen wir uns ausgewählter Dienstleister, insbesondere in den Bereichen:
+              <ul class="agb-sublist">
+                <li>Hosting und Bereitstellung der Website</li>
+                <li>Versand transaktionaler E-Mails (z. B. Bestellbestätigungen)</li>
+                <li>Versand bestellter Waren durch Logistik- und Versanddienstleister</li>
+                <li>Zahlungsabwicklung durch externe Zahlungsdienstleister</li>
+              </ul>
+            </li>
+            <li>Mit allen Auftragsverarbeitern wurden entsprechende Auftragsverarbeitungsverträge gemäß Art. 28 DSGVO geschlossen, die einen vertrauensvollen und gesetzeskonformen Umgang mit Ihren Daten gewährleisten.</li>
+            <li>Eine Übermittlung personenbezogener Daten in Drittländer außerhalb der Europäischen Union findet nicht oder nur dann statt, wenn die Voraussetzungen der Art. 44 ff. DSGVO erfüllt sind.</li>
+          </ol>
+        </section>
+
+        {/* § 12 */}
+        <section id="paragraph-12" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 12</span> Speicherdauer</h2>
+          <ol class="agb-list">
+            <li>Wir verarbeiten personenbezogene Daten nur so lange, wie dies zur Erreichung des jeweiligen Verarbeitungszwecks erforderlich ist.</li>
+            <li>Sofern gesetzliche Aufbewahrungsfristen bestehen, insbesondere nach Handels- oder Steuerrecht, speichern wir personenbezogene Daten für die Dauer dieser Fristen. Die handels- und steuerrechtlichen Aufbewahrungsfristen betragen in der Regel sechs (6) bis zehn (10) Jahre.</li>
+            <li>Nach Ablauf der Aufbewahrungsfristen werden die entsprechenden Daten routinemäßig gelöscht, sofern nicht zur Vertragsanbahnung, Vertragserfüllung oder aus anderem berechtigten Grund weiter erforderlich.</li>
+          </ol>
+        </section>
+
+        {/* § 13 */}
+        <section id="paragraph-13" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 13</span> Rechte der betroffenen Person</h2>
+          <p class="agb-paragraph">Werden Ihre personenbezogenen Daten verarbeitet, sind Sie Betroffener i. S. d. DSGVO und es stehen Ihnen die folgenden Rechte gegenüber dem Verantwortlichen zu:</p>
+          <ol class="agb-list">
+            <li><strong>Auskunftsrecht (Art. 15 DSGVO).</strong> Sie können vom Verantwortlichen eine Bestätigung darüber verlangen, ob personenbezogene Daten, die Sie betreffen, von uns verarbeitet werden, und ggf. eine Kopie dieser Daten erhalten.</li>
+            <li><strong>Recht auf Berichtigung (Art. 16 DSGVO).</strong> Sie haben das Recht, die Berichtigung Sie betreffender unrichtiger personenbezogener Daten sowie die Vervollständigung unvollständiger Daten zu verlangen.</li>
+            <li><strong>Recht auf Löschung (Art. 17 DSGVO).</strong> Sie haben das Recht zu verlangen, dass Sie betreffende personenbezogene Daten unverzüglich gelöscht werden, sofern einer der gesetzlich vorgesehenen Gründe zutrifft.</li>
+            <li><strong>Recht auf Einschränkung der Verarbeitung (Art. 18 DSGVO).</strong> Sie haben das Recht, die Einschränkung der Verarbeitung Ihrer personenbezogenen Daten zu verlangen.</li>
+            <li><strong>Recht auf Datenübertragbarkeit (Art. 20 DSGVO).</strong> Sie haben das Recht, die Sie betreffenden personenbezogenen Daten in einem strukturierten, gängigen und maschinenlesbaren Format zu erhalten und an einen anderen Verantwortlichen zu übermitteln.</li>
+            <li><strong>Widerrufsrecht (Art. 7 Abs. 3 DSGVO).</strong> Sie haben das Recht, Ihre datenschutzrechtliche Einwilligungserklärung jederzeit zu widerrufen. Durch den Widerruf der Einwilligung wird die Rechtmäßigkeit der aufgrund der Einwilligung bis zum Widerruf erfolgten Verarbeitung nicht berührt.</li>
+            <li><strong>Beschwerderecht bei einer Aufsichtsbehörde (Art. 77 DSGVO).</strong> Unbeschadet eines anderweitigen verwaltungsrechtlichen oder gerichtlichen Rechtsbehelfs haben Sie das Recht auf Beschwerde bei einer Aufsichtsbehörde, insbesondere in dem Mitgliedstaat Ihres Aufenthaltsorts, Ihres Arbeitsplatzes oder des Orts des mutmaßlichen Verstoßes.</li>
+          </ol>
+        </section>
+
+        {/* § 14 */}
+        <section id="paragraph-14" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 14</span> Widerspruchsrecht</h2>
+          <div class="agb-callout">
+            <p class="agb-callout__title">Widerspruchsrecht nach Art. 21 DSGVO</p>
+            <p>Sie haben das Recht, aus Gründen, die sich aus Ihrer besonderen Situation ergeben, jederzeit gegen die Verarbeitung Sie betreffender personenbezogener Daten, die aufgrund von Art. 6 Abs. 1 Buchst. e oder f DSGVO erfolgt, Widerspruch einzulegen.</p>
+            <p>Der Verantwortliche verarbeitet die personenbezogenen Daten dann nicht mehr, es sei denn, er kann zwingende schutzwürdige Gründe für die Verarbeitung nachweisen, die Ihren Interessen, Rechten und Freiheiten überwiegen, oder die Verarbeitung dient der Geltendmachung, Ausübung oder Verteidigung von Rechtsansprüchen.</p>
+            <p>Werden personenbezogene Daten verarbeitet, um Direktwerbung zu betreiben, haben Sie das Recht, jederzeit Widerspruch gegen die Verarbeitung Sie betreffender personenbezogener Daten zum Zwecke derartiger Werbung einzulegen.</p>
+            <p>Der Widerspruch kann formfrei erfolgen und sollte möglichst gerichtet werden an: <a href={`mailto:${email}`}>{email}</a></p>
+          </div>
+        </section>
+
+        {/* § 15 */}
+        <section id="paragraph-15" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 15</span> Datensicherheit</h2>
+          <ol class="agb-list">
+            <li>Wir treffen technische und organisatorische Sicherheitsmaßnahmen, um Ihre personenbezogenen Daten vor zufälligen oder vorsätzlichen Manipulationen, Verlust, Zerstörung oder dem Zugriff unberechtigter Personen zu schützen.</li>
+            <li>Innerhalb des Bestellvorgangs werden Ihre Daten verschlüsselt über das Internet übertragen. Wir sichern unsere Website und sonstigen Systeme durch technische und organisatorische Maßnahmen gegen Verlust, Zerstörung, Zugriff, Veränderung oder Verbreitung Ihrer Daten durch unberechtigte Personen.</li>
+            <li>Unsere Sicherheitsmaßnahmen werden entsprechend der technologischen Entwicklung fortlaufend verbessert.</li>
+          </ol>
+        </section>
+
+        {/* § 16 */}
+        <section id="paragraph-16" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 16</span> Änderungen dieser Datenschutzerklärung</h2>
+          <ol class="agb-list">
+            <li>Wir behalten uns vor, diese Datenschutzerklärung anzupassen, damit sie stets den aktuellen rechtlichen Anforderungen entspricht oder um Änderungen unserer Leistungen umzusetzen, etwa bei der Einführung neuer Services.</li>
+            <li>Für Ihren erneuten Besuch gilt dann die neue Datenschutzerklärung. Die jeweils aktuelle Fassung kann jederzeit auf dieser Seite eingesehen werden.</li>
+          </ol>
+        </section>
+
+        <div class="rule-thick" style="margin: 3rem 0 1.5rem;"></div>
+
+        <p class="agb-footer">
+          {firma} · {city}, {stand}
+        </p>
+
+      </article>
+    </div>
+
+  </main>
+</Layout>
+
+<style>
+  /* Styles werden aus agb.astro übernommen — gleicher Look für alle Rechts-Seiten */
+  .agb { max-width: 1100px; }
+
+  .agb-head { padding-top: 1rem; }
+  .agb-head__rubrik {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0 0 0.8rem;
+  }
+  .agb-head__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin: 0 0 1.5rem;
+    color: var(--ink);
+  }
+  .agb-head__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin: 0;
+  }
+  .agb-head__meta > div { display: flex; flex-direction: column; gap: 0.2rem; }
+  .agb-head__meta dt {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0;
+  }
+  .agb-head__meta dd {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  .agb-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .agb-toc {
+    position: sticky;
+    top: 2rem;
+    padding-right: 1rem;
+    border-right: var(--rule-soft);
+  }
+  .agb-toc__heading {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0 0 1rem;
+    font-weight: 600;
+  }
+  .agb-toc__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .agb-toc__list a {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.35rem 0;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-bottom: 1px dotted transparent;
+  }
+  .agb-toc__list a:hover {
+    color: var(--ink);
+    border-bottom-color: var(--paper-3);
+  }
+  .agb-toc__no {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    color: var(--ink-mute);
+    flex-shrink: 0;
+    min-width: 2.6em;
+  }
+
+  .agb-body {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--ink);
+    max-width: 720px;
+  }
+  .agb-praeambel {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--ink-soft);
+    margin: 0 0 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: var(--rule-soft);
+  }
+  .agb-paragraph {
+    font-family: var(--font-body);
+    line-height: 1.75;
+    color: var(--ink-soft);
+    margin: 0 0 1rem;
+  }
+
+  .agb-section {
+    margin-bottom: 2.5rem;
+    scroll-margin-top: 2rem;
+  }
+  .agb-section__title {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0 0 1rem;
+    color: var(--ink);
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+  .agb-section__no {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--ink-mute);
+    font-weight: 400;
+    min-width: 2.6em;
+  }
+
+  .agb-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: agb-counter;
+  }
+  .agb-list > li {
+    counter-increment: agb-counter;
+    position: relative;
+    padding-left: 2.4rem;
+    margin-bottom: 1rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+  .agb-list > li::before {
+    content: "(" counter(agb-counter) ")";
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-family: var(--font-meta);
+    font-size: 0.82rem;
+    color: var(--ink-mute);
+    font-weight: 500;
+    width: 2rem;
+  }
+
+  /* Verschachtelte Listen mit Spiegelstrich */
+  .agb-sublist {
+    list-style: none;
+    padding: 0;
+    margin: 0.6rem 0 0;
+  }
+  .agb-sublist > li {
+    position: relative;
+    padding-left: 1.2rem;
+    margin-bottom: 0.3rem;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+  }
+  .agb-sublist > li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--ink-mute);
+  }
+
+  .agb-contact-card {
+    margin: 1rem 0 0;
+    padding: 1rem 1.2rem;
+    background: var(--paper-2);
+    border-left: 2px solid var(--ink);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+  .agb-contact-card p { margin: 0.15rem 0; }
+  .agb-contact-card a { color: var(--ink); text-decoration: underline; }
+  .agb-contact-card a:hover { color: var(--red); }
+
+  .agb-callout {
+    padding: 1.5rem 1.5rem;
+    background: var(--paper-2);
+    border: 1px solid var(--ink);
+    margin-top: 0.5rem;
+  }
+  .agb-callout__title {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    font-weight: 600;
+    margin: 0 0 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--ink);
+  }
+  .agb-callout p {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    margin: 0 0 0.8rem;
+  }
+  .agb-callout p:last-child { margin-bottom: 0; }
+  .agb-callout a { color: var(--ink); text-decoration: underline; }
+  .agb-callout a:hover { color: var(--red); }
+
+  .agb-body a { color: var(--ink); text-decoration: underline; }
+  .agb-body a:hover { color: var(--red); }
+  .agb-body strong { color: var(--ink); font-weight: 600; }
+
+  .agb-footer {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    text-align: center;
+    margin: 0;
+  }
+
+  @media (max-width: 900px) {
+    .agb-layout { grid-template-columns: 1fr; gap: 2rem; }
+    .agb-toc {
+      position: static;
+      padding-right: 0;
+      border-right: none;
+      border-bottom: var(--rule-soft);
+      padding-bottom: 1.5rem;
+    }
+    .agb-toc__list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.3rem 1rem;
+    }
+  }
+  @media (max-width: 540px) {
+    .agb-toc__list { grid-template-columns: 1fr; }
+    .agb-section__title { flex-direction: column; gap: 0.2rem; }
+  }
+</style>

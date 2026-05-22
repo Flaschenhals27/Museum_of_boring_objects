@@ -1,0 +1,572 @@
+---
+// =====================================================================
+// pages/konto.astro — Persönlicher Konto-Bereich
+// =====================================================================
+// SSR-geschützte Seite: nur für eingeloggte Nutzer.
+// Liest die User-Daten und alle Bestellungen des Users über
+// die userId aus dem JWT-Cookie.
+//
+// Datenfluss:
+//   1. JWT-Cookie auslesen -> userId
+//   2. User aus DB holen (Name, E-Mail, Mitglied seit)
+//   3. Alle Orders mit dieser userId holen (sortiert: neueste zuerst)
+//   4. Pro Order: zugehörige OrderItems laden (für Detail-Ansicht)
+//
+// Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
+// =====================================================================
+
+import Layout from '../layouts/Layout.astro';
+import { db, User, Order, OrderItem, eq, desc } from 'astro:db';
+import { getUserFromCookie } from '../lib/auth';
+
+// --- 1) Auth-Check: ohne Login -> Redirect ---
+const userPayload = await getUserFromCookie(Astro.cookies);
+if (!userPayload) {
+  return Astro.redirect('/login');
+}
+
+// --- 2) User-Datensatz laden ---
+const userResult = await db
+  .select()
+  .from(User)
+  .where(eq(User.id, userPayload.userId));
+const user = userResult[0];
+
+if (!user) {
+  // Token gültig, aber User in DB gelöscht -> Logout erzwingen
+  Astro.cookies.delete('auth_token', { path: '/' });
+  return Astro.redirect('/login');
+}
+
+// --- 3) Bestellungen laden (neueste zuerst) ---
+const orders = await db
+  .select()
+  .from(Order)
+  .where(eq(Order.userId, user.id))
+  .orderBy(desc(Order.createdAt));
+
+// --- 4) Pro Order die zugehörigen Items laden ---
+//    Pattern: parallel laden mit Promise.all
+const ordersWithItems = await Promise.all(
+  orders.map(async (order) => {
+    const items = await db
+      .select()
+      .from(OrderItem)
+      .where(eq(OrderItem.orderId, order.id));
+    return { ...order, items };
+  })
+);
+
+// --- Hilfsfunktion für die Anzeige ---
+function formatDate(d: Date | string) {
+  const date = typeof d === 'string' ? new Date(d) : d;
+  return date.toLocaleDateString('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+// Status-Anzeige
+const statusLabels: Record<string, { text: string; color: string }> = {
+  eingegangen:    { text: 'Eingegangen',    color: 'red' },
+  versendet:      { text: 'Versendet',      color: 'ochre' },
+  abgeschlossen:  { text: 'Abgeschlossen',  color: 'green' },
+};
+
+// Mitglied-seit-Formatierung
+const memberSince = formatDate(user.createdAt);
+
+// Statistiken
+const totalSpent = orders.reduce((sum, o) => sum + o.total, 0);
+const orderCount = orders.length;
+---
+
+<Layout title="Mein Konto">
+  <main class="page konto">
+
+    <div class="section-marker">
+      <span class="section-marker__no">N° 01</span>
+      <span class="section-marker__line"></span>
+      <span class="section-marker__label">Konto · Persönlicher Bereich</span>
+    </div>
+
+    <header class="konto-head">
+      <h1 class="display-headline">
+        Guten Tag,<br/><em>{user.prename}.</em>
+      </h1>
+      <p class="konto-head__sub">
+        Hier finden Sie eine Übersicht Ihrer Vorgänge in unserem Hause.
+      </p>
+    </header>
+
+    <div class="rule-thick" style="margin: 1rem 0 2.5rem;"></div>
+
+    {/* STAMMDATEN-KARTE + STATS */}
+    <section class="konto-stats">
+      <div class="stammdaten">
+        <p class="stammdaten__eyebrow">Stammdaten</p>
+        <dl class="stammdaten__list">
+          <div>
+            <dt>Name</dt>
+            <dd>{user.prename} {user.surname}</dd>
+          </div>
+          <div>
+            <dt>Benutzername</dt>
+            <dd>{user.username}</dd>
+          </div>
+          <div>
+            <dt>E-Mail</dt>
+            <dd>{user.email}</dd>
+          </div>
+          <div>
+            <dt>Mitglied seit</dt>
+            <dd>{memberSince}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="kennzahlen">
+        <div class="kennzahl">
+          <span class="kennzahl__num">{String(orderCount).padStart(2, '0')}</span>
+          <span class="kennzahl__label">Bestellungen</span>
+        </div>
+        <div class="kennzahl">
+          <span class="kennzahl__num">{totalSpent.toFixed(2)} €</span>
+          <span class="kennzahl__label">Umsatz</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="rule-thick" style="margin: 2.5rem 0;"></div>
+
+    {/* BESTELLUNGEN */}
+    <section class="orders">
+      <div class="orders__head">
+        <h2 class="orders__title">Bestellhistorie</h2>
+        <p class="orders__hint">Klick auf eine Bestellung zeigt die Einzelheiten.</p>
+      </div>
+
+      {orders.length === 0 ? (
+        <div class="orders__empty">
+          <p class="orders__empty-title">Noch keine Bestellung.</p>
+          <p class="orders__empty-sub">
+            <em>Ihr Bordereau ist so leer wie unsere Versprechen. Werden Sie aktiv —
+            der Katalog wartet, geduldig wie immer.</em>
+          </p>
+          <a href="/" class="btn-primary">Zum Katalog →</a>
+        </div>
+      ) : (
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>Bordereau</th>
+              <th>Datum</th>
+              <th class="num">Artikel</th>
+              <th class="num">Summe</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {ordersWithItems.map((order) => {
+              const status = statusLabels[order.status] ?? { text: order.status, color: 'neutral' };
+              return (
+                <>
+                  <tr class="order-row" data-order-id={order.id}>
+                    <td><code>{order.bordereauNr}</code></td>
+                    <td>{formatDate(order.createdAt)}</td>
+                    <td class="num">{order.items.length}</td>
+                    <td class="num"><strong>{order.total.toFixed(2)} €</strong></td>
+                    <td><span class={`stamp stamp--${status.color} stamp--open`}>{status.text}</span></td>
+                    <td class="num">
+                      <button class="row-toggle" type="button" aria-expanded="false" aria-controls={`detail-${order.id}`}>
+                        Details ▾
+                      </button>
+                    </td>
+                  </tr>
+                  <tr class="order-detail" id={`detail-${order.id}`} hidden>
+                    <td colspan="6">
+                      <div class="detail-grid">
+                        <div class="detail-items">
+                          <p class="detail__eyebrow">Aufgegebene Artikel</p>
+                          {order.items.map((it) => (
+                            <div class="detail-item">
+                              <span class="detail-item__name">{it.nameSnapshot}</span>
+                              <span class="detail-item__qty">× {it.quantity}</span>
+                              <span class="detail-item__price">{(it.priceSnapshot * it.quantity).toFixed(2)} €</span>
+                            </div>
+                          ))}
+                          <div class="detail-line">
+                            <span>Zwischensumme</span>
+                            <span>{order.subtotal.toFixed(2)} €</span>
+                          </div>
+                          <div class="detail-line">
+                            <span>Versand</span>
+                            <span>{order.shippingCost.toFixed(2)} €</span>
+                          </div>
+                          <div class="detail-total">
+                            <span>Gesamt</span>
+                            <span>{order.total.toFixed(2)} €</span>
+                          </div>
+                        </div>
+
+                        <div class="detail-addr">
+                          <p class="detail__eyebrow">Lieferung an</p>
+                          <p>
+                            {order.addrPrename} {order.addrSurname}<br/>
+                            {order.addrStreet}<br/>
+                            {order.addrPostal} {order.addrCity}<br/>
+                            {order.addrCountry}
+                          </p>
+                          <p class="detail-addr__email">
+                            <span class="detail__eyebrow">Bestätigung an</span>
+                            <span>{order.email}</span>
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </section>
+
+  </main>
+</Layout>
+
+<script>
+  // -------------------------------------------------------------------
+  // Bestelldetail-Toggle
+  // -------------------------------------------------------------------
+  // Vanilla JS — keine Solid-Insel nötig, weil wir nur Sichtbarkeit
+  // togglen. So bleibt die Seite eine pure SSR-Seite ohne Hydration.
+  // -------------------------------------------------------------------
+  document.querySelectorAll<HTMLButtonElement>('.row-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      const targetId = btn.getAttribute('aria-controls');
+      const target = targetId ? document.getElementById(targetId) : null;
+      if (!target) return;
+      target.hidden = expanded;
+      btn.setAttribute('aria-expanded', String(!expanded));
+      btn.textContent = expanded ? 'Details ▾' : 'Schließen ▴';
+    });
+  });
+</script>
+
+<style>
+  .konto {
+    max-width: 1100px;
+    padding-top: 2rem;
+  }
+
+  /* HEADER */
+  .konto-head { margin-top: 1rem; }
+  .konto-head .display-headline { margin: 1rem 0 1rem; }
+  .konto-head__sub {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 600px;
+  }
+
+  /* STAMMDATEN + KENNZAHLEN */
+  .konto-stats {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+  .stammdaten__eyebrow {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin: 0 0 1rem;
+    font-weight: 600;
+  }
+  .stammdaten__list {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem 2rem;
+  }
+  .stammdaten__list > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .stammdaten__list dt {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0;
+  }
+  .stammdaten__list dd {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  .kennzahlen {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-left: var(--rule);
+    padding-left: 2rem;
+  }
+  .kennzahl {
+    padding: 0 1.2rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-right: var(--rule-soft);
+  }
+  .kennzahl:last-child {
+    border-right: none;
+    padding: 0 0 0 1.2rem;
+  }
+  .kennzahl__num {
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--red);
+    letter-spacing: -0.02em;
+  }
+  .kennzahl__label {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  /* BESTELLUNGEN */
+  .orders__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .orders__title {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1;
+  }
+  .orders__hint {
+    font-family: var(--font-body);
+    font-style: italic;
+    color: var(--ink-mute);
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  /* LEERZUSTAND */
+  .orders__empty {
+    text-align: center;
+    padding: 4rem 1rem;
+    border-top: var(--rule);
+    border-bottom: var(--rule);
+  }
+  .orders__empty-title {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 0 0.6rem;
+  }
+  .orders__empty-sub {
+    font-family: var(--font-body);
+    color: var(--ink-soft);
+    max-width: 460px;
+    margin: 0 auto 1.5rem;
+  }
+  .orders__empty-sub em { font-style: italic; }
+
+  /* TABELLE */
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-top: var(--rule);
+    border-bottom: var(--rule);
+    font-family: var(--font-body);
+  }
+  .orders-table thead {
+    border-bottom: var(--rule);
+  }
+  .orders-table th {
+    text-align: left;
+    padding: 0.85rem 0.6rem;
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    font-weight: 600;
+  }
+  .orders-table th.num { text-align: right; }
+  .orders-table td {
+    padding: 1rem 0.6rem;
+    color: var(--ink);
+    border-bottom: var(--rule-soft);
+    vertical-align: middle;
+  }
+  .orders-table td.num { text-align: right; }
+  .orders-table tbody tr.order-row:hover {
+    background: var(--paper-2);
+  }
+  .orders-table code {
+    font-family: var(--font-meta);
+    font-size: 0.88rem;
+    color: var(--ink);
+  }
+  .orders-table strong {
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+
+  .row-toggle {
+    background: none;
+    border: 1px solid var(--ink);
+    padding: 0.4rem 0.7rem;
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .row-toggle:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  /* DETAIL-ZEILE */
+  .order-detail td {
+    background: var(--paper-2);
+    border-bottom: var(--rule);
+    padding: 1.5rem 1rem !important;
+  }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 2.5rem;
+  }
+  .detail__eyebrow {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0 0 0.6rem;
+    font-weight: 600;
+    display: block;
+  }
+  .detail-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 1.5rem;
+    padding: 0.45rem 0;
+    border-bottom: 1px dotted var(--paper-3);
+    align-items: center;
+  }
+  .detail-item__name {
+    font-family: var(--font-display);
+    font-weight: 700;
+  }
+  .detail-item__qty {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    color: var(--ink-mute);
+    letter-spacing: 0.05em;
+  }
+  .detail-item__price {
+    font-family: var(--font-body);
+    color: var(--ink);
+  }
+  .detail-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    color: var(--ink-soft);
+  }
+  .detail-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.6rem 0 0;
+    margin-top: 0.4rem;
+    border-top: 1px solid var(--ink);
+  }
+  .detail-total span:first-child {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .detail-total span:last-child {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.4rem;
+  }
+
+  .detail-addr p {
+    font-family: var(--font-body);
+    margin: 0 0 1rem;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .detail-addr__email {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dotted var(--paper-3);
+  }
+  .detail-addr__email .detail__eyebrow {
+    margin-bottom: 0.3rem;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .konto-stats { grid-template-columns: 1fr; gap: 2rem; }
+    .kennzahlen {
+      border-left: none;
+      border-top: var(--rule);
+      padding-left: 0;
+      padding-top: 1.5rem;
+    }
+    .detail-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+  }
+  @media (max-width: 640px) {
+    .orders-table thead { display: none; }
+    .orders-table, .orders-table tbody, .orders-table tr, .orders-table td {
+      display: block;
+      width: 100%;
+    }
+    .orders-table tr.order-row {
+      padding: 1rem 0;
+      border-bottom: var(--rule-soft);
+    }
+    .orders-table td {
+      padding: 0.3rem 0 !important;
+      border-bottom: none;
+      text-align: left !important;
+    }
+    .stammdaten__list { grid-template-columns: 1fr; }
+  }
+</style>

@@ -1,0 +1,548 @@
+---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+
+const firma  = import.meta.env.IMPRESSUM_NAME    ?? 'The Ordinary Emporium GmbH';
+const street = import.meta.env.IMPRESSUM_STREET  ?? 'Musterstraße 1';
+const postal = import.meta.env.IMPRESSUM_POSTAL  ?? '12345';
+const city   = import.meta.env.IMPRESSUM_CITY    ?? 'Musterstadt';
+const email  = import.meta.env.IMPRESSUM_EMAIL   ?? 'info@ordinary-emporium.de';
+const tel    = import.meta.env.IMPRESSUM_TEL     ?? '+49 000 000000';
+
+const mapBbox    = import.meta.env.IMPRESSUM_MAP_BBOX        ?? '8.390%2C48.990%2C8.410%2C49.005';
+const markerLat  = import.meta.env.IMPRESSUM_MAP_MARKER_LAT  ?? '49.0069';
+const markerLng  = import.meta.env.IMPRESSUM_MAP_MARKER_LNG  ?? '8.4037';
+---
+
+<Layout title="Kontakt">
+  <main class="page kontakt">
+
+    <div class="section-marker">
+      <span class="section-marker__no">N° 01</span>
+      <span class="section-marker__line"></span>
+      <span class="section-marker__label">Service · Kontakt zur Redaktion</span>
+    </div>
+
+    <header class="kontakt-head">
+      <h1 class="display-headline">Schreiben Sie uns. <em>Leise.</em></h1>
+      <p class="kontakt-head__sub">
+        Wir antworten werktags zwischen neun und siebzehn Uhr, in der Reihenfolge
+        der Eingänge — und mit der Gelassenheit, die das Wochenblatt von uns verlangt.
+      </p>
+    </header>
+
+    <div class="rule-thick" style="margin: 1rem 0 2.5rem;"></div>
+
+    <div class="kontakt-layout">
+
+      {/* FORMULAR */}
+      <section class="kontakt-form">
+        <p class="kontakt-form__eyebrow">Anfrage einreichen</p>
+        <h2 class="kontakt-form__title">Nachricht.</h2>
+
+        <form id="kontakt-form" onsubmit="event.preventDefault();">
+
+          <div id="form-success" class="form-success" hidden>
+            <p class="form-success__title">Vermerkt.</p>
+            <p>Ihre Nachricht ist bei uns eingegangen. Wir melden uns,
+            sobald die Redaktion sich gefasst hat — werktags, ohne Hast.</p>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="kf-prename">Vorname</label>
+              <input type="text" id="kf-prename" name="prename" placeholder="Max" required />
+            </div>
+            <div class="form-field">
+              <label for="kf-surname">Nachname</label>
+              <input type="text" id="kf-surname" name="surname" placeholder="Mustermann" required />
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="kf-email">E-Mail-Adresse</label>
+            <input type="email" id="kf-email" name="email" placeholder="ihre.adresse@beispiel.de" required />
+          </div>
+
+          <div class="form-field">
+            <label for="kf-topic">Anliegen</label>
+            <select id="kf-topic" name="topic" required>
+              <option value="">Bitte wählen …</option>
+              <option value="bestellung">Frage zu einer Bestellung</option>
+              <option value="versand">Versand &amp; Lieferung</option>
+              <option value="ruecksendung">Rücksendung &amp; Widerruf</option>
+              <option value="produkt">Produktanfrage</option>
+              <option value="kooperation">Kooperationsanfrage (mit Geduld)</option>
+              <option value="presse">Presseanfrage</option>
+              <option value="sonstiges">Sonstiges</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="kf-order">Bestellnummer <span class="form-field__hint">(optional)</span></label>
+            <input type="text" id="kf-order" name="order" placeholder="2026/00000" />
+          </div>
+
+          <div class="form-field">
+            <label for="kf-message">Ihre Nachricht</label>
+            <textarea id="kf-message" name="message" rows="6" placeholder="Schreiben Sie uns, was Ihnen einfällt — wir lesen alles." required></textarea>
+          </div>
+
+          <label class="form-check">
+            <input type="checkbox" id="kf-privacy" required />
+            <span>
+              Ich habe die <a href="/datenschutz">Datenschutzerklärung</a> zur
+              Kenntnis genommen und bin mit der Verarbeitung meiner Angaben zum
+              Zweck der Bearbeitung meiner Anfrage einverstanden.
+            </span>
+          </label>
+
+          <button type="submit" class="btn-primary" id="kf-submit">Nachricht senden →</button>
+
+          <p class="form-note">
+            <em>Eine Antwort erreicht Sie in der Regel innerhalb von zwei Werktagen.
+            Bei komplexeren Anliegen darf es etwas länger dauern.</em>
+          </p>
+
+        </form>
+      </section>
+
+      {/* KONTAKTDATEN */}
+      <aside class="kontakt-info">
+
+        <div class="info-card">
+          <p class="info-card__eyebrow">Direkter Draht</p>
+
+          <div class="info-row">
+            <dt>E-Mail</dt>
+            <dd><a href={`mailto:${email}`}>{email}</a></dd>
+          </div>
+          <div class="info-row">
+            <dt>Telefon</dt>
+            <dd>{tel}</dd>
+          </div>
+          <div class="info-row">
+            <dt>Postanschrift</dt>
+            <dd>
+              {firma}<br/>
+              {street}<br/>
+              {postal} {city}<br/>
+              Deutschland
+            </dd>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <p class="info-card__eyebrow">Sprechzeiten</p>
+          <table class="hours-table">
+            <tbody>
+              <tr><td>Montag</td><td>09:00–17:00</td></tr>
+              <tr><td>Dienstag</td><td>09:00–17:00</td></tr>
+              <tr><td>Mittwoch</td><td>09:00–17:00</td></tr>
+              <tr><td>Donnerstag</td><td>09:00–17:00</td></tr>
+              <tr><td>Freitag</td><td>09:00–14:00</td></tr>
+              <tr><td>Samstag</td><td class="muted">geschlossen</td></tr>
+              <tr><td>Sonntag</td><td class="muted">geschlossen</td></tr>
+            </tbody>
+          </table>
+          <p class="info-card__note">
+            <em>Außerhalb der Sprechzeiten erreichen Sie uns am verlässlichsten
+            per E-Mail. Wir antworten, sobald es uns gelingt.</em>
+          </p>
+        </div>
+
+        <div class="info-card info-card--map">
+          <p class="info-card__eyebrow">Anschrift der Redaktion</p>
+          <div class="kontakt-map">
+            <iframe
+              src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapBbox}&layer=mapnik&marker=${markerLat}%2C${markerLng}`}
+              style="border: 0;"
+              width="100%"
+              height="100%"
+              allowfullscreen
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              title="Karte zum Sitz der Redaktion"
+            ></iframe>
+          </div>
+          <p class="info-card__note">
+            <em>Persönliche Besuche sind nicht erwünscht. Wir sind meistens nicht da —
+            und falls doch, sehr leise.</em>
+          </p>
+        </div>
+
+      </aside>
+    </div>
+
+    {/* HINWEIS-BANNER: FAQ zuerst */}
+    <section class="kontakt-hint">
+      <div>
+        <p class="kontakt-hint__eyebrow">Bevor Sie schreiben</p>
+        <h2 class="kontakt-hint__title">Vielleicht haben wir die Antwort bereits gedruckt.</h2>
+        <p class="kontakt-hint__sub">
+          Ein Blick in unsere Häufigen Fragen lohnt sich oft — und spart allen Beteiligten
+          etwas Zeit.
+        </p>
+      </div>
+      <a href="/faq" class="kontakt-hint__btn">Zu den Häufigen Fragen →</a>
+    </section>
+
+  </main>
+</Layout>
+
+<script>
+  const form = document.getElementById('kontakt-form') as HTMLFormElement;
+  const submitBtn = document.getElementById('kf-submit') as HTMLButtonElement;
+  const success = document.getElementById('form-success') as HTMLElement;
+
+  const markInvalid = (id: string) => {
+    document.getElementById(id)?.classList.add('invalid');
+  };
+  const clearInvalid = () => {
+    form.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+  };
+
+  form.addEventListener('submit', () => {
+    clearInvalid();
+
+    const fields = ['kf-prename', 'kf-surname', 'kf-email', 'kf-topic', 'kf-message'];
+    let valid = true;
+
+    fields.forEach(id => {
+      const el = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+      if (!el.value.trim()) { markInvalid(id); valid = false; }
+    });
+
+    const privacy = document.getElementById('kf-privacy') as HTMLInputElement;
+    if (!privacy.checked) { markInvalid('kf-privacy'); valid = false; }
+
+    if (!valid) return;
+
+    // Demo: keine Backend-Anbindung — visuell bestätigen
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Wird übermittelt …';
+
+    setTimeout(() => {
+      success.hidden = false;
+      form.querySelectorAll('input, textarea, select, button[type="submit"]').forEach(el => {
+        (el as HTMLElement).style.display = 'none';
+      });
+      // Nur die Submit-Note auch ausblenden
+      const note = form.querySelector('.form-note') as HTMLElement;
+      if (note) note.style.display = 'none';
+      success.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 600);
+  });
+</script>
+
+<style>
+  .kontakt {
+    max-width: 1100px;
+    padding-top: 2rem;
+  }
+
+  /* HEADER */
+  .kontakt-head { margin-top: 1rem; }
+  .kontakt-head .display-headline {
+    margin: 0.5rem 0 1rem;
+    max-width: 900px;
+  }
+  .kontakt-head__sub {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 1.15rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 680px;
+    margin: 0;
+  }
+
+  /* LAYOUT */
+  .kontakt-layout {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  /* FORM */
+  .kontakt-form__eyebrow {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin: 0 0 0.4rem;
+    font-weight: 600;
+  }
+  .kontakt-form__title {
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1;
+    margin: 0 0 2rem;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  form { display: flex; flex-direction: column; gap: 1.4rem; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.4rem;
+  }
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .form-field label {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    font-weight: 500;
+  }
+  .form-field__hint {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 0.75rem;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--ink-mute);
+    margin-left: 0.4rem;
+  }
+  .form-field input,
+  .form-field textarea,
+  .form-field select {
+    padding: 0.85rem 0.9rem;
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    width: 100%;
+  }
+  .form-field textarea {
+    resize: vertical;
+    min-height: 140px;
+    font-family: var(--font-body);
+    line-height: 1.6;
+  }
+  .form-field select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%231a1612' d='M6 8L0 0h12z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.4rem;
+  }
+  .form-field input.invalid,
+  .form-field textarea.invalid,
+  .form-field select.invalid {
+    border-color: var(--red);
+    background: rgba(122,31,31,0.05);
+  }
+
+  .form-check {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .form-check input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--ink);
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+  .form-check input.invalid {
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+  .form-check a { color: var(--ink); text-decoration: underline; }
+  .form-check a:hover { color: var(--red); }
+
+  #kf-submit { align-self: flex-start; margin-top: 0.4rem; }
+
+  .form-note {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--ink-mute);
+    margin: 0;
+    line-height: 1.55;
+  }
+
+  .form-success {
+    background: var(--paper-2);
+    border-left: 3px solid #4a6f3a;
+    padding: 1.5rem 1.5rem;
+  }
+  .form-success__title {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem;
+    color: var(--ink);
+  }
+  .form-success p {
+    font-family: var(--font-body);
+    line-height: 1.65;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  /* INFO-SIDEBAR */
+  .kontakt-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: sticky;
+    top: 2rem;
+  }
+  .info-card {
+    border-top: var(--rule);
+    padding-top: 1.2rem;
+  }
+  .info-card__eyebrow {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0 0 1rem;
+    font-weight: 600;
+  }
+  .info-row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 1rem;
+    align-items: baseline;
+    padding: 0.45rem 0;
+  }
+  .info-row dt {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0;
+  }
+  .info-row dd {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--ink);
+    margin: 0;
+    line-height: 1.55;
+  }
+  .info-row a { color: var(--ink); text-decoration: underline; }
+  .info-row a:hover { color: var(--red); }
+
+  .hours-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+  }
+  .hours-table td {
+    padding: 0.45rem 0;
+    border-bottom: var(--rule-soft);
+    color: var(--ink);
+  }
+  .hours-table tr:last-child td { border-bottom: none; }
+  .hours-table td:last-child {
+    text-align: right;
+    font-family: var(--font-meta);
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+  .hours-table td.muted { color: var(--ink-mute); font-style: italic; }
+
+  .info-card__note {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--ink-mute);
+    margin: 0.8rem 0 0;
+    line-height: 1.55;
+  }
+
+  .kontakt-map {
+    width: 100%;
+    height: 240px;
+    border: 1px solid var(--ink);
+    background: var(--paper-2);
+    overflow: hidden;
+    filter: sepia(0.18) contrast(0.95) saturate(0.85);
+    margin-bottom: 0.4rem;
+  }
+
+  /* HINWEIS */
+  .kontakt-hint {
+    background: var(--ochre);
+    color: var(--ink);
+    padding: 2.5rem 3rem;
+    margin-top: 3rem;
+    display: grid;
+    grid-template-columns: 1.6fr auto;
+    gap: 2rem;
+    align-items: center;
+  }
+  .kontakt-hint__eyebrow {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+  }
+  .kontakt-hint__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0 0 0.6rem;
+    color: var(--ink);
+  }
+  .kontakt-hint__sub {
+    font-family: var(--font-body);
+    font-style: italic;
+    color: rgba(26,22,18,0.7);
+    margin: 0;
+    line-height: 1.55;
+  }
+  .kontakt-hint__btn {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--font-meta);
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 1.1rem 1.6rem;
+    text-decoration: none;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .kontakt-hint__btn:hover { background: var(--red); color: var(--paper); }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .kontakt-layout { grid-template-columns: 1fr; gap: 2.5rem; }
+    .kontakt-info { position: static; }
+    .kontakt-hint { grid-template-columns: 1fr; padding: 2rem 1.5rem; }
+  }
+  @media (max-width: 540px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .info-row { grid-template-columns: 1fr; gap: 0.2rem; }
+  }
+</style>

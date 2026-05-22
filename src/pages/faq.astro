@@ -1,0 +1,539 @@
+---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+
+const email = import.meta.env.IMPRESSUM_EMAIL ?? 'info@ordinary-emporium.de';
+
+// FAQ-Daten — strukturiert nach Kategorien
+const kategorien = [
+  {
+    id: 'bestellung',
+    label: 'Bestellung',
+    eintraege: [
+      {
+        q: 'Wie gebe ich eine Bestellung auf?',
+        a: 'Wählen Sie aus dem Katalog die gewünschten Artikel und legen Sie sie über die Schaltfläche „In den Warenkorb" in Ihr Bordereau. Sobald Sie zufrieden sind — oder zumindest hinreichend gleichgültig — klicken Sie auf „Zur Kasse" und folgen den Schritten der Bestellabwicklung. Eine Registrierung ist nicht erforderlich, aber selbstverständlich möglich.',
+      },
+      {
+        q: 'Erhalte ich eine Bestätigung meiner Bestellung?',
+        a: 'Ja. Unmittelbar nach Bestellabschluss erhalten Sie eine Eingangsbestätigung per E-Mail. Sobald wir uns gefasst haben, folgt eine zweite E-Mail mit den Versanddetails. Der Zeitraum dazwischen kann zwischen wenigen Minuten und mehreren Werktagen liegen — das ist beabsichtigt.',
+      },
+      {
+        q: 'Kann ich eine Bestellung nachträglich ändern oder stornieren?',
+        a: 'Solange die Ware noch nicht versendet wurde, können Sie Änderungen oder eine Stornierung per E-Mail an unseren Kundenservice mitteilen. Nach erfolgtem Versand greift Ihr Widerrufsrecht (siehe Versand & Rücksendung).',
+      },
+      {
+        q: 'Mein Wunschartikel ist „Sehr begehrt" — bekomme ich ihn noch?',
+        a: 'Die Kennzeichnung „Sehr begehrt" bedeutet, dass nur noch wenige Exemplare verfügbar sind. Wir versenden in der Reihenfolge der Bestelleingänge. Eine Reservierung im Voraus ist nicht möglich. Eine Nachbestellung erfolgt in der Regel nicht — auch nicht aus konzeptionellen Gründen.',
+      },
+    ],
+  },
+  {
+    id: 'versand',
+    label: 'Versand',
+    eintraege: [
+      {
+        q: 'Wie lange dauert die Lieferung?',
+        a: 'Innerhalb Deutschlands beträgt die Lieferzeit drei (3) bis sieben (7) Werktage ab Versandbestätigung. Internationale Sendungen können entsprechend länger unterwegs sein. Detaillierte Angaben finden Sie auf unserer Seite Versand & Rücksendung.',
+      },
+      {
+        q: 'In welche Länder versendet ihr?',
+        a: 'Wir liefern innerhalb Deutschlands, Österreichs, der Schweiz und in das gesamte EU-Ausland. Sendungen in andere Länder sind auf Anfrage möglich. Beachten Sie, dass bei Lieferungen außerhalb der EU zusätzliche Zoll- und Einfuhrabgaben anfallen können.',
+      },
+      {
+        q: 'Wie hoch sind die Versandkosten?',
+        a: 'Innerhalb Deutschlands berechnen wir 4,90 € für den Standardversand. Ab einem Bestellwert von 50,00 € ist der Versand innerhalb Deutschlands kostenfrei. Die genauen Konditionen für andere Zielgebiete finden Sie in unserer Versandkostentabelle.',
+      },
+      {
+        q: 'Kann ich meine Sendung verfolgen?',
+        a: 'Ja. Mit der Versandbestätigung erhalten Sie eine Sendungsverfolgungsnummer, mit der Sie den Lieferstatus jederzeit beim Versanddienstleister einsehen können.',
+      },
+    ],
+  },
+  {
+    id: 'ruecksendung',
+    label: 'Rücksendung',
+    eintraege: [
+      {
+        q: 'Wie lange habe ich Zeit für eine Rücksendung?',
+        a: 'Als Verbraucher haben Sie ein gesetzliches Widerrufsrecht von vierzehn (14) Tagen ab Erhalt der Ware. Innerhalb dieser Frist können Sie den Vertrag ohne Angabe von Gründen widerrufen.',
+      },
+      {
+        q: 'Wer trägt die Kosten der Rücksendung?',
+        a: 'Bei einem Widerruf trägt grundsätzlich der Kunde die unmittelbaren Kosten der Rücksendung. Bei berechtigten Mängelrügen — etwa Transportschäden oder Falschlieferungen — übernehmen wir selbstverständlich die vollständigen Rücksendekosten.',
+      },
+      {
+        q: 'Wann erhalte ich mein Geld zurück?',
+        a: 'Nach Eingang und Prüfung der Rücksendung erstatten wir den Kaufpreis innerhalb von vierzehn (14) Tagen auf das ursprünglich verwendete Zahlungsmittel. Wir können die Rückzahlung verweigern, bis wir die Ware zurückerhalten haben oder Sie den Nachweis erbracht haben, dass die Ware zurückgesandt wurde.',
+      },
+      {
+        q: 'Was, wenn die Ware beschädigt ankommt?',
+        a: 'Melden Sie sichtbare Transportschäden nach Möglichkeit unmittelbar beim zustellenden Mitarbeiter und informieren Sie unseren Kundenservice per E-Mail. Wir kümmern uns dann um Ersatz oder Erstattung. Ihre gesetzlichen Gewährleistungsrechte bleiben hiervon unberührt.',
+      },
+    ],
+  },
+  {
+    id: 'zahlung',
+    label: 'Zahlung',
+    eintraege: [
+      {
+        q: 'Welche Zahlungsmethoden werden akzeptiert?',
+        a: 'Aktuell akzeptieren wir ausschließlich die Übernahme der Rechnung durch einen weltbekannten Milliardär. Weitere Zahlungsmethoden wie Kreditkarte oder PayPal sind technisch vorgesehen, aber aus konzeptionellen Gründen derzeit nicht aktiv. Die Zahlungsabwicklung erfolgt nach Vertragsschluss.',
+      },
+      {
+        q: 'Wann wird der Betrag abgebucht?',
+        a: 'Da die Zahlung über einen unbeteiligten Dritten erfolgt, findet eine Abbuchung von Ihrem Konto nicht statt. Der Vorgang ist für Sie kostenfrei. Wir bedauern nichts.',
+      },
+      {
+        q: 'Erhalte ich eine Rechnung?',
+        a: 'Ja. Mit der Versandbestätigung erhalten Sie eine ordnungsgemäße Rechnung im PDF-Format als E-Mail-Anhang. Diese können Sie für Ihre Unterlagen aufbewahren oder achtsam ignorieren.',
+      },
+    ],
+  },
+  {
+    id: 'produkte',
+    label: 'Produkte',
+    eintraege: [
+      {
+        q: 'Was bedeutet der „Langeweile-Index"?',
+        a: 'Jeder Artikel in unserem Katalog wird redaktionell auf seine Langeweile geprüft und mit einem Wert von 1 bis 10 versehen. Nur Artikel ab einem Wert von 7/10 werden ins Sortiment aufgenommen. Ein höherer Wert bedeutet entsprechend höhere Mittelmäßigkeit — und ist als Qualitätsmerkmal zu verstehen.',
+      },
+      {
+        q: 'Sind die Produkte funktionsfähig?',
+        a: 'In der Regel ja, wenn auch oft nur eingeschränkt. Ein ausgetrockneter Textmarker etwa markiert nicht mehr im klassischen Sinne, hinterlässt aber ein charakteristisches Geräusch. Die jeweiligen Eigenheiten entnehmen Sie bitte der ehrlichen Artikelbeschreibung.',
+      },
+      {
+        q: 'Werden ausverkaufte Artikel nachbestellt?',
+        a: 'In der Regel nicht. Unsere Artikel sind kuratierte Einzelstücke oder Kleinstauflagen. Sollten dennoch Nachlieferungen möglich sein, weisen wir gesondert darauf hin. Sie können sich über die Wunschlisten-Funktion benachrichtigen lassen.',
+      },
+      {
+        q: 'Kann ich einen Artikel vorschlagen?',
+        a: 'Anregungen aus der Leserschaft nehmen wir grundsätzlich entgegen, prüfen sie redaktionell und beantworten sie, sobald es uns gelingt. Schreiben Sie uns einfach an unseren Kundenservice.',
+      },
+    ],
+  },
+  {
+    id: 'konto',
+    label: 'Kundenkonto',
+    eintraege: [
+      {
+        q: 'Muss ich ein Konto erstellen, um zu bestellen?',
+        a: 'Nein. Eine Bestellung als Gast ist jederzeit möglich. Ein Kundenkonto erleichtert jedoch die Verwaltung Ihrer Bestellungen und die Nutzung der Wunschliste.',
+      },
+      {
+        q: 'Ich habe mein Passwort vergessen — was tun?',
+        a: 'Auf der Anmeldeseite finden Sie eine Funktion zum Zurücksetzen des Passworts. Geben Sie Ihre E-Mail-Adresse ein, wir senden Ihnen anschließend einen Link zum Anlegen eines neuen Passworts.',
+      },
+      {
+        q: 'Wie kann ich mein Konto löschen?',
+        a: 'Senden Sie uns eine kurze E-Mail von der bei uns hinterlegten Adresse mit der Bitte um Löschung. Wir löschen Ihr Konto innerhalb weniger Werktage, sofern keine gesetzlichen Aufbewahrungspflichten entgegenstehen.',
+      },
+    ],
+  },
+  {
+    id: 'sonstiges',
+    label: 'Sonstiges',
+    eintraege: [
+      {
+        q: 'Wer steht hinter The Ordinary Emporium?',
+        a: 'Ein armer Student, der sich mit dem Verkauf von belanglosen Dingen ein Zubrot verdienen wollte — und dabei aus Versehen mehr Geld verdient als ein PHP Entwickler.',
+      },
+      {
+        q: 'Bietet ihr Gutscheine an?',
+        a: 'Ja. Gutscheine sind in unregelmäßigen Abständen in der Wochenausgabe enthalten und können während der Bestellung im Warenkorb eingelöst werden. Aktuell ist der Code LANGWEILE10 für einen Nachlass von zehn Prozent gültig.',
+      },
+      {
+        q: 'Kann ich euch in den sozialen Medien folgen?',
+        a: 'Nein. Wir betreiben aus Gründen der redaktionellen Stille keine Profile in sozialen Netzwerken. Wer informiert bleiben möchte, abonniert unseren Newsletter — einmal pro Woche, ohne Eile.',
+      },
+      {
+        q: 'Hier ist nicht die Antwort, die ich suchte.',
+        a: 'Das tut uns leid. Schreiben Sie uns Ihre Frage an unseren Kundenservice, wir antworten verlässlich, wenn auch nicht überstürzt.',
+      },
+    ],
+  },
+];
+
+const total = kategorien.reduce((sum, k) => sum + k.eintraege.length, 0);
+---
+
+<Layout title="Häufige Fragen">
+  <main class="page faq">
+
+    {/* HERO */}
+    <section class="faq-hero">
+      <div class="section-marker">
+        <span class="section-marker__no">N° 01</span>
+        <span class="section-marker__line"></span>
+        <span class="section-marker__label">Service · Häufige Fragen</span>
+      </div>
+
+      <h1 class="display-headline">Häufige <em>Fragen.</em></h1>
+      <p class="faq-hero__sub">
+        Antworten auf alles, was man uns bisher gefragt hat —
+        und einige Dinge, die niemand wirklich fragen wollte.
+      </p>
+
+      {/* Suche */}
+      <div class="faq-search">
+        <input
+          type="search"
+          id="faq-search"
+          placeholder="Frage eingeben …"
+          aria-label="FAQ durchsuchen"
+        />
+        <p class="faq-search__hint" id="faq-search-hint">
+          {total} Einträge in {kategorien.length} Kategorien
+        </p>
+      </div>
+
+      {/* Kategorie-Filter */}
+      <ul class="faq-tabs" id="faq-tabs">
+        <li><button data-cat="all" class="is-active">Alle ({total})</button></li>
+        {kategorien.map(k => (
+          <li><button data-cat={k.id}>{k.label} ({k.eintraege.length})</button></li>
+        ))}
+      </ul>
+    </section>
+
+    <div class="rule-thick" style="margin: 2rem 0;"></div>
+
+    {/* FAQ-LISTE */}
+    <section class="faq-list" id="faq-list">
+      {kategorien.map(k => (
+        <div class="faq-cat" data-cat={k.id}>
+          <h2 class="faq-cat__title" id={`cat-${k.id}`}>
+            <span class="faq-cat__no">·</span> {k.label}
+          </h2>
+
+          {k.eintraege.map((e, i) => (
+            <details class="faq-item">
+              <summary>
+                <span class="faq-item__q">{e.q}</span>
+                <span class="faq-item__icon" aria-hidden="true">+</span>
+              </summary>
+              <div class="faq-item__a">
+                <p>{e.a}</p>
+              </div>
+            </details>
+          ))}
+        </div>
+      ))}
+
+      <p class="faq-empty" id="faq-empty" hidden>
+        Keine Treffer. Vielleicht haben Sie zu spezifisch gesucht —
+        oder die Frage wartet noch darauf, gestellt zu werden.
+      </p>
+    </section>
+
+    {/* KONTAKT-CTA */}
+    <section class="faq-cta">
+      <div>
+        <p class="faq-cta__eyebrow">Noch nicht beantwortet?</p>
+        <h2 class="faq-cta__title">Schreiben Sie uns.</h2>
+        <p class="faq-cta__sub">
+          Wir antworten werktags, in der Reihenfolge der Eingänge, ohne Hast.
+        </p>
+      </div>
+      <a href={`mailto:${email}`} class="faq-cta__btn">
+        {email} →
+      </a>
+    </section>
+
+  </main>
+</Layout>
+
+<script>
+  const searchInput  = document.getElementById('faq-search') as HTMLInputElement;
+  const searchHint   = document.getElementById('faq-search-hint')!;
+  const list         = document.getElementById('faq-list')!;
+  const tabsRoot     = document.getElementById('faq-tabs')!;
+  const emptyMsg     = document.getElementById('faq-empty') as HTMLElement;
+  const items        = Array.from(document.querySelectorAll('.faq-item')) as HTMLDetailsElement[];
+  const categories   = Array.from(document.querySelectorAll('.faq-cat')) as HTMLElement[];
+
+  let activeCat = 'all';
+  let query = '';
+
+  function applyFilters() {
+    const q = query.trim().toLowerCase();
+    let visibleCount = 0;
+
+    // Pro Kategorie filtern
+    categories.forEach(cat => {
+      const catId = cat.dataset.cat;
+      const matchesCat = activeCat === 'all' || activeCat === catId;
+      let catHasMatch = false;
+
+      cat.querySelectorAll('.faq-item').forEach(item => {
+        const el = item as HTMLDetailsElement;
+        const qText = el.querySelector('.faq-item__q')?.textContent?.toLowerCase() ?? '';
+        const aText = el.querySelector('.faq-item__a')?.textContent?.toLowerCase() ?? '';
+        const matchesQuery = !q || qText.includes(q) || aText.includes(q);
+        const show = matchesCat && matchesQuery;
+
+        el.hidden = !show;
+        if (show) {
+          catHasMatch = true;
+          visibleCount++;
+          // Bei Suche: öffnen, damit Treffer sichtbar ist
+          if (q) el.open = true;
+          else el.open = false;
+        }
+      });
+
+      cat.hidden = !catHasMatch;
+    });
+
+    emptyMsg.hidden = visibleCount > 0;
+    searchHint.textContent = q || activeCat !== 'all'
+      ? `${visibleCount} ${visibleCount === 1 ? 'Treffer' : 'Treffer'}`
+      : `${items.length} Einträge in ${categories.length} Kategorien`;
+  }
+
+  searchInput.addEventListener('input', () => {
+    query = searchInput.value;
+    applyFilters();
+  });
+
+  tabsRoot.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('button[data-cat]') as HTMLButtonElement | null;
+    if (!btn) return;
+    tabsRoot.querySelectorAll('button').forEach(b => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    activeCat = btn.dataset.cat!;
+    applyFilters();
+  });
+
+  // Smooth "+" → "−" Animation via Attribut
+  items.forEach(item => {
+    item.addEventListener('toggle', () => {
+      const icon = item.querySelector('.faq-item__icon');
+      if (icon) icon.textContent = item.open ? '−' : '+';
+    });
+  });
+</script>
+
+<style>
+  .faq {
+    max-width: 980px;
+    padding-top: 2rem;
+  }
+
+  /* HERO */
+  .faq-hero { margin-top: 1rem; }
+  .faq-hero .display-headline {
+    margin: 1rem 0 1rem;
+  }
+  .faq-hero__sub {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 1.15rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    max-width: 640px;
+    margin: 0 0 2rem;
+  }
+
+  /* SUCHE */
+  .faq-search {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1.5rem;
+    max-width: 540px;
+  }
+  .faq-search input {
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    width: 100%;
+  }
+  .faq-search input:focus {
+    outline: 2px solid var(--red);
+    outline-offset: -1px;
+  }
+  .faq-search__hint {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0;
+  }
+
+  /* TABS */
+  .faq-tabs {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .faq-tabs button {
+    background: transparent;
+    border: 1px solid var(--paper-3);
+    padding: 0.5rem 0.9rem;
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .faq-tabs button:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .faq-tabs button.is-active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  /* LISTE */
+  .faq-cat { margin-bottom: 2.5rem; }
+  .faq-cat[hidden] { display: none; }
+  .faq-cat__title {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--red);
+    font-weight: 600;
+    margin: 0 0 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--ink);
+  }
+  .faq-cat__no {
+    color: var(--ink-mute);
+    margin-right: 0.3rem;
+  }
+
+  .faq-item {
+    border-bottom: var(--rule-soft);
+  }
+  .faq-item[hidden] { display: none; }
+  .faq-item > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.2rem 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    transition: color 0.15s;
+  }
+  .faq-item > summary::-webkit-details-marker { display: none; }
+  .faq-item > summary::marker { content: ''; }
+  .faq-item > summary:hover { color: var(--red); }
+  .faq-item__q {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--ink);
+    flex: 1;
+  }
+  .faq-item > summary:hover .faq-item__q { color: var(--red); }
+  .faq-item__icon {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 400;
+    color: var(--red);
+    line-height: 1;
+    flex-shrink: 0;
+    width: 1.5rem;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .faq-item[open] .faq-item__icon {
+    transform: rotate(180deg);
+  }
+
+  .faq-item__a {
+    padding: 0 0 1.5rem;
+    padding-right: 2.5rem;
+  }
+  .faq-item__a p {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .faq-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    font-family: var(--font-body);
+    font-style: italic;
+    color: var(--ink-mute);
+    font-size: 1rem;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* CTA */
+  .faq-cta {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 2.5rem 3rem;
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: 1.4fr auto;
+    gap: 2rem;
+    align-items: center;
+  }
+  .faq-cta__eyebrow {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    margin: 0 0 0.3rem;
+  }
+  .faq-cta__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 0 0 0.6rem;
+    color: var(--paper);
+  }
+  .faq-cta__sub {
+    font-family: var(--font-body);
+    font-style: italic;
+    color: rgba(243,237,225,0.7);
+    margin: 0;
+  }
+  .faq-cta__btn {
+    background: var(--ochre);
+    color: var(--ink);
+    font-family: var(--font-meta);
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 1.1rem 1.6rem;
+    text-decoration: none;
+    transition: background 0.15s;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .faq-cta__btn:hover {
+    background: var(--paper);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 720px) {
+    .faq-tabs { gap: 0.4rem; }
+    .faq-tabs button { font-size: 0.72rem; padding: 0.4rem 0.7rem; }
+    .faq-item__q { font-size: 1.05rem; }
+    .faq-cta { grid-template-columns: 1fr; padding: 2rem 1.5rem; }
+  }
+</style>

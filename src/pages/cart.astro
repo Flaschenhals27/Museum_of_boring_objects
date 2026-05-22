@@ -234,7 +234,7 @@ function makeSignatur(id: number, boredom: number) {
       body: JSON.stringify({ cartItemId, itemId, oldQuantity, newQuantity }),
     }).then(res => {
       if (res.ok) window.location.reload();
-      else res.json().then(d => alert(d.error));
+      else res.json().then(d => window.toast?.(d.error ?? 'Fehler bei der Aktualisierung.', 'error'));
     });
   }
 
@@ -266,7 +266,7 @@ function makeSignatur(id: number, boredom: number) {
         body: JSON.stringify({ cartItemId, itemId, oldQuantity, newQuantity }),
       }).then(res => {
         if (res.ok) window.location.reload();
-        else res.json().then(d => alert(d.error));
+        else res.json().then(d => window.toast?.(d.error ?? 'Fehler bei der Aktualisierung.', 'error'));
       });
     });
   });

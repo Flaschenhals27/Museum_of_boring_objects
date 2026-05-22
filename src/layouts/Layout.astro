@@ -53,33 +53,34 @@ const jahrgang = ['MMXXVI','MMXXVII','MMXXVIII'][now.getFullYear() - 2026] ?? 'M
 				<div class="footer__brand">
 					<p class="footer__logo">The Ordinary<br/>Emporium.</p>
 					<p class="footer__motto">Das Wochenblatt für vollkommen belanglose Gegenstände. Hebdomadär, aus Anstand.</p>
-					<form class="footer__newsletter" onsubmit="event.preventDefault();">
-						<input type="email" placeholder="ihre.adresse@beispiel.de" aria-label="E-Mail-Adresse" />
+					<form class="footer__newsletter" id="footer-newsletter-form" data-newsletter-form>
+						<input type="email" name="email" placeholder="ihre.adresse@beispiel.de" aria-label="E-Mail-Adresse" required />
 						<button type="submit">Abonnieren</button>
 					</form>
-					<p class="footer__newsletter-note">Einmal pro Woche. Keine dringenden Nachrichten. Versprochen.</p>
+					<p class="footer__newsletter-note" data-newsletter-status>Einmal pro Woche. Keine dringenden Nachrichten. Versprochen.</p>
 				</div>
 
 				<div class="footer__col">
 					<p class="footer__heading">Rubriken</p>
 					<a href="/">Katalog</a>
 					<a href="/daily-object">Objekt des Tages</a>
+					<a href="/wunschliste">Wunschliste</a>
 					<a href="/about">Die Redaktion</a>
 				</div>
 
 				<div class="footer__col">
 					<p class="footer__heading">Service</p>
-					<a href="/about">Versand &amp; Rücksendung</a>
-					<a href="/about">Häufige Fragen</a>
-					<a href="/about">Kontakt</a>
+					<a href="/versand">Versand &amp; Rücksendung</a>
+					<a href="/faq">Häufige Fragen</a>
+					<a href="/kontakt">Kontakt</a>
 				</div>
 
 				<div class="footer__col">
 					<p class="footer__heading">Rechtliches</p>
 					<a href="/impressum">Impressum</a>
 					<a href="/agb">AGB</a>
-					<a href="/impressum">Datenschutz</a>
-					<a href="/impressum">Cookies</a>
+					<a href="/datenschutz">Datenschutz</a>
+					<a href="/cookies">Cookies</a>
 				</div>
 			</div>
 
@@ -88,6 +89,120 @@ const jahrgang = ['MMXXVI','MMXXVII','MMXXVIII'][now.getFullYear() - 2026] ?? 'M
 				<span>GEDRUCKT (INNERLICH) AUF INDIFFERENTEM PAPIER</span>
 			</div>
 		</footer>
+
+		{/* Toast-Container: globales Feedback-System */}
+		<div id="toast-stack" class="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+		<script is:inline>
+			// =================================================================
+			// Globales Toast-System
+			// =================================================================
+			// Nutzung von überall: window.toast('Nachricht', 'success' | 'error' | 'info')
+			// Default-Variante: 'info'
+			// =================================================================
+			(function () {
+				const stack = document.getElementById('toast-stack');
+				if (!stack) return;
+
+				const MAX_TOASTS = 3;
+				const DEFAULT_TIMEOUT = 4000;
+
+				function show(message, variant) {
+					if (!message) return;
+					const safeVariant = ['success', 'error', 'info'].includes(variant) ? variant : 'info';
+
+					// Älteste Toasts entfernen wenn Limit erreicht
+					while (stack.children.length >= MAX_TOASTS) {
+						stack.firstChild?.remove();
+					}
+
+					const toast = document.createElement('div');
+					toast.className = 'toast toast--' + safeVariant;
+					toast.setAttribute('role', safeVariant === 'error' ? 'alert' : 'status');
+					toast.textContent = message;
+
+					const close = document.createElement('button');
+					close.className = 'toast__close';
+					close.setAttribute('aria-label', 'Schließen');
+					close.textContent = '×';
+					close.addEventListener('click', () => removeToast(toast));
+					toast.appendChild(close);
+
+					stack.appendChild(toast);
+					// Einblenden im nächsten Frame, damit CSS-Transition greift
+					requestAnimationFrame(() => toast.classList.add('is-visible'));
+
+					setTimeout(() => removeToast(toast), DEFAULT_TIMEOUT);
+				}
+
+				function removeToast(toast) {
+					if (!toast.isConnected) return;
+					toast.classList.remove('is-visible');
+					toast.classList.add('is-leaving');
+					setTimeout(() => toast.remove(), 220);
+				}
+
+				window.toast = show;
+			})();
+		</script>
+
+		{/* Newsletter-Forms: ein Handler für ALLE Forms mit data-newsletter-form */}
+		<script is:inline>
+			document.querySelectorAll('[data-newsletter-form]').forEach((form) => {
+				form.addEventListener('submit', async (event) => {
+					event.preventDefault();
+					const formEl = event.currentTarget;
+					const emailInput = formEl.querySelector('input[type="email"]');
+					const button     = formEl.querySelector('button[type="submit"]');
+
+					// Status-Element: erst innerhalb des Forms suchen,
+					// dann in einem optionalen Wrapper (data-newsletter-wrapper),
+					// notfalls direktes Geschwister-Element.
+					const wrapper = formEl.closest('[data-newsletter-wrapper]');
+					const statusEl =
+						formEl.querySelector('[data-newsletter-status]') ||
+						(wrapper && wrapper.querySelector('[data-newsletter-status]')) ||
+						(formEl.parentElement && formEl.parentElement.querySelector('[data-newsletter-status]'));
+
+					if (!emailInput || !button || !statusEl) return;
+
+					const email = emailInput.value.trim();
+					if (!email) return;
+
+					const originalLabel = button.textContent;
+					button.disabled = true;
+					button.textContent = 'Wird übermittelt …';
+					statusEl.classList.remove('is-error', 'is-success');
+
+					try {
+						const res = await fetch('/api/newsletter/subscribe', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({ email }),
+						});
+						const data = await res.json();
+
+						if (!res.ok) {
+							statusEl.textContent = data.error || 'Es ist ein Fehler aufgetreten.';
+							statusEl.classList.add('is-error');
+							button.disabled = false;
+							button.textContent = originalLabel;
+							return;
+						}
+
+						statusEl.textContent = data.message || 'Eine Bestätigung wurde Ihnen zugestellt.';
+						statusEl.classList.add('is-success');
+						emailInput.value = '';
+						button.textContent = 'Vermerkt ✓';
+					} catch (err) {
+						statusEl.textContent = 'Netzwerkfehler. Bitte später erneut versuchen.';
+						statusEl.classList.add('is-error');
+						button.disabled = false;
+						button.textContent = originalLabel;
+					}
+				});
+			});
+		</script>
 	</body>
 </html>
 
@@ -243,13 +358,34 @@ const jahrgang = ['MMXXVI','MMXXVII','MMXXVIII'][now.getFullYear() - 2026] ?? 'M
 	}
 	.nav-cart:hover { background: var(--red); color: var(--paper); }
 
+	.nav-wishlist {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		color: var(--ink);
+		font-family: var(--font-meta);
+		font-size: 0.78rem;
+		letter-spacing: 0.08em;
+		text-decoration: none;
+		padding: 0.55rem 0.7rem;
+		border: 1px solid var(--paper-3);
+		transition: border-color 0.15s, color 0.15s;
+	}
+	.nav-wishlist:hover {
+		border-color: var(--red);
+		color: var(--red);
+	}
+
 	.nav-user-chip {
 		font-family: var(--font-meta);
 		font-size: 0.78rem;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
 		color: var(--ink-soft);
+		text-decoration: none;
+		transition: color 0.15s;
 	}
+	a.nav-user-chip:hover { color: var(--red); }
 	.nav-logout-btn {
 		background: none;
 		border: 1px solid var(--ink);
@@ -569,6 +705,83 @@ const jahrgang = ['MMXXVI','MMXXVII','MMXXVIII'][now.getFullYear() - 2026] ?? 'M
 		margin: 0;
 	}
 
+	/* Newsletter-Status-Anzeige nach dem Submit */
+	[data-newsletter-status].is-success {
+		color: var(--ochre);
+		font-style: normal;
+		font-weight: 600;
+	}
+	[data-newsletter-status].is-error {
+		color: #d04040;
+		font-style: normal;
+	}
+	/* In hellen Bereichen (z.B. Katalog-CTA) anders einfärben */
+	.katalog-cta [data-newsletter-status].is-success { color: var(--ink); }
+	.katalog-cta [data-newsletter-status].is-error   { color: var(--red); }
+
+	/* ============================================================
+	   Toast-Stack — globales Feedback rechts unten
+	   ============================================================ */
+	.toast-stack {
+		position: fixed;
+		right: 1.5rem;
+		bottom: 1.5rem;
+		z-index: 100000;
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		max-width: calc(100vw - 3rem);
+		width: 360px;
+		pointer-events: none;
+	}
+	.toast {
+		pointer-events: auto;
+		background: var(--ink);
+		color: var(--paper);
+		font-family: var(--font-body);
+		font-size: 0.95rem;
+		line-height: 1.5;
+		padding: 0.9rem 2.4rem 0.9rem 1.1rem;
+		border-left: 3px solid var(--ochre);
+		box-shadow: 0 8px 24px rgba(26,22,18,0.25);
+		opacity: 0;
+		transform: translateX(20px);
+		transition: opacity 0.2s ease, transform 0.2s ease;
+		position: relative;
+	}
+	.toast.is-visible {
+		opacity: 1;
+		transform: translateX(0);
+	}
+	.toast.is-leaving {
+		opacity: 0;
+		transform: translateX(20px);
+	}
+	.toast--success { border-left-color: #6a8d4a; }
+	.toast--error   { border-left-color: var(--red); }
+	.toast--info    { border-left-color: var(--ochre); }
+	.toast__close {
+		position: absolute;
+		top: 0.4rem;
+		right: 0.5rem;
+		background: transparent;
+		border: none;
+		color: rgba(243,237,225,0.5);
+		font-size: 1.4rem;
+		line-height: 1;
+		cursor: pointer;
+		padding: 0.2rem 0.5rem;
+		transition: color 0.15s;
+	}
+	.toast__close:hover { color: var(--paper); }
+	@media (max-width: 540px) {
+		.toast-stack {
+			right: 0.8rem;
+			bottom: 0.8rem;
+			width: calc(100vw - 1.6rem);
+		}
+	}
+
 	.footer__legal {
 		max-width: var(--container);
 		margin: 0 auto;
@@ -678,12 +891,10 @@ const jahrgang = ['MMXXVI','MMXXVII','MMXXVIII'][now.getFullYear() - 2026] ?? 'M
 	.progress-ring-bg { fill: none; stroke: rgba(26,22,18,0.2); stroke-width: 3; }
 	.progress-ring-fill {
 		fill: none; stroke: var(--ink); stroke-width: 3;
-		stroke-dasharray: 94.2; stroke-dashoffset: 94.2;
-		animation: progress-countdown 5s linear infinite;
-	}
-	@keyframes progress-countdown {
-		from { stroke-dashoffset: 94.2; }
-		to   { stroke-dashoffset: 0; }
+		stroke-linecap: round;
+		/* stroke-dasharray + stroke-dashoffset werden von ImageGallery.tsx
+		   per Inline-Attribut gesetzt — synchron mit dem Bildwechsel */
+		transition: stroke-dashoffset 0.05s linear;
 	}
 
 	/* Lightbox */
@@ -752,6 +963,65 @@ const jahrgang = ['MMXXVI','MMXXVII','MMXXVIII'][now.getFullYear() - 2026] ?? 'M
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		margin: 0;
+	}
+
+	/* Wishlist-Button — Icon-Variante (rund, klein, für Karten) */
+	.wishlist-icon-btn {
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+		border: 1px solid var(--paper-3);
+		background: var(--paper);
+		color: var(--ink-mute);
+		font-size: 1.1rem;
+		line-height: 1;
+		cursor: pointer;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.15s;
+		flex-shrink: 0;
+	}
+	.wishlist-icon-btn:hover:not(:disabled) {
+		border-color: var(--red);
+		color: var(--red);
+	}
+	.wishlist-icon-btn.is-active {
+		background: var(--red);
+		border-color: var(--red);
+		color: var(--paper);
+	}
+	.wishlist-icon-btn:disabled {
+		opacity: 0.6;
+		cursor: wait;
+	}
+
+	/* Wishlist-Button — Block-Variante (groß, für Detail-Seiten) */
+	.wishlist-block-btn {
+		padding: 1rem 1.5rem;
+		background: transparent;
+		color: var(--ink);
+		border: 1px solid var(--ink);
+		font-family: var(--font-meta);
+		font-size: 0.85rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.15s, color 0.15s;
+		width: 100%;
+		margin-top: 0.5rem;
+	}
+	.wishlist-block-btn:hover:not(:disabled) {
+		background: var(--paper-2);
+	}
+	.wishlist-block-btn.is-active {
+		background: var(--red);
+		color: var(--paper);
+		border-color: var(--red);
+	}
+	.wishlist-block-btn.is-active:hover:not(:disabled) {
+		background: var(--red-deep);
 	}
 
 	/* AddToCart Inline-Variante (für Katalog-Karten) */

@@ -117,14 +117,14 @@ function makeKlassifikation(id: number) {
     <div class="rule-thick"></div>
 
     {/* Newsletter-CTA */}
-    <section class="katalog-cta reveal">
+    <section class="katalog-cta reveal" data-newsletter-wrapper>
       <div class="katalog-cta__left">
         <p class="eyebrow">Der wöchentliche Bestandsbericht</p>
         <h2>Erfahren Sie zuerst, was Sie ohnehin nicht brauchen.</h2>
-        <p class="katalog-cta__note">Einmal pro Woche. Nichts Dringendes. Versprochen.</p>
+        <p class="katalog-cta__note" data-newsletter-status>Einmal pro Woche. Nichts Dringendes. Versprochen.</p>
       </div>
-      <form class="katalog-cta__form" onsubmit="event.preventDefault();">
-        <input type="email" placeholder="ihre.adresse@beispiel.de" />
+      <form class="katalog-cta__form" data-newsletter-form>
+        <input type="email" name="email" placeholder="ihre.adresse@beispiel.de" required />
         <button type="submit" class="btn-ochre">Abonnieren</button>
       </form>
     </section>

@@ -26,12 +26,20 @@ export default function AddToCart(props: Props) {
       });
 
       if (res.ok) {
-        setStock(stock() - qty);
+        // Stock NICHT lokal reduzieren — er wird erst beim Bestellabschluss
+        // in der DB reduziert. Lokale Reduzierung würde Drift erzeugen,
+        // sobald die Seite neu geladen wird.
         setIsAdded(true);
         setQuantity(1);
         setTimeout(() => setIsAdded(false), 2000);
         window.dispatchEvent(new CustomEvent('cart-updated'));
+        (window as any).toast?.('Vermerkt — im Warenkorb.', 'success');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        (window as any).toast?.(data.error ?? 'Konnte nicht hinzugefügt werden.', 'error');
       }
+    } catch (err) {
+      (window as any).toast?.('Netzwerkfehler. Bitte erneut versuchen.', 'error');
     } finally {
       setIsLoading(false);
     }

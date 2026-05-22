@@ -1,0 +1,599 @@
+---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+
+const firma  = import.meta.env.IMPRESSUM_NAME    ?? 'The Ordinary Emporium GmbH';
+const email  = import.meta.env.IMPRESSUM_EMAIL   ?? 'info@ordinary-emporium.de';
+
+const stand = '14. Mai 2026';
+const version = '1.0';
+
+const sections = [
+  { id: 'paragraph-1', no: '§ 1', title: 'Geltungsbereich' },
+  { id: 'paragraph-2', no: '§ 2', title: 'Was sind Cookies?' },
+  { id: 'paragraph-3', no: '§ 3', title: 'Welche Cookie-Kategorien verwenden wir?' },
+  { id: 'paragraph-4', no: '§ 4', title: 'Eingesetzte Cookies im Einzelnen' },
+  { id: 'paragraph-5', no: '§ 5', title: 'Rechtsgrundlagen' },
+  { id: 'paragraph-6', no: '§ 6', title: 'Speicherdauer' },
+  { id: 'paragraph-7', no: '§ 7', title: 'Verwaltung und Deaktivierung von Cookies' },
+  { id: 'paragraph-8', no: '§ 8', title: 'Auswirkungen der Deaktivierung' },
+  { id: 'paragraph-9', no: '§ 9', title: 'Änderungen dieser Richtlinie' },
+];
+
+// Konkrete Cookie-Tabelle — was wir wirklich setzen (Cart-Session, Auth, Order)
+const cookies = [
+  {
+    name: 'cart_session',
+    zweck: 'Identifikation des Warenkorbs während eines Besuchs.',
+    typ: 'Technisch notwendig',
+    dauer: 'Sitzung',
+    anbieter: 'Erstanbieter',
+  },
+  {
+    name: 'auth_token',
+    zweck: 'Authentifizierung eingeloggter Nutzer (signiertes JWT-Token).',
+    typ: 'Technisch notwendig',
+    dauer: '30 Tage',
+    anbieter: 'Erstanbieter',
+  },
+  {
+    name: 'customer_email',
+    zweck: 'Vorübergehende Speicherung der E-Mail-Adresse zur Versendung der Bestellbestätigung.',
+    typ: 'Technisch notwendig',
+    dauer: 'Sitzung',
+    anbieter: 'Erstanbieter',
+  },
+  {
+    name: 'order_placed',
+    zweck: 'Verhinderung doppelter Bestellbestätigungen beim Reload der Bestätigungsseite.',
+    typ: 'Technisch notwendig',
+    dauer: 'Sitzung',
+    anbieter: 'Erstanbieter',
+  },
+];
+---
+
+<Layout title="Cookie-Richtlinie">
+  <main class="page agb">
+
+    <header class="agb-head">
+      <p class="agb-head__rubrik">Rechtliches</p>
+      <h1 class="agb-head__title">Cookie-Richtlinie</h1>
+      <dl class="agb-head__meta">
+        <div><dt>Stand</dt><dd>{stand}</dd></div>
+        <div><dt>Version</dt><dd>{version}</dd></div>
+        <div><dt>Verantwortlicher</dt><dd>{firma}</dd></div>
+      </dl>
+    </header>
+
+    <div class="rule-thick" style="margin: 1.5rem 0 2.5rem;"></div>
+
+    <div class="agb-layout">
+
+      <aside class="agb-toc">
+        <p class="agb-toc__heading">Inhaltsverzeichnis</p>
+        <ol class="agb-toc__list">
+          {sections.map(s => (
+            <li><a href={`#${s.id}`}><span class="agb-toc__no">{s.no}</span> {s.title}</a></li>
+          ))}
+        </ol>
+      </aside>
+
+      <article class="agb-body">
+
+        <p class="agb-praeambel">
+          Diese Cookie-Richtlinie ergänzt unsere Datenschutzerklärung und informiert
+          Sie darüber, welche Cookies und vergleichbaren Technologien auf dieser
+          Website eingesetzt werden, zu welchem Zweck dies geschieht und wie Sie
+          deren Verwendung steuern können.
+        </p>
+
+        {/* § 1 */}
+        <section id="paragraph-1" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 1</span> Geltungsbereich</h2>
+          <ol class="agb-list">
+            <li>Diese Cookie-Richtlinie gilt für die Nutzung unserer Website und der darüber angebotenen Dienste durch alle Besucher und Kunden.</li>
+            <li>Verantwortlich für die Verarbeitung personenbezogener Daten im Zusammenhang mit dem Einsatz von Cookies ist der im Impressum genannte Anbieter. Anfragen zu dieser Richtlinie können an <a href={`mailto:${email}`}>{email}</a> gerichtet werden.</li>
+          </ol>
+        </section>
+
+        {/* § 2 */}
+        <section id="paragraph-2" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 2</span> Was sind Cookies?</h2>
+          <ol class="agb-list">
+            <li>Cookies sind kleine Textdateien, die beim Besuch einer Website über den verwendeten Browser auf dem Endgerät des Nutzers (z. B. Computer, Smartphone, Tablet) gespeichert werden.</li>
+            <li>Cookies können beim erneuten Aufruf der jeweiligen Website durch den Browser ausgelesen werden und ermöglichen es, den Nutzer wiederzuerkennen oder bestimmte Einstellungen zu speichern.</li>
+            <li>Cookies enthalten in der Regel eine charakteristische Zeichenfolge, die eine eindeutige Identifizierung des Browsers beim erneuten Aufrufen der Website ermöglicht. Sie sind nicht in der Lage, Programme auszuführen oder Schadcode auf das Endgerät zu übertragen.</li>
+            <li>Neben Cookies im technischen Sinne können auch vergleichbare Technologien (z. B. Local Storage, Session Storage, Pixel) eingesetzt werden. Diese Richtlinie gilt entsprechend für alle derartigen Technologien.</li>
+          </ol>
+        </section>
+
+        {/* § 3 */}
+        <section id="paragraph-3" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 3</span> Welche Cookie-Kategorien verwenden wir?</h2>
+          <p class="agb-paragraph">
+            Auf dieser Website werden ausschließlich technisch notwendige Cookies eingesetzt.
+            Wir verzichten bewusst auf Analyse-Cookies, Tracking-Cookies und Cookies zu
+            Marketing- oder Werbezwecken.
+          </p>
+          <ol class="agb-list">
+            <li>
+              <strong>Technisch notwendige Cookies.</strong> Diese Cookies sind für den
+              Betrieb der Website unbedingt erforderlich. Sie ermöglichen grundlegende
+              Funktionen wie die Speicherung des Warenkorbinhalts, die Authentifizierung
+              eingeloggter Nutzer und die Abwicklung von Bestellungen. Ohne diese Cookies
+              kann die Website nicht ordnungsgemäß funktionieren.
+            </li>
+            <li>
+              <strong>Funktionale Cookies.</strong> Diese Kategorie wird derzeit nicht eingesetzt.
+            </li>
+            <li>
+              <strong>Analyse- und Statistik-Cookies.</strong> Diese Kategorie wird derzeit nicht eingesetzt.
+            </li>
+            <li>
+              <strong>Marketing- und Werbe-Cookies.</strong> Diese Kategorie wird derzeit nicht eingesetzt.
+            </li>
+          </ol>
+        </section>
+
+        {/* § 4 — die Cookie-Tabelle */}
+        <section id="paragraph-4" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 4</span> Eingesetzte Cookies im Einzelnen</h2>
+          <p class="agb-paragraph">
+            Die folgende Übersicht enthält alle Cookies, die auf dieser Website gesetzt werden.
+            Sämtliche aufgeführten Cookies sind technisch notwendig.
+          </p>
+
+          <div class="cookie-table-wrap">
+            <table class="cookie-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Zweck</th>
+                  <th>Typ</th>
+                  <th>Dauer</th>
+                  <th>Anbieter</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cookies.map(c => (
+                  <tr>
+                    <td><code>{c.name}</code></td>
+                    <td>{c.zweck}</td>
+                    <td>{c.typ}</td>
+                    <td>{c.dauer}</td>
+                    <td>{c.anbieter}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p class="agb-paragraph" style="margin-top: 1.2rem;">
+            Sämtliche aufgeführten Cookies werden ausschließlich vom Anbieter dieser
+            Website gesetzt. Eine Weitergabe der dadurch erhobenen Informationen an
+            Dritte erfolgt nicht.
+          </p>
+        </section>
+
+        {/* § 5 */}
+        <section id="paragraph-5" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 5</span> Rechtsgrundlagen</h2>
+          <ol class="agb-list">
+            <li>
+              Rechtsgrundlage für die Verwendung technisch notwendiger Cookies ist
+              § 25 Abs. 2 Nr. 2 TDDDG (Telekommunikation-Digitale-Dienste-Datenschutz-Gesetz)
+              in Verbindung mit Art. 6 Abs. 1 Buchst. f DSGVO. Unser berechtigtes Interesse
+              besteht in der technisch fehlerfreien und nutzerfreundlichen Bereitstellung
+              unserer Website.
+            </li>
+            <li>
+              Da ausschließlich technisch notwendige Cookies eingesetzt werden, ist eine
+              gesonderte Einwilligung gemäß § 25 Abs. 1 TDDDG nicht erforderlich.
+            </li>
+            <li>
+              Sollte zukünftig die Verwendung weiterer Cookie-Kategorien erforderlich
+              werden, werden wir hierfür zuvor Ihre Einwilligung einholen.
+            </li>
+          </ol>
+        </section>
+
+        {/* § 6 */}
+        <section id="paragraph-6" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 6</span> Speicherdauer</h2>
+          <ol class="agb-list">
+            <li>
+              <strong>Sitzungs-Cookies (Session-Cookies)</strong> werden automatisch gelöscht,
+              sobald Sie Ihren Browser schließen oder die Sitzung anderweitig beendet wird.
+            </li>
+            <li>
+              <strong>Persistente Cookies</strong> verbleiben für die in der vorstehenden
+              Übersicht angegebene Dauer auf Ihrem Endgerät und werden anschließend
+              automatisch gelöscht.
+            </li>
+            <li>
+              Sie können Cookies jederzeit auch vor Ablauf ihrer regulären Speicherdauer
+              manuell über die Einstellungen Ihres Browsers löschen.
+            </li>
+          </ol>
+        </section>
+
+        {/* § 7 */}
+        <section id="paragraph-7" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 7</span> Verwaltung und Deaktivierung von Cookies</h2>
+
+          <p class="agb-paragraph">
+            Sie haben die volle Kontrolle über den Einsatz von Cookies auf Ihrem
+            Endgerät. Sie können das Speichern von Cookies generell verhindern, einzelne
+            Cookies löschen oder das Verhalten Ihres Browsers bei Cookies anpassen.
+            Die hierfür erforderlichen Einstellungen finden Sie in Ihrem Browser.
+            Eine Auswahl an Anleitungen ist nachfolgend aufgeführt:
+          </p>
+
+          <ul class="browser-list">
+            <li>
+              <strong>Google Chrome</strong> ·
+              <a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener">support.google.com/chrome/answer/95647</a>
+            </li>
+            <li>
+              <strong>Mozilla Firefox</strong> ·
+              <a href="https://support.mozilla.org/de/kb/cookies-erlauben-und-ablehnen" target="_blank" rel="noopener">support.mozilla.org/de/kb/cookies-erlauben-und-ablehnen</a>
+            </li>
+            <li>
+              <strong>Microsoft Edge</strong> ·
+              <a href="https://support.microsoft.com/de-de/microsoft-edge/cookies-in-microsoft-edge-l%C3%B6schen-63947406-40ac-c3b8-57b9-2a946a29ae09" target="_blank" rel="noopener">support.microsoft.com/de-de/microsoft-edge/cookies-in-microsoft-edge-löschen</a>
+            </li>
+            <li>
+              <strong>Apple Safari</strong> ·
+              <a href="https://support.apple.com/de-de/guide/safari/sfri11471/mac" target="_blank" rel="noopener">support.apple.com/de-de/guide/safari/sfri11471/mac</a>
+            </li>
+            <li>
+              <strong>Opera</strong> ·
+              <a href="https://help.opera.com/de/latest/web-preferences/" target="_blank" rel="noopener">help.opera.com/de/latest/web-preferences</a>
+            </li>
+          </ul>
+        </section>
+
+        {/* § 8 */}
+        <section id="paragraph-8" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 8</span> Auswirkungen der Deaktivierung</h2>
+          <div class="agb-callout">
+            <p class="agb-callout__title">Hinweis</p>
+            <p>
+              Da auf dieser Website ausschließlich technisch notwendige Cookies eingesetzt werden,
+              kann die Deaktivierung dieser Cookies die Funktionalität der Website erheblich einschränken.
+            </p>
+            <p>
+              Insbesondere kann es ohne diese Cookies dazu kommen, dass der Warenkorb seinen
+              Inhalt verliert, Sie nicht eingeloggt bleiben oder Bestellungen nicht
+              ordnungsgemäß abgeschlossen werden können.
+            </p>
+            <p>
+              Die Nutzung von Inhalten ohne Anmeldung und ohne Bestellfunktion bleibt
+              hingegen grundsätzlich auch dann möglich, wenn Sie Cookies in Ihrem
+              Browser vollständig deaktivieren.
+            </p>
+          </div>
+        </section>
+
+        {/* § 9 */}
+        <section id="paragraph-9" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 9</span> Änderungen dieser Richtlinie</h2>
+          <ol class="agb-list">
+            <li>Wir behalten uns vor, diese Cookie-Richtlinie anzupassen, damit sie stets den aktuellen rechtlichen Anforderungen entspricht oder um Änderungen unserer Leistungen umzusetzen.</li>
+            <li>Für Ihren erneuten Besuch gilt dann die jeweils neue Cookie-Richtlinie. Die jeweils aktuelle Fassung kann jederzeit auf dieser Seite eingesehen werden.</li>
+            <li>Bei wesentlichen Änderungen, insbesondere bei der Einführung neuer Cookie-Kategorien, werden wir Sie zusätzlich gesondert informieren und gegebenenfalls Ihre Einwilligung einholen.</li>
+          </ol>
+        </section>
+
+        <div class="rule-thick" style="margin: 3rem 0 1.5rem;"></div>
+
+        <p class="agb-footer">
+          {firma} · Stand: {stand}
+        </p>
+
+      </article>
+    </div>
+
+  </main>
+</Layout>
+
+<style>
+  /* Shared Styles (identisch zu agb.astro / datenschutz.astro) */
+  .agb { max-width: 1100px; }
+
+  .agb-head { padding-top: 1rem; }
+  .agb-head__rubrik {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0 0 0.8rem;
+  }
+  .agb-head__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin: 0 0 1.5rem;
+    color: var(--ink);
+  }
+  .agb-head__meta { display: flex; flex-wrap: wrap; gap: 2rem; margin: 0; }
+  .agb-head__meta > div { display: flex; flex-direction: column; gap: 0.2rem; }
+  .agb-head__meta dt {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0;
+  }
+  .agb-head__meta dd {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--ink);
+    margin: 0;
+  }
+
+  .agb-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .agb-toc {
+    position: sticky;
+    top: 2rem;
+    padding-right: 1rem;
+    border-right: var(--rule-soft);
+  }
+  .agb-toc__heading {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0 0 1rem;
+    font-weight: 600;
+  }
+  .agb-toc__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .agb-toc__list a {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.35rem 0;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-bottom: 1px dotted transparent;
+  }
+  .agb-toc__list a:hover {
+    color: var(--ink);
+    border-bottom-color: var(--paper-3);
+  }
+  .agb-toc__no {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    color: var(--ink-mute);
+    flex-shrink: 0;
+    min-width: 2.6em;
+  }
+
+  .agb-body {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--ink);
+    max-width: 760px;
+  }
+  .agb-praeambel {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--ink-soft);
+    margin: 0 0 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: var(--rule-soft);
+  }
+  .agb-paragraph {
+    font-family: var(--font-body);
+    line-height: 1.75;
+    color: var(--ink-soft);
+    margin: 0 0 1rem;
+  }
+
+  .agb-section {
+    margin-bottom: 2.5rem;
+    scroll-margin-top: 2rem;
+  }
+  .agb-section__title {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin: 0 0 1rem;
+    color: var(--ink);
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+  }
+  .agb-section__no {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--ink-mute);
+    font-weight: 400;
+    min-width: 2.6em;
+  }
+
+  .agb-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: agb-counter;
+  }
+  .agb-list > li {
+    counter-increment: agb-counter;
+    position: relative;
+    padding-left: 2.4rem;
+    margin-bottom: 1rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
+  }
+  .agb-list > li::before {
+    content: "(" counter(agb-counter) ")";
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-family: var(--font-meta);
+    font-size: 0.82rem;
+    color: var(--ink-mute);
+    font-weight: 500;
+    width: 2rem;
+  }
+
+  /* COOKIE TABELLE */
+  .cookie-table-wrap {
+    margin: 1rem 0 0;
+    overflow-x: auto;
+    border: 1px solid var(--paper-3);
+    background: var(--paper-2);
+  }
+  .cookie-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    min-width: 720px;
+  }
+  .cookie-table thead {
+    background: var(--paper);
+    border-bottom: 1px solid var(--ink);
+  }
+  .cookie-table th {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    font-weight: 600;
+    text-align: left;
+    padding: 0.9rem 1rem;
+  }
+  .cookie-table td {
+    padding: 0.9rem 1rem;
+    border-bottom: var(--rule-soft);
+    color: var(--ink-soft);
+    vertical-align: top;
+    line-height: 1.55;
+  }
+  .cookie-table tr:last-child td { border-bottom: none; }
+  .cookie-table code {
+    font-family: var(--font-meta);
+    font-size: 0.85rem;
+    background: var(--paper);
+    padding: 0.15em 0.4em;
+    color: var(--ink);
+    border: 1px solid var(--paper-3);
+    white-space: nowrap;
+  }
+
+  /* BROWSER-LISTE */
+  .browser-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .browser-list > li {
+    padding: 0.7rem 1rem;
+    background: var(--paper-2);
+    border-left: 2px solid var(--ink);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+  }
+  .browser-list strong {
+    color: var(--ink);
+    font-weight: 600;
+    margin-right: 0.4rem;
+  }
+  .browser-list a {
+    color: var(--ink);
+    text-decoration: underline;
+    word-break: break-all;
+  }
+  .browser-list a:hover { color: var(--red); }
+
+  .agb-callout {
+    padding: 1.5rem 1.5rem;
+    background: var(--paper-2);
+    border: 1px solid var(--ink);
+    margin-top: 0.5rem;
+  }
+  .agb-callout__title {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    font-weight: 600;
+    margin: 0 0 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--ink);
+  }
+  .agb-callout p {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    margin: 0 0 0.8rem;
+  }
+  .agb-callout p:last-child { margin-bottom: 0; }
+
+  .agb-body a { color: var(--ink); text-decoration: underline; }
+  .agb-body a:hover { color: var(--red); }
+  .agb-body strong { color: var(--ink); font-weight: 600; }
+
+  .agb-footer {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    text-align: center;
+    margin: 0;
+  }
+
+  @media (max-width: 900px) {
+    .agb-layout { grid-template-columns: 1fr; gap: 2rem; }
+    .agb-toc {
+      position: static;
+      padding-right: 0;
+      border-right: none;
+      border-bottom: var(--rule-soft);
+      padding-bottom: 1.5rem;
+    }
+    .agb-toc__list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.3rem 1rem;
+    }
+  }
+  @media (max-width: 540px) {
+    .agb-toc__list { grid-template-columns: 1fr; }
+    .agb-section__title { flex-direction: column; gap: 0.2rem; }
+  }
+</style>

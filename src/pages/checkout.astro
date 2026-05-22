@@ -1,24 +1,43 @@
 ---
+// =====================================================================
+// pages/checkout.astro — Kassenseite
+// =====================================================================
+// SSR-Seite: zeigt den aktuellen Warenkorb + Formular für Lieferadresse.
+// Beim Absenden wird POST /api/orders aufgerufen — der Endpoint
+// kümmert sich um Order-Anlage, Mail-Versand, Stock-Reduzierung
+// und Cart-Cleanup. Diese Seite ist nur UI-Schicht.
+//
+// Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
+// =====================================================================
+
 import Layout from '../layouts/Layout.astro';
 import { db, Cart, CartItem, Item, eq } from 'astro:db';
+import { getUserFromCookie } from '../lib/auth';
 
-const sessionId = Astro.cookies.get('cart_session')?.value;
+// Aktuellen Warenkorb laden (User-Cart oder Session-Cart)
+const sessionId   = Astro.cookies.get('cart_session')?.value;
+const userPayload = await getUserFromCookie(Astro.cookies);
 
 let cartItems: any[] = [];
 let total = 0;
 
-if (sessionId) {
-  const cartRecord = (await db.select().from(Cart).where(eq(Cart.sessionId, sessionId)))[0];
-  if (cartRecord) {
-    const rawItems = await db.select().from(CartItem).where(eq(CartItem.cartId, cartRecord.id));
-    cartItems = await Promise.all(
-      rawItems.map(async (cartItem) => {
-        const product = (await db.select().from(Item).where(eq(Item.id, cartItem.itemId)))[0];
-        return { quantity: cartItem.quantity, product };
-      })
-    );
-    total = cartItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
-  }
+let cartRecord;
+if (userPayload) {
+  cartRecord = (await db.select().from(Cart).where(eq(Cart.userId, userPayload.userId)))[0];
+}
+if (!cartRecord && sessionId) {
+  cartRecord = (await db.select().from(Cart).where(eq(Cart.sessionId, sessionId)))[0];
+}
+
+if (cartRecord) {
+  const rawItems = await db.select().from(CartItem).where(eq(CartItem.cartId, cartRecord.id));
+  cartItems = await Promise.all(
+    rawItems.map(async (cartItem) => {
+      const product = (await db.select().from(Item).where(eq(Item.id, cartItem.itemId)))[0];
+      return { quantity: cartItem.quantity, product };
+    })
+  );
+  total = cartItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
 }
 
 if (cartItems.length === 0) {
@@ -47,7 +66,9 @@ const gesamt = total + versand;
 
     <div class="checkout-layout">
 
-      <div class="checkout-form">
+      <form class="checkout-form" id="checkout-form" onsubmit="event.preventDefault();">
+
+        <div id="form-error" class="form-error" hidden></div>
 
         <section class="form-section">
           <h2 class="form-title">
@@ -57,28 +78,28 @@ const gesamt = total + versand;
 
           <div class="form-grid">
             <div class="form-field">
-              <label>Vorname</label>
-              <input type="text" placeholder="Max" />
+              <label for="cf-prename">Vorname</label>
+              <input type="text" id="cf-prename" name="prename" placeholder="Max" required />
             </div>
             <div class="form-field">
-              <label>Nachname</label>
-              <input type="text" placeholder="Mustermann" />
+              <label for="cf-surname">Nachname</label>
+              <input type="text" id="cf-surname" name="surname" placeholder="Mustermann" required />
             </div>
             <div class="form-field form-field--full">
-              <label>Straße & Hausnummer</label>
-              <input type="text" placeholder="Musterstraße 1" />
+              <label for="cf-street">Straße &amp; Hausnummer</label>
+              <input type="text" id="cf-street" name="street" placeholder="Musterstraße 1" required />
             </div>
             <div class="form-field">
-              <label>PLZ</label>
-              <input type="text" placeholder="12345" />
+              <label for="cf-postal">PLZ</label>
+              <input type="text" id="cf-postal" name="postal" placeholder="12345" required />
             </div>
             <div class="form-field">
-              <label>Ort</label>
-              <input type="text" placeholder="Musterstadt" />
+              <label for="cf-city">Ort</label>
+              <input type="text" id="cf-city" name="city" placeholder="Musterstadt" required />
             </div>
             <div class="form-field form-field--full">
-              <label>E-Mail (für die Eingangsbestätigung)</label>
-              <input type="email" id="customer-email" placeholder="ihre.adresse@beispiel.de" />
+              <label for="cf-email">E-Mail (für die Eingangsbestätigung)</label>
+              <input type="email" id="cf-email" name="email" placeholder="ihre.adresse@beispiel.de" required />
             </div>
           </div>
         </section>
@@ -91,7 +112,7 @@ const gesamt = total + versand;
 
           <div class="payment-options">
             <label class="payment-option">
-              <input type="radio" name="payment" value="elon" checked />
+              <input type="radio" name="payment" value="milliardaer" checked />
               <div class="payment-card">
                 <span class="payment-name">Auf Kosten eines weltbekannten Milliardärs.</span>
                 <span class="payment-desc"><em>Er hat genug. Wir fragen ihn gar nicht erst.</em></span>
@@ -117,7 +138,7 @@ const gesamt = total + versand;
           </div>
         </section>
 
-      </div>
+      </form>
 
       <aside class="checkout-summary">
         <p class="checkout-summary__eyebrow">Ihre Bestellung</p>
@@ -168,7 +189,7 @@ const gesamt = total + versand;
           <p>Wird übernommen — siehe oben.</p>
         </div>
 
-        <button class="checkout-cta" id="order-btn">
+        <button type="button" class="checkout-cta" id="order-btn">
           Bestellung aufgeben →
         </button>
 
@@ -184,15 +205,81 @@ const gesamt = total + versand;
 </Layout>
 
 <script>
-  document.getElementById('order-btn')?.addEventListener('click', async () => {
-    const customerEmail = (document.getElementById('customer-email') as HTMLInputElement)?.value;
-    if (!customerEmail) {
-      alert('Bitte tragen Sie eine E-Mail-Adresse ein.');
-      return;
+  // -------------------------------------------------------------------
+  // Checkout-Submit-Logik
+  // -------------------------------------------------------------------
+  // Sammelt die Formulardaten, ruft POST /api/orders auf, navigiert bei
+  // Erfolg zu /order-confirmed?nr=<bordereauNr>.
+  // -------------------------------------------------------------------
+
+  const orderBtn = document.getElementById('order-btn') as HTMLButtonElement;
+  const errorBox = document.getElementById('form-error')!;
+
+  function showError(msg: string) {
+    errorBox.textContent = msg;
+    errorBox.hidden = false;
+    errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function hideError() {
+    errorBox.hidden = true;
+  }
+
+  function getValue(id: string): string {
+    return (document.getElementById(id) as HTMLInputElement)?.value?.trim() ?? '';
+  }
+
+  orderBtn.addEventListener('click', async () => {
+    hideError();
+
+    // 1) Werte einsammeln
+    const payload = {
+      prename: getValue('cf-prename'),
+      surname: getValue('cf-surname'),
+      street:  getValue('cf-street'),
+      postal:  getValue('cf-postal'),
+      city:    getValue('cf-city'),
+      email:   getValue('cf-email'),
+      paymentMethod: (document.querySelector('input[name="payment"]:checked') as HTMLInputElement)?.value ?? 'milliardaer',
+    };
+
+    // 2) Client-seitige Mindest-Prüfung — die richtige Validierung macht der Server
+    for (const [key, val] of Object.entries(payload)) {
+      if (!val) {
+        showError(`Bitte alle Felder ausfüllen (fehlt: ${key}).`);
+        return;
+      }
     }
-    document.cookie = `customer_email=${encodeURIComponent(customerEmail)}; path=/`;
-    document.cookie = 'order_placed=true; path=/';
-    window.location.href = '/order-confirmed';
+
+    // 3) UI-Feedback: Button sperren
+    orderBtn.disabled = true;
+    orderBtn.textContent = 'Wird übermittelt …';
+
+    // 4) Aufruf des Endpunkts
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Server-Validation-Fehler oder Lagerproblem
+        showError(data.error ?? 'Etwas ist schiefgegangen. Bitte versuchen Sie es erneut.');
+        orderBtn.disabled = false;
+        orderBtn.textContent = 'Bestellung aufgeben →';
+        return;
+      }
+
+      // 5) Erfolg — zur Bestätigungsseite navigieren
+      window.location.href = `/order-confirmed?nr=${encodeURIComponent(data.bordereauNr)}`;
+    } catch (err) {
+      showError('Netzwerkfehler. Bitte prüfen Sie Ihre Verbindung.');
+      orderBtn.disabled = false;
+      orderBtn.textContent = 'Bestellung aufgeben →';
+    }
   });
 </script>
 
@@ -223,7 +310,16 @@ const gesamt = total + versand;
     margin-top: 2rem;
   }
 
-  /* FORM SECTIONS */
+  .form-error {
+    background: rgba(122,31,31,0.08);
+    color: var(--red);
+    padding: 0.9rem 1rem;
+    font-family: var(--font-meta);
+    font-size: 0.85rem;
+    border-left: 3px solid var(--red);
+    margin-bottom: 1.5rem;
+  }
+
   .form-section {
     padding: 1.8rem 0;
     border-bottom: var(--rule-soft);
@@ -276,7 +372,6 @@ const gesamt = total + versand;
     font-size: 1rem;
   }
 
-  /* PAYMENT */
   .payment-options { display: flex; flex-direction: column; gap: 0.75rem; }
   .payment-option { cursor: pointer; display: block; }
   .payment-option input { display: none; }
@@ -311,7 +406,6 @@ const gesamt = total + versand;
   }
   .payment-card .stamp { grid-area: stamp; }
 
-  /* SUMMARY */
   .checkout-summary {
     position: sticky;
     top: 2rem;
@@ -340,15 +434,9 @@ const gesamt = total + versand;
     align-items: center;
     padding: 0.6rem 0;
   }
-  .summary-img {
-    width: 56px;
-    height: 56px;
-    overflow: hidden;
-  }
+  .summary-img { width: 56px; height: 56px; overflow: hidden; }
   .summary-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    width: 100%; height: 100%; object-fit: cover;
     filter: sepia(0.12) contrast(0.95);
     mix-blend-mode: multiply;
   }
@@ -420,7 +508,8 @@ const gesamt = total + versand;
     cursor: pointer;
     transition: background 0.15s;
   }
-  .checkout-cta:hover { background: var(--red); }
+  .checkout-cta:hover:not(:disabled) { background: var(--red); }
+  .checkout-cta:disabled { opacity: 0.6; cursor: not-allowed; }
   .checkout-disclaimer {
     font-family: var(--font-body);
     font-style: italic;
@@ -431,7 +520,6 @@ const gesamt = total + versand;
     margin: 1rem 0 0;
   }
 
-  /* Responsive */
   @media (max-width: 900px) {
     .checkout-layout { grid-template-columns: 1fr; }
     .checkout-summary { position: static; }
