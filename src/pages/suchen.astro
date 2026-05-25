@@ -1,0 +1,344 @@
+---
+// =====================================================================
+// pages/suchen.astro — Suche
+// =====================================================================
+// SSR-Suche über Item.name + Item.description.
+// Suchstring kommt als ?q=... aus der URL — teilbar, SEO-tauglich,
+// funktioniert auch ohne JavaScript.
+//
+// Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
+// =====================================================================
+
+import Layout from '../layouts/Layout.astro';
+import { db, Item, like, or } from 'astro:db';
+
+const rawQuery = Astro.url.searchParams.get('q') ?? '';
+const query = rawQuery.trim().slice(0, 100);   // Cap zur Sicherheit
+
+let items: any[] = [];
+
+if (query.length > 0) {
+  // SQL LIKE-Suche, case-insensitive über LOWER(...)
+  // Drizzle escaped die Parameter automatisch — kein SQL-Injection-Risiko
+  const pattern = `%${query.toLowerCase()}%`;
+  items = await db
+    .select()
+    .from(Item)
+    .where(
+      or(
+        like(Item.name, pattern),
+        like(Item.description, pattern)
+      )
+    );
+}
+
+const klassifikationen = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache', 'Apparat', 'Utensil'];
+function makeSignatur(id: number, boredom: number) {
+  const a = String(boredom).padStart(2, '0');
+  const b = String((id * 137) % 1000).padStart(3, '0');
+  return `${a}.${b}`;
+}
+function makeKlassifikation(id: number) {
+  return klassifikationen[id % klassifikationen.length];
+}
+---
+
+<Layout title={query ? `Suche · ${query}` : 'Suchen'}>
+  <main class="page suchen">
+
+    <div class="section-marker">
+      <span class="section-marker__no">N° 01</span>
+      <span class="section-marker__line"></span>
+      <span class="section-marker__label">Suche · Im Bestand recherchieren</span>
+    </div>
+
+    <header class="suchen-head">
+      <h1 class="display-headline">Suchen.</h1>
+      <p class="suchen-head__sub">
+        Recherchieren Sie im Bestand. Wir durchsuchen Bezeichnungen und Beschreibungen —
+        leise, wie es sich gehört.
+      </p>
+    </header>
+
+    <div class="rule-thick" style="margin: 1rem 0 2rem;"></div>
+
+    {/* Suchformular */}
+    <form class="suchen-form" method="get">
+      <input
+        type="search"
+        name="q"
+        value={query}
+        placeholder="Bleistift, Klammer, irgendwas Belangloses …"
+        autofocus
+        aria-label="Suchbegriff"
+        maxlength="100"
+      />
+      <button type="submit" class="btn-primary">Suchen →</button>
+    </form>
+
+    {/* Ergebnisse */}
+    {query.length === 0 && (
+      <div class="suchen-empty">
+        <p class="suchen-empty__title">Was möchten Sie finden?</p>
+        <p class="suchen-empty__sub">
+          <em>Geben Sie oben einen Begriff ein. Wir durchsuchen unsere Bestände
+          mit der Gründlichkeit, die wir Ihnen schuldig sind.</em>
+        </p>
+      </div>
+    )}
+
+    {query.length > 0 && items.length === 0 && (
+      <div class="suchen-empty">
+        <p class="suchen-empty__title">Nichts gefunden.</p>
+        <p class="suchen-empty__sub">
+          <em>Zum Begriff „{query}" fehlt uns ein Eintrag. Versuchen Sie es mit
+          einer anderen Bezeichnung — oder akzeptieren Sie die Leere als
+          Erkenntnis.</em>
+        </p>
+        <a href="/" class="btn-outline">Zum vollständigen Katalog →</a>
+      </div>
+    )}
+
+    {items.length > 0 && (
+      <>
+        <p class="suchen-count">
+          {items.length} Treffer für <strong>„{query}"</strong>
+        </p>
+
+        <div class="suchen-results">
+          {items.map((item: any, i: number) => {
+            const idx = String(i + 1).padStart(2, '0');
+            const klass = makeKlassifikation(item.id);
+            const sign = makeSignatur(item.id, item.boredom);
+            const ausverkauft = item.stock <= 0;
+
+            return (
+              <article class="suchen-row">
+                <p class="suchen-row__no">N° {idx}</p>
+                <div class="suchen-row__body">
+                  <p class="suchen-row__rubrik">
+                    Schreibwaren <span class="suchen-row__sep">·</span> {klass}
+                    <span class="suchen-row__sep">·</span> Sign. {sign}
+                  </p>
+                  <h2 class="suchen-row__title">
+                    <a href={`/product/${item.id}`}>{item.name}</a>
+                  </h2>
+                  <p class="suchen-row__desc">{item.description}</p>
+                  <div class="suchen-row__meta">
+                    {ausverkauft
+                      ? <span class="stamp stamp--neutral stamp--open">Ausverkauft</span>
+                      : item.boredom >= 9
+                        ? <span class="stamp stamp--red">Sehr begehrt</span>
+                        : <span class="stamp stamp--neutral stamp--open">Verfügbar</span>
+                    }
+                    <span class="suchen-row__langeweile">Langeweile {item.boredom}/10</span>
+                  </div>
+                </div>
+                <div class="suchen-row__price">
+                  <p class="suchen-row__price-label">Tagespreis</p>
+                  <p class="suchen-row__price-value">{item.price.toFixed(2)} €</p>
+                  <a href={`/product/${item.id}`} class="suchen-row__link">Zum Eintrag →</a>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </>
+    )}
+
+  </main>
+</Layout>
+
+<style>
+  .suchen { max-width: 1100px; padding-top: 2rem; }
+
+  .suchen-head { margin-top: 1rem; }
+  .suchen-head .display-headline { margin: 1rem 0 1rem; }
+  .suchen-head__sub {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 1.15rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 680px;
+    margin: 0;
+  }
+
+  .suchen-form {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 2.5rem;
+    max-width: 640px;
+  }
+  .suchen-form input[type="search"] {
+    flex: 1;
+    font-size: 1.1rem;
+    padding: 1rem 1.1rem;
+  }
+  .suchen-form button {
+    padding: 1rem 1.4rem;
+    white-space: nowrap;
+  }
+
+  .suchen-empty {
+    text-align: center;
+    padding: 3.5rem 1rem;
+    border-top: var(--rule);
+    border-bottom: var(--rule);
+  }
+  .suchen-empty__title {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0 0 0.8rem;
+  }
+  .suchen-empty__sub {
+    font-family: var(--font-body);
+    color: var(--ink-soft);
+    line-height: 1.7;
+    max-width: 520px;
+    margin: 0 auto 1.5rem;
+  }
+
+  .suchen-count {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0 0 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: var(--rule-soft);
+  }
+  .suchen-count strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .suchen-results {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .suchen-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 200px;
+    gap: 2rem;
+    padding: 1.8rem 0;
+    border-bottom: var(--rule-soft);
+    align-items: start;
+  }
+  .suchen-row:last-child { border-bottom: none; }
+
+  .suchen-row__no {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.4rem;
+    color: var(--ink-mute);
+    margin: 0;
+    line-height: 1;
+  }
+
+  .suchen-row__body { min-width: 0; }
+  .suchen-row__rubrik {
+    font-family: var(--font-meta);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin: 0 0 0.5rem;
+  }
+  .suchen-row__sep { color: var(--ink-mute); margin: 0 0.3em; }
+
+  .suchen-row__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 2.2vw, 1.8rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0 0 0.5rem;
+  }
+  .suchen-row__title a {
+    color: var(--ink);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .suchen-row__title a:hover { color: var(--red); }
+
+  .suchen-row__desc {
+    font-family: var(--font-body);
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin: 0 0 0.8rem;
+  }
+
+  .suchen-row__meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .suchen-row__langeweile {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  .suchen-row__price {
+    text-align: right;
+    border-left: var(--rule-soft);
+    padding-left: 1.5rem;
+  }
+  .suchen-row__price-label {
+    font-family: var(--font-meta);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0 0 0.3rem;
+  }
+  .suchen-row__price-value {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--ink);
+    margin: 0 0 0.8rem;
+    line-height: 1;
+  }
+  .suchen-row__link {
+    font-family: var(--font-meta);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 1px;
+  }
+  .suchen-row__link:hover { color: var(--red); border-bottom-color: var(--red); }
+
+  @media (max-width: 720px) {
+    .suchen-row {
+      grid-template-columns: 40px 1fr;
+      gap: 1rem;
+    }
+    .suchen-row__price {
+      grid-column: 1 / -1;
+      text-align: left;
+      border-left: none;
+      border-top: var(--rule-soft);
+      padding-left: 0;
+      padding-top: 1rem;
+      margin-top: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .suchen-row__price-label { display: none; }
+    .suchen-form { flex-direction: column; }
+    .suchen-form button { width: 100%; }
+  }
+</style>

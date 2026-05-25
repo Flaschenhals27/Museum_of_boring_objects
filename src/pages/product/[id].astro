@@ -379,4 +379,14 @@ const isBegehrt = item.boredom >= 9;
     .produkt-layout { grid-template-columns: 1fr; gap: 2.5rem; }
     .produkt-info { position: static; }
   }
+  @media (max-width: 640px) {
+    .produkt-info__title { font-size: clamp(1.6rem, 7vw, 2.2rem); }
+    .produkt-info__price { font-size: clamp(2rem, 8vw, 2.6rem); }
+    .produkt-info__rubrik { font-size: 0.65rem; }
+    .produkt-info__features { padding-top: 1.5rem; }
+    .produkt-feature__head { font-size: 1rem; }
+    .produkt-feature__sub { font-size: 0.9rem; }
+    .produkt-specs { grid-template-columns: 1fr; }
+    .produkt-specs__row { padding: 0.4rem 0; }
+  }
 </style>

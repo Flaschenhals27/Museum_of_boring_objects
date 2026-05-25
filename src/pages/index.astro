@@ -1,16 +1,88 @@
 ---
+// =====================================================================
+// pages/index.astro — Katalog (Startseite)
+// =====================================================================
+// SSR-Seite. Liest Filter- und Sortier-Einstellungen aus den URL-Params
+// (?filter=…&sort=…), filtert/sortiert die Items serverseitig und
+// rendert sie. Vorteile gegenüber Client-State:
+//   - Direkt teilbar (URL = Zustand)
+//   - SEO-freundlich (Suchmaschinen sehen gefilterte Inhalte)
+//   - Funktioniert ohne JavaScript (Progressive Enhancement)
+//
+// Diese Datei wurde mit Hilfe von Claude (Anthropic) angepasst.
+// =====================================================================
+
 import Layout from '../layouts/Layout.astro';
-import { db, Item, desc } from 'astro:db';
+import { db, Item, asc, desc } from 'astro:db';
 import AddToCart from '../components/AddToChart.tsx';
 
-const items = await db.select().from(Item).orderBy(desc(Item.boredom));
+// --- 1) URL-Parameter lesen und gegen Whitelist prüfen ---
+const validFilters = ['alle', 'verfuegbar', 'begehrt'] as const;
+const validSorts   = ['langeweile-desc', 'langeweile-asc', 'preis-desc', 'preis-asc'] as const;
+type Filter = typeof validFilters[number];
+type Sort   = typeof validSorts[number];
 
-// Kategorien für die Signatur-Nummer (Rubrik · Klassifikation · SIGN. XX.YYY)
+const urlFilter = Astro.url.searchParams.get('filter');
+const urlSort   = Astro.url.searchParams.get('sort');
+
+const activeFilter: Filter = (validFilters as readonly string[]).includes(urlFilter ?? '')
+  ? (urlFilter as Filter)
+  : 'alle';
+const activeSort: Sort = (validSorts as readonly string[]).includes(urlSort ?? '')
+  ? (urlSort as Sort)
+  : 'langeweile-desc';
+
+// --- 2) Sortier-Spalte für die DB-Query bestimmen ---
+const orderByExpr = (() => {
+  switch (activeSort) {
+    case 'langeweile-asc':  return asc(Item.boredom);
+    case 'preis-desc':      return desc(Item.price);
+    case 'preis-asc':       return asc(Item.price);
+    default:                return desc(Item.boredom);  // langeweile-desc (default)
+  }
+})();
+
+// --- 3) Alle Items aus der DB holen (sortiert) ---
+const allItems = await db.select().from(Item).orderBy(orderByExpr);
+
+// --- 4) Counts ermitteln (vor Filterung — für die Tabs) ---
+const sehrBegehrtCount = allItems.filter(i => i.boredom >= 9).length;
+const verfuegbarCount  = allItems.filter(i => i.stock > 0).length;
+
+// --- 5) Filterung anwenden ---
+const items = allItems.filter((item) => {
+  if (activeFilter === 'verfuegbar') return item.stock > 0;
+  if (activeFilter === 'begehrt')    return item.boredom >= 9;
+  return true; // 'alle'
+});
+
+// --- 6) Display-Helpers ---
+const filterLabels: Record<Filter, string> = {
+  alle:        'alle',
+  verfuegbar:  'verfügbar',
+  begehrt:     'sehr begehrt',
+};
+const sortLabels: Record<Sort, string> = {
+  'langeweile-desc': 'Langeweile ↓',
+  'langeweile-asc':  'Langeweile ↑',
+  'preis-desc':      'Preis ↓',
+  'preis-asc':       'Preis ↑',
+};
+
+// Hilfsfunktion: URL mit veränderten Params bauen (für Tab-Links)
+function buildUrl(overrides: { filter?: Filter; sort?: Sort }) {
+  const params = new URLSearchParams();
+  const filter = overrides.filter ?? activeFilter;
+  const sort   = overrides.sort   ?? activeSort;
+  if (filter !== 'alle')                params.set('filter', filter);
+  if (sort   !== 'langeweile-desc')     params.set('sort',   sort);
+  const qs = params.toString();
+  return qs ? `/?${qs}` : '/';
+}
+
+// Kategorien für die Signatur-Nummer
 const klassifikationen = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache', 'Apparat', 'Utensil'];
-const sehrBegehrtCount = items.filter(i => i.boredom >= 9).length;
-const verfuegbarCount = items.filter(i => i.stock > 0).length;
 
-// Hilfs-Funktion: Signatur-Nummer aus ID generieren (deterministisch)
 function makeSignatur(id: number, boredom: number) {
   const a = String(boredom).padStart(2, '0');
   const b = String((id * 137) % 1000).padStart(3, '0');
@@ -33,25 +105,32 @@ function makeKlassifikation(id: number) {
       </div>
 
       <ul class="filter-tabs">
-        <li><a href="#" class="is-active">Alle ({items.length})</a></li>
-        <li><a href="#">Verfügbar ({verfuegbarCount})</a></li>
-        <li><a href="#">Sehr begehrt ({sehrBegehrtCount})</a></li>
+        <li><a href={buildUrl({ filter: 'alle' })}       class={activeFilter === 'alle' ? 'is-active' : ''}>Alle ({allItems.length})</a></li>
+        <li><a href={buildUrl({ filter: 'verfuegbar' })} class={activeFilter === 'verfuegbar' ? 'is-active' : ''}>Verfügbar ({verfuegbarCount})</a></li>
+        <li><a href={buildUrl({ filter: 'begehrt' })}    class={activeFilter === 'begehrt' ? 'is-active' : ''}>Sehr begehrt ({sehrBegehrtCount})</a></li>
       </ul>
     </div>
 
     <div class="rule-thick" style="margin: 0 0 1.2rem;"></div>
 
     <div class="katalog-meta">
-      <span class="katalog-count">{items.length} Einträge · Gefiltert: alle</span>
-      <label class="katalog-sort">
-        Sortierung:
-        <select>
-          <option>Langeweile ↓</option>
-          <option>Langeweile ↑</option>
-          <option>Preis ↓</option>
-          <option>Preis ↑</option>
-        </select>
-      </label>
+      <span class="katalog-count">{items.length} Einträge · Gefiltert: {filterLabels[activeFilter]}</span>
+      <form class="katalog-sort" method="get" id="sort-form">
+        {/* aktuellen Filter durch hidden field beibehalten */}
+        {activeFilter !== 'alle' && <input type="hidden" name="filter" value={activeFilter} />}
+        <label>
+          Sortierung:
+          <select name="sort" id="sort-select">
+            {Object.entries(sortLabels).map(([value, label]) => (
+              <option value={value} selected={activeSort === value}>{label}</option>
+            ))}
+          </select>
+        </label>
+        <noscript>
+          <button type="submit" class="btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.7rem; margin-left: 0.5rem;">Anwenden</button>
+        </noscript>
+      </form>
+    </div>
     </div>
 
     {/* GRID */}
@@ -131,6 +210,14 @@ function makeKlassifikation(id: number) {
 
   </main>
 </Layout>
+
+<script>
+  // Sort-Dropdown soll bei Änderung sofort das Form submitten.
+  // Falls JS deaktiviert ist, sehen Nutzer den <noscript>-Button "Anwenden".
+  document.getElementById('sort-select')?.addEventListener('change', () => {
+    (document.getElementById('sort-form') as HTMLFormElement | null)?.submit();
+  });
+</script>
 
 <style>
   .katalog { padding-top: 2rem; }

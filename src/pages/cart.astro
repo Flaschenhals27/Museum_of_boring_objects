@@ -234,7 +234,7 @@ function makeSignatur(id: number, boredom: number) {
       body: JSON.stringify({ cartItemId, itemId, oldQuantity, newQuantity }),
     }).then(res => {
       if (res.ok) window.location.reload();
-      else res.json().then(d => window.toast?.(d.error ?? 'Fehler bei der Aktualisierung.', 'error'));
+      else res.json().then(d => alert(d.error));
     });
   }
 
@@ -266,7 +266,7 @@ function makeSignatur(id: number, boredom: number) {
         body: JSON.stringify({ cartItemId, itemId, oldQuantity, newQuantity }),
       }).then(res => {
         if (res.ok) window.location.reload();
-        else res.json().then(d => window.toast?.(d.error ?? 'Fehler bei der Aktualisierung.', 'error'));
+        else res.json().then(d => alert(d.error));
       });
     });
   });
@@ -664,5 +664,12 @@ function makeSignatur(id: number, boredom: number) {
       align-items: center;
     }
     .cart-row__qty { grid-area: qty; justify-self: start; }
+  }
+  @media (max-width: 540px) {
+    .cart-head__title { font-size: clamp(1.8rem, 9vw, 2.4rem); }
+    .cart-head__motto { font-size: 0.95rem; }
+    .cart-row { padding: 1rem 0; }
+    .cart-row__artikel-name { font-size: 1rem; }
+    .cart-summary { padding: 1.2rem; }
   }
 </style>
