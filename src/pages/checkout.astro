@@ -44,8 +44,8 @@ if (cartItems.length === 0) {
   return Astro.redirect('/');
 }
 
-const versand = 12.00;
-const gesamt = total + versand;
+const shippingCost = 12.00;
+const grandTotal = total + shippingCost;
 ---
 
 <Layout title="Kasse">
@@ -171,7 +171,7 @@ const gesamt = total + versand;
         </div>
         <div class="summary-line">
           <span>Versand <em>(langsam)</em></span>
-          <span>{versand.toFixed(2)} €</span>
+          <span>{shippingCost.toFixed(2)} €</span>
         </div>
         <div class="summary-line">
           <span>Symbolische Steuer</span>
@@ -182,7 +182,7 @@ const gesamt = total + versand;
 
         <div class="summary-total">
           <span class="summary-total__label">Gesamt</span>
-          <span class="summary-total__value">{gesamt.toFixed(2)} €</span>
+          <span class="summary-total__value">{grandTotal.toFixed(2)} €</span>
         </div>
 
         <div class="summary-uebernahme">

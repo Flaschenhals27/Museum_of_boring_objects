@@ -1,0 +1,15 @@
+# robots.txt für The Ordinary Emporium
+# Erlaubt allen Crawlern alle öffentlichen Seiten zu indexieren,
+# blockt aber Auth- und API-Routen.
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /konto
+Disallow: /cart
+Disallow: /checkout
+Disallow: /order-confirmed
+Disallow: /login
+Disallow: /wunschliste
+
+Sitemap: /sitemap.xml

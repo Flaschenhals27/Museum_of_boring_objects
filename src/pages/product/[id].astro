@@ -47,8 +47,8 @@ const recommendation = allOthers[Math.floor(Math.random() * Math.max(allOthers.l
 const recImages = (recommendation?.images as string[]) ?? [];
 const recThumbnail = recImages[0];
 
-const klassifikationen = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache'];
-const klass = klassifikationen[item.id % klassifikationen.length];
+const classifications = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache'];
+const classification = classifications[item.id % classifications.length];
 const sign = `${String(item.boredom).padStart(2,'0')}.${String((item.id * 137) % 1000).padStart(3,'0')}`;
 const isBegehrt = item.boredom >= 9;
 ---
@@ -60,7 +60,7 @@ const isBegehrt = item.boredom >= 9;
     <nav class="produkt-breadcrumb">
       <a href="/">Katalog</a>
       <span class="produkt-breadcrumb__sep">·</span>
-      <span>Schreibwaren · {klass}</span>
+      <span>Schreibwaren · {classification}</span>
       <span class="produkt-breadcrumb__sep">·</span>
       <span class="produkt-breadcrumb__active">Sign. {sign}</span>
     </nav>
@@ -81,7 +81,7 @@ const isBegehrt = item.boredom >= 9;
       {/* RECHTS: Info */}
       <div class="produkt-info">
 
-        <p class="produkt-info__rubrik">Schreibwaren · {klass} · Sign. {sign}</p>
+        <p class="produkt-info__rubrik">Schreibwaren · {classification} · Sign. {sign}</p>
 
         <h1 class="produkt-info__title">{item.name}</h1>
 

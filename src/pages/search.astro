@@ -1,6 +1,6 @@
 ---
 // =====================================================================
-// pages/suchen.astro — Suche
+// pages/search.astro — Suche
 // =====================================================================
 // SSR-Suche über Item.name + Item.description.
 // Suchstring kommt als ?q=... aus der URL — teilbar, SEO-tauglich,
@@ -32,14 +32,14 @@ if (query.length > 0) {
     );
 }
 
-const klassifikationen = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache', 'Apparat', 'Utensil'];
+const classifications = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache', 'Apparat', 'Utensil'];
 function makeSignatur(id: number, boredom: number) {
   const a = String(boredom).padStart(2, '0');
   const b = String((id * 137) % 1000).padStart(3, '0');
   return `${a}.${b}`;
 }
-function makeKlassifikation(id: number) {
-  return klassifikationen[id % klassifikationen.length];
+function makeClassification(id: number) {
+  return classifications[id % classifications.length];
 }
 ---
 
@@ -108,7 +108,7 @@ function makeKlassifikation(id: number) {
         <div class="suchen-results">
           {items.map((item: any, i: number) => {
             const idx = String(i + 1).padStart(2, '0');
-            const klass = makeKlassifikation(item.id);
+            const classification = makeClassification(item.id);
             const sign = makeSignatur(item.id, item.boredom);
             const ausverkauft = item.stock <= 0;
 
@@ -117,7 +117,7 @@ function makeKlassifikation(id: number) {
                 <p class="suchen-row__no">N° {idx}</p>
                 <div class="suchen-row__body">
                   <p class="suchen-row__rubrik">
-                    Schreibwaren <span class="suchen-row__sep">·</span> {klass}
+                    Schreibwaren <span class="suchen-row__sep">·</span> {classification}
                     <span class="suchen-row__sep">·</span> Sign. {sign}
                   </p>
                   <h2 class="suchen-row__title">

@@ -1,6 +1,6 @@
 ---
 // =====================================================================
-// pages/archiv.astro — Archiv: das Vergessene
+// pages/archive.astro — Archiv: das Vergessene
 // =====================================================================
 // SSR-Seite. Zeigt Items mit boredom ≤ 7 — also alles, was unter unseren
 // strengen Langeweile-Standards rangiert und daher selten beworben wird.
@@ -18,14 +18,14 @@ const items = await db
   .where(lte(Item.boredom, 7))
   .orderBy(asc(Item.boredom));
 
-const klassifikationen = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache', 'Apparat', 'Utensil'];
+const classifications = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache', 'Apparat', 'Utensil'];
 function makeSignatur(id: number, boredom: number) {
   const a = String(boredom).padStart(2, '0');
   const b = String((id * 137) % 1000).padStart(3, '0');
   return `${a}.${b}`;
 }
-function makeKlassifikation(id: number) {
-  return klassifikationen[id % klassifikationen.length];
+function makeClassification(id: number) {
+  return classifications[id % classifications.length];
 }
 ---
 
@@ -78,7 +78,7 @@ function makeKlassifikation(id: number) {
       <section class="archiv-grid">
         {items.map((item: any, i: number) => {
           const idx = String(i + 1).padStart(2, '0');
-          const klass = makeKlassifikation(item.id);
+          const classification = makeClassification(item.id);
           const sign = makeSignatur(item.id, item.boredom);
           const images = (item.images as string[]) ?? [];
           const thumbnail = images[0];
@@ -96,7 +96,7 @@ function makeKlassifikation(id: number) {
 
               <div class="archiv-card__body">
                 <p class="archiv-card__rubrik">
-                  Schreibwaren <span>·</span> {klass} <span>·</span> Sign. {sign}
+                  Schreibwaren <span>·</span> {classification} <span>·</span> Sign. {sign}
                 </p>
                 <h2 class="archiv-card__title">
                   <a href={`/product/${item.id}`}>{item.name}</a>

@@ -16,7 +16,6 @@ export default function AddToCart(props: Props) {
     if (stock() <= 0 || isLoading()) return;
     const qty = Math.min(quantity(), stock());
     if (qty <= 0) return;
-
     setIsLoading(true);
     try {
       const res = await fetch('/api/cart/add', {

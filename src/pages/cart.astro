@@ -29,10 +29,10 @@ if (cartRecord) {
 }
 
 const isEmpty = cartItems.length === 0;
-const versand = isEmpty ? 0 : 12.00;
-const gesamt = total + versand;
+const shippingCost = isEmpty ? 0 : 12.00;
+const grandTotal = total + shippingCost;
 const bordereauNr = `2026/${String(cartRecord?.id ?? 0).padStart(5, '0')}`;
-const klassifikationen = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache'];
+const classifications = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache'];
 function makeSignatur(id: number, boredom: number) {
   const a = String(boredom).padStart(2, '0');
   const b = String((id * 137) % 1000).padStart(3, '0');
@@ -81,7 +81,7 @@ function makeSignatur(id: number, boredom: number) {
             const images = (item.product.images as string[]) ?? [];
             const thumbnail = images[0];
             const isBegehrt = item.product.boredom >= 9;
-            const klass = klassifikationen[item.product.id % klassifikationen.length];
+            const classification = classifications[item.product.id % classifications.length];
             const sign = makeSignatur(item.product.id, item.product.boredom);
             return (
               <div class="cart-row">
@@ -168,7 +168,7 @@ function makeSignatur(id: number, boredom: number) {
           </div>
           <div class="cart-summary__line">
             <span>Versand <em>(langsam)</em></span>
-            <span>{versand.toFixed(2)} €</span>
+            <span>{shippingCost.toFixed(2)} €</span>
           </div>
           <div class="cart-summary__line">
             <span>Symbolische Steuer</span>
@@ -179,7 +179,7 @@ function makeSignatur(id: number, boredom: number) {
 
           <div class="cart-summary__total">
             <span class="cart-summary__total-label">Gesamt</span>
-            <span class="cart-summary__total-value">{gesamt.toFixed(2)} €</span>
+            <span class="cart-summary__total-value">{grandTotal.toFixed(2)} €</span>
           </div>
 
           <a href="/checkout" class="cart-summary__cta">Zur Kasse →</a>
@@ -234,7 +234,7 @@ function makeSignatur(id: number, boredom: number) {
       body: JSON.stringify({ cartItemId, itemId, oldQuantity, newQuantity }),
     }).then(res => {
       if (res.ok) window.location.reload();
-      else res.json().then(d => alert(d.error));
+      else res.json().then(d => window.toast?.(d.error ?? 'Fehler bei der Aktualisierung.', 'error'));
     });
   }
 
@@ -266,7 +266,7 @@ function makeSignatur(id: number, boredom: number) {
         body: JSON.stringify({ cartItemId, itemId, oldQuantity, newQuantity }),
       }).then(res => {
         if (res.ok) window.location.reload();
-        else res.json().then(d => alert(d.error));
+        else res.json().then(d => window.toast?.(d.error ?? 'Fehler bei der Aktualisierung.', 'error'));
       });
     });
   });
