@@ -12,6 +12,7 @@
 // =====================================================================
 
 import { SignJWT, jwtVerify } from 'jose';
+import type { AstroCookies } from 'astro';
 
 const rawSecret = import.meta.env.JWT_SECRET;
 if (!rawSecret || rawSecret.length < 32) {
@@ -50,7 +51,7 @@ export async function verifyToken(token: string) {
  * Liest das auth_token-Cookie und gibt das verifizierte Payload zurück.
  * Gibt null zurück, wenn kein Cookie da oder Token ungültig.
  */
-export async function getUserFromCookie(cookies: any) {
+export async function getUserFromCookie(cookies: AstroCookies) {
   const token = cookies.get('auth_token')?.value;
   if (!token) return null;
   return verifyToken(token);

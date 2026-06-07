@@ -11,41 +11,28 @@
 // =====================================================================
 
 import Layout from '../layouts/Layout.astro';
-import { db, Cart, CartItem, Item, eq } from 'astro:db';
-import { getUserFromCookie } from '../lib/auth';
+import { getCart, loadCartItems, cartSubtotal } from '../lib/cart';
+import { resolveDiscount } from '../lib/coupon';
 
 // Aktuellen Warenkorb laden (User-Cart oder Session-Cart)
-const sessionId   = Astro.cookies.get('cart_session')?.value;
-const userPayload = await getUserFromCookie(Astro.cookies);
+const cartRecord = await getCart(Astro.cookies);
 
-let cartItems: any[] = [];
+let cartItems: Awaited<ReturnType<typeof loadCartItems>> = [];
 let total = 0;
-
-let cartRecord;
-if (userPayload) {
-  cartRecord = (await db.select().from(Cart).where(eq(Cart.userId, userPayload.userId)))[0];
-}
-if (!cartRecord && sessionId) {
-  cartRecord = (await db.select().from(Cart).where(eq(Cart.sessionId, sessionId)))[0];
-}
-
 if (cartRecord) {
-  const rawItems = await db.select().from(CartItem).where(eq(CartItem.cartId, cartRecord.id));
-  cartItems = await Promise.all(
-    rawItems.map(async (cartItem) => {
-      const product = (await db.select().from(Item).where(eq(Item.id, cartItem.itemId)))[0];
-      return { quantity: cartItem.quantity, product };
-    })
-  );
-  total = cartItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+  cartItems = await loadCartItems(cartRecord.id);
+  total = cartSubtotal(cartItems);
 }
 
 if (cartItems.length === 0) {
   return Astro.redirect('/');
 }
 
+// Gutschein vom Cart übernehmen (verwaltet wird er im Warenkorb)
+const { coupon, discount } = await resolveDiscount(cartRecord?.couponCode, total);
+
 const shippingCost = 12.00;
-const grandTotal = total + shippingCost;
+const grandTotal = Math.max(0, total - discount) + shippingCost;
 ---
 
 <Layout title="Kasse">
@@ -169,6 +156,12 @@ const grandTotal = total + shippingCost;
           <span>Zwischensumme</span>
           <span>{total.toFixed(2)} €</span>
         </div>
+        {discount > 0 && coupon && (
+          <div class="summary-line summary-line--discount">
+            <span>Gutschein <em>({coupon.code})</em></span>
+            <span>−{discount.toFixed(2)} €</span>
+          </div>
+        )}
         <div class="summary-line">
           <span>Versand <em>(langsam)</em></span>
           <span>{shippingCost.toFixed(2)} €</span>
@@ -273,8 +266,8 @@ const grandTotal = total + shippingCost;
         return;
       }
 
-      // 5) Erfolg — zur Bestätigungsseite navigieren
-      window.location.href = `/order-confirmed?nr=${encodeURIComponent(data.bordereauNr)}`;
+      // 5) Erfolg — zur Bestätigungsseite navigieren (Token statt ratbarer Nr)
+      window.location.href = `/order-confirmed?token=${encodeURIComponent(data.token)}`;
     } catch (err) {
       showError('Netzwerkfehler. Bitte prüfen Sie Ihre Verbindung.');
       orderBtn.disabled = false;
@@ -469,6 +462,7 @@ const grandTotal = total + shippingCost;
     color: var(--ink-soft);
   }
   .summary-line em { font-style: italic; color: var(--ink-mute); font-size: 0.9em; }
+  .summary-line--discount span:last-child { color: var(--red); }
   .summary-total { display: flex; justify-content: space-between; align-items: baseline; }
   .summary-total__label {
     font-family: var(--font-meta);

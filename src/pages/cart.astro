@@ -1,36 +1,25 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { db, Cart, CartItem, Item, eq } from 'astro:db';
-import { getUserFromCookie } from '../lib/auth';
+import { getCart, loadCartItems, cartSubtotal } from '../lib/cart';
+import { resolveDiscount, describeCoupon } from '../lib/coupon';
 
-const sessionId = Astro.cookies.get('cart_session')?.value;
-const userPayload = await getUserFromCookie(Astro.cookies);
+const cartRecord = await getCart(Astro.cookies);
 
-let cartItems: any[] = [];
+let cartItems: Awaited<ReturnType<typeof loadCartItems>> = [];
 let total = 0;
-
-let cartRecord;
-if (userPayload) {
-  cartRecord = (await db.select().from(Cart).where(eq(Cart.userId, userPayload.userId)))[0];
-}
-if (!cartRecord && sessionId) {
-  cartRecord = (await db.select().from(Cart).where(eq(Cart.sessionId, sessionId)))[0];
-}
-
 if (cartRecord) {
-  const rawItems = await db.select().from(CartItem).where(eq(CartItem.cartId, cartRecord.id));
-  cartItems = await Promise.all(
-    rawItems.map(async (cartItem) => {
-      const product = (await db.select().from(Item).where(eq(Item.id, cartItem.itemId)))[0];
-      return { cartItemId: cartItem.id, quantity: cartItem.quantity, product };
-    })
-  );
-  total = cartItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+  cartItems = await loadCartItems(cartRecord.id);
+  total = cartSubtotal(cartItems);
 }
 
 const isEmpty = cartItems.length === 0;
 const shippingCost = isEmpty ? 0 : 12.00;
-const grandTotal = total + shippingCost;
+
+// Gutschein: auf dem Cart vermerkten Code auflösen und Rabatt berechnen
+const { coupon, discount } = await resolveDiscount(cartRecord?.couponCode, total);
+const couponLabel = coupon ? describeCoupon(coupon) : null;
+
+const grandTotal = Math.max(0, total - discount) + shippingCost;
 const bordereauNr = `2026/${String(cartRecord?.id ?? 0).padStart(5, '0')}`;
 const classifications = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache'];
 function makeSignatur(id: number, boredom: number) {
@@ -148,11 +137,25 @@ function makeSignatur(id: number, boredom: number) {
           <div class="cart-foot">
             <a href="/" class="cart-foot__back">← Weiterstöbern</a>
 
-            <form class="cart-gutschein" onsubmit="event.preventDefault();">
-              <label>Gutschein</label>
-              <input type="text" placeholder="LANGWEILE10" />
-              <button type="submit" class="btn-outline" style="padding: 0.6rem 1rem; font-size: 0.75rem;">Einlösen</button>
-            </form>
+            {coupon ? (
+              <div class="cart-gutschein cart-gutschein--applied">
+                <label>Gutschein</label>
+                <div class="cart-gutschein__applied">
+                  <span class="cart-gutschein__code">
+                    <span class="stamp stamp--green stamp--open">{coupon.code}</span>
+                    <em>{couponLabel}</em>
+                  </span>
+                  <button type="button" id="coupon-remove" class="cart-gutschein__remove">Entfernen</button>
+                </div>
+              </div>
+            ) : (
+              <form class="cart-gutschein" id="coupon-form">
+                <label for="coupon-input">Gutschein</label>
+                <input type="text" id="coupon-input" name="code" placeholder="LANGWEILE10" autocomplete="off" />
+                <button type="submit" class="btn-outline" style="padding: 0.6rem 1rem; font-size: 0.75rem;">Einlösen</button>
+              </form>
+            )}
+            <p id="coupon-msg" class="cart-gutschein__msg" hidden></p>
           </div>
         </div>
 
@@ -166,6 +169,12 @@ function makeSignatur(id: number, boredom: number) {
             <span>Zwischensumme</span>
             <span>{total.toFixed(2)} €</span>
           </div>
+          {discount > 0 && coupon && (
+            <div class="cart-summary__line cart-summary__line--discount">
+              <span>Gutschein <em>({coupon.code})</em></span>
+              <span>−{discount.toFixed(2)} €</span>
+            </div>
+          )}
           <div class="cart-summary__line">
             <span>Versand <em>(langsam)</em></span>
             <span>{shippingCost.toFixed(2)} €</span>
@@ -269,6 +278,65 @@ function makeSignatur(id: number, boredom: number) {
         else res.json().then(d => window.toast?.(d.error ?? 'Fehler bei der Aktualisierung.', 'error'));
       });
     });
+  });
+
+  // -------------------------------------------------------------------
+  // Gutschein einlösen / entfernen
+  // -------------------------------------------------------------------
+  const couponMsg = document.getElementById('coupon-msg');
+
+  function showCouponMsg(text: string, ok: boolean) {
+    if (!couponMsg) return;
+    couponMsg.textContent = text;
+    couponMsg.hidden = false;
+    couponMsg.classList.toggle('is-error', !ok);
+  }
+
+  const couponForm = document.getElementById('coupon-form') as HTMLFormElement | null;
+  couponForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('coupon-input') as HTMLInputElement | null;
+    const code = input?.value.trim() ?? '';
+    if (!code) {
+      showCouponMsg('Bitte einen Gutschein-Code eingeben.', false);
+      return;
+    }
+    const btn = couponForm.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+    if (btn) { btn.disabled = true; btn.textContent = 'Prüfe …'; }
+
+    try {
+      const res = await fetch('/api/cart/coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        showCouponMsg(data.error ?? 'Gutschein konnte nicht eingelöst werden.', false);
+        if (btn) { btn.disabled = false; btn.textContent = 'Einlösen'; }
+      }
+    } catch {
+      showCouponMsg('Netzwerkfehler. Bitte erneut versuchen.', false);
+      if (btn) { btn.disabled = false; btn.textContent = 'Einlösen'; }
+    }
+  });
+
+  const couponRemove = document.getElementById('coupon-remove') as HTMLButtonElement | null;
+  couponRemove?.addEventListener('click', async () => {
+    couponRemove.disabled = true;
+    try {
+      const res = await fetch('/api/cart/coupon', { method: 'DELETE' });
+      if (res.ok) window.location.reload();
+      else {
+        showCouponMsg('Gutschein konnte nicht entfernt werden.', false);
+        couponRemove.disabled = false;
+      }
+    } catch {
+      showCouponMsg('Netzwerkfehler. Bitte erneut versuchen.', false);
+      couponRemove.disabled = false;
+    }
   });
 </script>
 
@@ -536,6 +604,49 @@ function makeSignatur(id: number, boredom: number) {
     text-transform: uppercase;
     width: 180px;
   }
+  .cart-gutschein__applied {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .cart-gutschein__code {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .cart-gutschein__code em {
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    font-style: normal;
+  }
+  .cart-gutschein__remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    text-decoration: underline;
+    padding: 0;
+  }
+  .cart-gutschein__remove:hover { color: var(--red); }
+  .cart-gutschein__remove:disabled { opacity: 0.5; cursor: not-allowed; }
+  .cart-gutschein__msg {
+    flex-basis: 100%;
+    width: 100%;
+    margin: 0.5rem 0 0;
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    text-align: right;
+  }
+  .cart-gutschein__msg.is-error { color: var(--red); }
+
+  .cart-summary__line--discount span:last-child { color: var(--red); }
+  .cart-summary__line--discount em { font-style: italic; }
 
   /* SUMMARY */
   .cart-summary {

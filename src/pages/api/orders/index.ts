@@ -16,9 +16,11 @@
 // Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
 
 import type { APIRoute } from 'astro';
-import { db, Cart, CartItem, Item, Order, OrderItem, eq, sql } from 'astro:db';
+import { db, Cart, CartItem, Item, Order, OrderItem, Coupon, eq, sql } from 'astro:db';
 import { Resend } from 'resend';
 import { getUserFromCookie } from '../../../lib/auth';
+import { getCart } from '../../../lib/cart';
+import { resolveDiscount } from '../../../lib/coupon';
 
 // Versandkosten — könnten später dynamisch werden
 const SHIPPING_COST = 12.00;
@@ -110,17 +112,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   }
   const data = validation.data;
 
-  // 2) Aktuellen Warenkorb finden (für eingeloggte User ODER per Cookie)
+  // 2) Identität (für den Order-Snapshot) + aktuellen Warenkorb ermitteln
   const userPayload = await getUserFromCookie(cookies);
   const sessionId   = cookies.get('cart_session')?.value;
 
-  let cartRecord;
-  if (userPayload) {
-    cartRecord = (await db.select().from(Cart).where(eq(Cart.userId, userPayload.userId)))[0];
-  }
-  if (!cartRecord && sessionId) {
-    cartRecord = (await db.select().from(Cart).where(eq(Cart.sessionId, sessionId)))[0];
-  }
+  const cartRecord = await getCart(cookies);
   if (!cartRecord) {
     return new Response(JSON.stringify({ error: 'Kein Warenkorb gefunden.' }), { status: 400 });
   }
@@ -155,11 +151,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     (sum, { cartItem, product }) => sum + product.price * cartItem.quantity,
     0
   );
-  const shippingCost = SHIPPING_COST;
-  const total        = subtotal + shippingCost;
 
-  // 6) Bestellnummer generieren
+  // Gutschein serverseitig erneut prüfen & Rabatt berechnen (nie dem Client trauen)
+  const { coupon, discount } = await resolveDiscount(cartRecord.couponCode, subtotal);
+  const couponCode = coupon?.code ?? null;
+
+  const shippingCost = SHIPPING_COST;
+  const total        = Math.max(0, subtotal - discount) + shippingCost;
+
+  // 6) Bestellnummer + unrätbaren Zugriffstoken generieren
   const bordereauNr = await generateBordereauNr();
+  const token = crypto.randomUUID();
   const now = new Date();
 
   // 7) Order in die DB schreiben
@@ -172,6 +174,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   // ----------------------------------------------------------------
   const orderInsert = await db.insert(Order).values({
     bordereauNr,
+    token,
     userId:        userPayload?.userId ?? null,
     sessionId:     sessionId ?? null,
     email:         data.email,
@@ -183,6 +186,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     addrCountry:   data.country,
     subtotal,
     shippingCost,
+    discount,
+    couponCode,
     total,
     status:        'eingegangen',
     paymentMethod: data.paymentMethod,
@@ -210,8 +215,18 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       .where(eq(Item.id, product.id));
   }
 
-  // 10) Warenkorb leeren
+  // 10) Warenkorb leeren (Positionen + eingelösten Gutschein zurücksetzen)
   await db.delete(CartItem).where(eq(CartItem.cartId, cartRecord.id));
+  if (cartRecord.couponCode) {
+    await db.update(Cart).set({ couponCode: null }).where(eq(Cart.id, cartRecord.id));
+  }
+
+  // 10b) Einlöse-Zähler des Gutscheins erhöhen (falls einer angewendet wurde)
+  if (coupon) {
+    await db.update(Coupon)
+      .set({ redeemedCount: coupon.redeemedCount + 1 })
+      .where(eq(Coupon.id, coupon.id));
+  }
 
   // 11) E-Mails versenden (an Anbieter UND Kunde)
   try {
@@ -248,6 +263,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             <span style="color:#7a6f5f;">Zwischensumme</span>
             <span>${subtotal.toFixed(2)} €</span>
           </div>
+          ${discount > 0 ? `
+          <div style="display:flex; justify-content:space-between; padding:.3rem 0;">
+            <span style="color:#7a6f5f;">Gutschein${couponCode ? ` (${couponCode})` : ''}</span>
+            <span style="color:#7a1f1f;">−${discount.toFixed(2)} €</span>
+          </div>` : ''}
           <div style="display:flex; justify-content:space-between; padding:.3rem 0;">
             <span style="color:#7a6f5f;">Versand</span>
             <span>${shippingCost.toFixed(2)} €</span>
@@ -293,8 +313,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     maxAge: 60, // 60 Sekunden — nur für den Redirect
   });
 
-  // 13) Antworten
-  return new Response(JSON.stringify({ ok: true, bordereauNr }), {
+  // 13) Antworten — der Client navigiert mit dem Token (nicht der ratbaren Nr)
+  return new Response(JSON.stringify({ ok: true, bordereauNr, token }), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });

@@ -54,10 +54,11 @@ const Item = defineTable({
 // ---------------------------------------------------------------------
 const Cart = defineTable({
   columns: {
-    id:        column.number({ primaryKey: true, autoIncrement: true }),
-    sessionId: column.text({ unique: true }),
-    userId:    column.number({ optional: true, references: () => User.columns.id }),
-    createdAt: column.date(),
+    id:         column.number({ primaryKey: true, autoIncrement: true }),
+    sessionId:  column.text({ unique: true }),
+    userId:     column.number({ optional: true, references: () => User.columns.id }),
+    couponCode: column.text({ optional: true }),  // aktuell eingelöster Gutschein (siehe Coupon)
+    createdAt:  column.date(),
   }
 });
 
@@ -67,6 +68,35 @@ const CartItem = defineTable({
     cartId:   column.number({ references: () => Cart.columns.id }),
     itemId:   column.number({ references: () => Item.columns.id }),
     quantity: column.number(),
+  }
+});
+
+// ---------------------------------------------------------------------
+// Coupon — einlösbare Gutschein-/Rabattcodes
+// ---------------------------------------------------------------------
+// type === 'percent' -> value ist ein Prozentsatz (z.B. 10 = 10 %).
+// type === 'fixed'   -> value ist ein fester Betrag in Euro.
+// minSubtotal: optionaler Mindest-Bestellwert (auf die Zwischensumme bezogen).
+// validFrom/validUntil: optionales Gültigkeitsfenster (NULL = unbegrenzt).
+// maxRedemptions: optionales Einlöse-Limit (NULL = unbegrenzt); redeemedCount
+//   zählt erfolgreiche Einlösungen (wird beim Bestellabschluss erhöht).
+// Der angewendete Code wird auf dem Cart vermerkt (Cart.couponCode) und
+// beim Bestellabschluss serverseitig neu berechnet & als Snapshot in der
+// Order gespeichert.
+// ---------------------------------------------------------------------
+const Coupon = defineTable({
+  columns: {
+    id:             column.number({ primaryKey: true, autoIncrement: true }),
+    code:           column.text({ unique: true }),   // immer in GROSSBUCHSTABEN gespeichert
+    type:           column.text(),                    // 'percent' | 'fixed'
+    value:          column.number(),
+    active:         column.boolean({ default: true }),
+    minSubtotal:    column.number({ optional: true }),
+    validFrom:      column.date({ optional: true }),
+    validUntil:     column.date({ optional: true }),
+    maxRedemptions: column.number({ optional: true }),
+    redeemedCount:  column.number({ default: 0 }),
+    createdAt:      column.date(),
   }
 });
 
@@ -104,6 +134,7 @@ const Order = defineTable({
   columns: {
     id:           column.number({ primaryKey: true, autoIncrement: true }),
     bordereauNr:  column.text({ unique: true }),  // z.B. "2026/00042" — fachlich sprechende ID
+    token:        column.text({ optional: true }), // unrätbarer Zugriffstoken (zufällige UUID) für /order-confirmed
     userId:       column.number({ optional: true, references: () => User.columns.id }),
     sessionId:    column.text({ optional: true }),
 
@@ -119,7 +150,9 @@ const Order = defineTable({
     // Beträge
     subtotal:     column.number(),                // Summe der Items
     shippingCost: column.number(),                // Versandkosten zum Zeitpunkt der Bestellung
-    total:        column.number(),                // = subtotal + shippingCost
+    discount:     column.number({ default: 0 }),  // Gutschein-Rabatt zum Bestellzeitpunkt
+    couponCode:   column.text({ optional: true }),// eingelöster Code (Snapshot)
+    total:        column.number(),                // = subtotal + shippingCost - discount
 
     // Status & Meta
     status:       column.text({ default: 'eingegangen' }),  // siehe oben
@@ -165,6 +198,7 @@ export default defineDb({
     Item,
     Cart,
     CartItem,
+    Coupon,
     Address,
     Order,
     OrderItem,

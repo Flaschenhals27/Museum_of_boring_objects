@@ -2,15 +2,14 @@
 // =====================================================================
 // pages/order-confirmed.astro — Bestätigungsseite nach Bestellung
 // =====================================================================
-// SSR-Seite. Liest die Bestellnummer aus dem URL-Parameter `?nr=...`,
+// SSR-Seite. Liest den Zugriffstoken aus dem URL-Parameter `?token=...`,
 // holt die Order + OrderItems aus der DB und zeigt die Bestätigung.
 //
-// Sicherheit: Wenn jemand ohne Cookie 'order_placed' direkt diese URL
-// aufruft, sehen wir die Order trotzdem an — aber nur, wenn sie wirklich
-// existiert. Wir verlassen uns auf die Schwer-Ratbarkeit der
-// Bordereau-Nummer (Jahr + 5-stellige fortlaufende Zahl) als
-// schwachen "unguessable token". Für ein echtes Produkt würde man
-// kryptografisch sichere Tokens erzeugen — für unsere Demo reicht das.
+// Sicherheit: Der Zugriff läuft über einen pro Bestellung zufällig
+// erzeugten UUID-Token (Order.token), nicht über die fortlaufende
+// Bordereau-Nummer. Letztere ist ratbar und taugt daher nicht als
+// Zugriffsschutz; sie wird nur noch angezeigt. Ohne gültigen Token
+// gibt es keine Bestelldetails zu sehen.
 //
 // Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
 // =====================================================================
@@ -21,18 +20,18 @@ import { db, Order, OrderItem, Item, eq } from 'astro:db';
 Astro.response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
 Astro.response.headers.set('Pragma', 'no-cache');
 
-// 1) Bordereau-Nummer aus dem Query-Parameter holen
-const bordereauNr = Astro.url.searchParams.get('nr');
+// 1) Zugriffstoken aus dem Query-Parameter holen
+const token = Astro.url.searchParams.get('token');
 
-if (!bordereauNr) {
+if (!token) {
   return Astro.redirect('/');
 }
 
-// 2) Order anhand der Bordereau-Nummer finden
+// 2) Order anhand des unrätbaren Tokens finden
 const orderResult = await db
   .select()
   .from(Order)
-  .where(eq(Order.bordereauNr, bordereauNr));
+  .where(eq(Order.token, token));
 const order = orderResult[0];
 
 if (!order) {
@@ -104,6 +103,12 @@ Astro.cookies.delete('order_placed', { path: '/' });
           <span>Zwischensumme</span>
           <span>{order.subtotal.toFixed(2)} €</span>
         </div>
+        {order.discount > 0 && (
+          <div class="confirmed__line confirmed__line--discount">
+            <span>Gutschein {order.couponCode ? `(${order.couponCode})` : ''}</span>
+            <span>−{order.discount.toFixed(2)} €</span>
+          </div>
+        )}
         <div class="confirmed__line">
           <span>Versand</span>
           <span>{order.shippingCost.toFixed(2)} €</span>
@@ -215,6 +220,7 @@ Astro.cookies.delete('order_placed', { path: '/' });
     font-family: var(--font-body);
     color: var(--ink-soft);
   }
+  .confirmed__line--discount span:last-child { color: var(--red); }
   .confirmed__total {
     display: flex;
     justify-content: space-between;
