@@ -247,15 +247,7 @@ const markerLng  = import.meta.env.IMPRESSUM_MAP_MARKER_LNG  ?? '8.4037';
     margin: 0.5rem 0 1rem;
     max-width: 900px;
   }
-  .kontakt-head__sub {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 1.15rem;
-    line-height: 1.55;
-    color: var(--ink-soft);
-    max-width: 680px;
-    margin: 0;
-  }
+  /* .kontakt-head__sub: Basis in global.css */
 
   /* LAYOUT */
   .kontakt-layout {
@@ -292,39 +284,7 @@ const markerLng  = import.meta.env.IMPRESSUM_MAP_MARKER_LNG  ?? '8.4037';
     grid-template-columns: 1fr 1fr;
     gap: 1.4rem;
   }
-  .form-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-  .form-field label {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    font-weight: 500;
-  }
-  .form-field__hint {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 0.75rem;
-    text-transform: none;
-    letter-spacing: 0;
-    color: var(--ink-mute);
-    margin-left: 0.4rem;
-  }
-  .form-field input,
-  .form-field textarea,
-  .form-field select {
-    padding: 0.85rem 0.9rem;
-    border: 1px solid var(--ink);
-    background: var(--paper);
-    color: var(--ink);
-    font-family: var(--font-body);
-    font-size: 1rem;
-    width: 100%;
-  }
+  /* .form-field / label / __hint / input-Basis / .invalid: siehe global.css */
   .form-field textarea {
     resize: vertical;
     min-height: 140px;
@@ -339,13 +299,6 @@ const markerLng  = import.meta.env.IMPRESSUM_MAP_MARKER_LNG  ?? '8.4037';
     background-position: right 1rem center;
     padding-right: 2.4rem;
   }
-  .form-field input.invalid,
-  .form-field textarea.invalid,
-  .form-field select.invalid {
-    border-color: var(--red);
-    background: rgba(122,31,31,0.05);
-  }
-
   .form-check {
     display: flex;
     gap: 0.7rem;

@@ -343,21 +343,7 @@ function makeSignatur(id: number, boredom: number) {
 <style>
   .cart { padding-top: 2rem; }
 
-  .cart-head {
-    margin-top: 2rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: end;
-    gap: 2rem;
-  }
-  .cart-head__motto {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 1.2rem;
-    color: var(--ink-soft);
-    margin: 0;
-    text-align: right;
-  }
+  /* .cart-head / __motto: Basis in global.css */
   .cart-head__motto em {
     color: var(--red);
     font-style: italic;
@@ -453,13 +439,7 @@ function makeSignatur(id: number, boredom: number) {
     position: relative;
     display: block;
   }
-  .cart-row__thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: sepia(0.15) contrast(0.95);
-    mix-blend-mode: multiply;
-  }
+  /* .cart-row__thumb img: Basis in global.css */
   .cart-row__thumb-stamp {
     position: absolute;
     top: -8px;
@@ -649,20 +629,7 @@ function makeSignatur(id: number, boredom: number) {
   .cart-summary__line--discount em { font-style: italic; }
 
   /* SUMMARY */
-  .cart-summary {
-    position: sticky;
-    top: 2rem;
-    border-top: var(--rule);
-    padding-top: 1.5rem;
-  }
-  .cart-summary__eyebrow {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0 0 0.3rem;
-  }
+  /* .cart-summary / __eyebrow: Basis in global.css */
   .cart-summary__title {
     font-family: var(--font-display);
     font-size: 2.6rem;
@@ -679,23 +646,7 @@ function makeSignatur(id: number, boredom: number) {
     font-size: 1rem;
     color: var(--ink-soft);
   }
-  .cart-summary__line em {
-    font-style: italic;
-    color: var(--ink-mute);
-    font-size: 0.9em;
-  }
-  .cart-summary__total {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-  }
-  .cart-summary__total-label {
-    font-family: var(--font-meta);
-    font-size: 0.8rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
+  /* .cart-summary__line em / __total / __total-label: Basis in global.css */
   .cart-summary__total-value {
     font-family: var(--font-display);
     font-size: 2.4rem;

@@ -213,31 +213,9 @@ Astro.cookies.delete('order_placed', { path: '/' });
     font-family: var(--font-display);
     font-weight: 700;
   }
-  .confirmed__line {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.4rem 0;
-    font-family: var(--font-body);
-    color: var(--ink-soft);
-  }
+  /* .confirmed__line: Basis in global.css */
   .confirmed__line--discount span:last-child { color: var(--red); }
-  .confirmed__total {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-  }
-  .confirmed__total span:first-child {
-    font-family: var(--font-meta);
-    font-size: 0.8rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-  .confirmed__total span:last-child {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    font-weight: 800;
-  }
+  /* .confirmed__total (+ spans): Basis in global.css */
 
   .confirmed__addr {
     text-align: left;

@@ -279,21 +279,7 @@ const grandTotal = Math.max(0, total - discount) + shippingCost;
 <style>
   .checkout { padding-top: 2rem; }
 
-  .checkout-head {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: end;
-    gap: 2rem;
-    margin-top: 2rem;
-  }
-  .checkout-head__motto {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 1.2rem;
-    color: var(--ink-soft);
-    margin: 0;
-    text-align: right;
-  }
+  /* .checkout-head / __motto: Basis in global.css */
 
   .checkout-layout {
     display: grid;
@@ -342,28 +328,8 @@ const grandTotal = Math.max(0, total - discount) + shippingCost;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
   }
-  .form-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
+  /* .form-field / label / input-Basis: siehe global.css */
   .form-field--full { grid-column: 1 / -1; }
-  .form-field label {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    font-weight: 500;
-  }
-  .form-field input {
-    padding: 0.85rem 0.9rem;
-    border: 1px solid var(--ink);
-    background: var(--paper);
-    color: var(--ink);
-    font-family: var(--font-body);
-    font-size: 1rem;
-  }
 
   .payment-options { display: flex; flex-direction: column; gap: 0.75rem; }
   .payment-option { cursor: pointer; display: block; }
@@ -399,20 +365,7 @@ const grandTotal = Math.max(0, total - discount) + shippingCost;
   }
   .payment-card .stamp { grid-area: stamp; }
 
-  .checkout-summary {
-    position: sticky;
-    top: 2rem;
-    border-top: var(--rule);
-    padding-top: 1.5rem;
-  }
-  .checkout-summary__eyebrow {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0 0 0.3rem;
-  }
+  /* .checkout-summary / __eyebrow: Basis in global.css */
   .checkout-summary__title {
     font-family: var(--font-display);
     font-size: 2.4rem;
@@ -454,28 +407,9 @@ const grandTotal = Math.max(0, total - discount) + shippingCost;
     font-weight: 700;
     margin: 0;
   }
-  .summary-line {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.4rem 0;
-    font-family: var(--font-body);
-    color: var(--ink-soft);
-  }
-  .summary-line em { font-style: italic; color: var(--ink-mute); font-size: 0.9em; }
+  /* .summary-line / em: Basis in global.css */
   .summary-line--discount span:last-child { color: var(--red); }
-  .summary-total { display: flex; justify-content: space-between; align-items: baseline; }
-  .summary-total__label {
-    font-family: var(--font-meta);
-    font-size: 0.8rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-  .summary-total__value {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    font-weight: 800;
-  }
+  /* .summary-total / __label / __value: Basis in global.css */
   .summary-uebernahme {
     background: var(--paper-2);
     padding: 0.8rem 1rem;
