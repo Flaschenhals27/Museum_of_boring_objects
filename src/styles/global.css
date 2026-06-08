@@ -2,9 +2,9 @@
    global.css — globales Designsystem
    --------------------------------------------------------------------
    Alle globalen Styles aus dem Layout extrahiert für bessere Übersicht.
-   Wird in Layout.astro per <link> eingebunden.
-   Browser cached die Datei zwischen Page-Navigationen — Vorteil
-   gegenüber inline <style is:global>.
+   Wird in Layout.astro per `import '../styles/global.css'` eingebunden
+   und damit von Astro/Vite gebündelt (gehashter, zwischen Page-Navigationen
+   gecachter Dateiname). Liegt zusammen mit legal.css in src/styles/.
 
    Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
    ==================================================================== */
