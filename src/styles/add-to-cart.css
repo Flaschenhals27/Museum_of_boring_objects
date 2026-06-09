@@ -1,0 +1,37 @@
+/* ====================================================================
+   add-to-cart.css — Styles der Komponente
+   --------------------------------------------------------------------
+   AddToChart.tsx (Inline-Variante für Karten).
+   Aus global.css ausgelagert (lud vorher auf jeder Seite). Wird von
+   der Komponente importiert → lädt nur, wo sie rendert. Nutzt die
+   globalen Design-Tokens aus global.css.
+   ==================================================================== */
+
+/* AddToCart Inline-Variante (für Katalog-Karten) */
+.addcart-btn-inline {
+	padding: 0.6rem 1rem;
+	background: var(--ochre);
+	color: var(--ink);
+	border: none;
+	font-family: var(--font-meta);
+	font-size: 0.78rem;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.15s;
+}
+.addcart-btn-inline:hover:not(:disabled) {
+	background: var(--ochre-deep);
+}
+.addcart-btn-inline.is-out,
+.addcart-btn-inline:disabled {
+	background: transparent;
+	border: 1px solid var(--ink);
+	color: var(--ink);
+	cursor: not-allowed;
+}
+.addcart-btn-inline.is-added {
+	background: var(--ink);
+	color: var(--paper);
+}

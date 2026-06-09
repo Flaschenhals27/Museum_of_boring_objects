@@ -1,17 +1,11 @@
 ---
 export const prerender = true;
 import Layout from '../layouts/Layout.astro';
+import { company } from '../lib/company';
 import '../styles/legal.css';
 
 // Werte aus env (genauso wie im Impressum), mit Fallbacks
-const firma  = import.meta.env.IMPRESSUM_NAME    ?? 'The Ordinary Emporium GmbH';
-const street = import.meta.env.IMPRESSUM_STREET  ?? 'Musterstraße 1';
-const postal = import.meta.env.IMPRESSUM_POSTAL  ?? '12345';
-const city   = import.meta.env.IMPRESSUM_CITY    ?? 'Musterstadt';
-const email  = import.meta.env.IMPRESSUM_EMAIL   ?? 'info@ordinary-emporium.de';
-const tel    = import.meta.env.IMPRESSUM_TEL     ?? '+49 000 000000';
-const boss   = import.meta.env.IMPRESSUM_BOSS    ?? 'Max Mustermann';
-const vatId  = import.meta.env.IMPRESSUM_VAT_ID  ?? 'DE123456789';
+const { name: firma, street, postal, city, email, tel, boss, vatId } = company;
 
 const stand = '14. Mai 2026';
 const version = '1.0';

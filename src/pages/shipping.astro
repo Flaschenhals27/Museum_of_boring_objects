@@ -1,9 +1,9 @@
 ---
 export const prerender = true;
 import Layout from '../layouts/Layout.astro';
+import { company } from '../lib/company';
 
-const email = import.meta.env.IMPRESSUM_EMAIL ?? 'info@ordinary-emporium.de';
-const tel   = import.meta.env.IMPRESSUM_TEL   ?? '+49 000 000000';
+const { email, tel } = company;
 
 const stand = '14. Mai 2026';
 ---

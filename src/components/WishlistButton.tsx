@@ -12,6 +12,7 @@
 // =====================================================================
 
 import { createSignal, onMount } from 'solid-js';
+import '../styles/wishlist-button.css';
 
 interface Props {
   itemId: number;

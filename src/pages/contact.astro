@@ -1,17 +1,9 @@
 ---
 export const prerender = true;
 import Layout from '../layouts/Layout.astro';
+import { company } from '../lib/company';
 
-const firma  = import.meta.env.IMPRESSUM_NAME    ?? 'The Ordinary Emporium GmbH';
-const street = import.meta.env.IMPRESSUM_STREET  ?? 'Musterstraße 1';
-const postal = import.meta.env.IMPRESSUM_POSTAL  ?? '12345';
-const city   = import.meta.env.IMPRESSUM_CITY    ?? 'Musterstadt';
-const email  = import.meta.env.IMPRESSUM_EMAIL   ?? 'info@ordinary-emporium.de';
-const tel    = import.meta.env.IMPRESSUM_TEL     ?? '+49 000 000000';
-
-const mapBbox    = import.meta.env.IMPRESSUM_MAP_BBOX        ?? '8.390%2C48.990%2C8.410%2C49.005';
-const markerLat  = import.meta.env.IMPRESSUM_MAP_MARKER_LAT  ?? '49.0069';
-const markerLng  = import.meta.env.IMPRESSUM_MAP_MARKER_LNG  ?? '8.4037';
+const { name: firma, street, postal, city, email, tel, mapBbox, markerLat, markerLng } = company;
 ---
 
 <Layout title="Kontakt">

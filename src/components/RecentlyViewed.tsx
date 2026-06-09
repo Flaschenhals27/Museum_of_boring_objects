@@ -8,6 +8,7 @@
 // Diese Datei wurde mit Hilfe von Claude (Anthropic) angepasst.
 
 import { createSignal, onMount, For, Show } from 'solid-js';
+import '../styles/recently-viewed.css';
 
 interface Props {
   currentId: number;

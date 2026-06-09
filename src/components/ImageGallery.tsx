@@ -15,6 +15,7 @@
 
 import { createSignal, onCleanup, onMount, For, Show } from 'solid-js';
 import { isServer } from 'solid-js/web';
+import '../styles/gallery.css';
 
 interface Props {
   images: string[];
