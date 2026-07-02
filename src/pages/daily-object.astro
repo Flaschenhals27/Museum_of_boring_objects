@@ -13,7 +13,6 @@
 
 import Layout from '../layouts/Layout.astro';
 import { db, Item, count } from 'astro:db';
-import AddToCart from '../components/AddToCart.tsx';
 
 const countResult = await db.select({ value: count() }).from(Item);
 const itemCount = countResult[0].value;
@@ -182,7 +181,7 @@ const isBegehrt = randomItem.boredom >= 9;
         <p class="erwerb__price">{randomItem.price.toFixed(2)} €</p>
         <div class="erwerb__cta">
           {isBegehrt && <span class="stamp stamp--red" style="color: var(--ochre);">Sehr begehrt</span>}
-          <a href={`/product/${randomItem.id}`} class="btn-ochre">Wunschliste</a>
+          <a href={`/product/${randomItem.id}`} class="btn-ochre">Zum Objekt →</a>
         </div>
       </div>
     </section>
