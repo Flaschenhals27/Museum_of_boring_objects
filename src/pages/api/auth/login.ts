@@ -20,6 +20,7 @@ import { db, User, Cart, Wishlist, eq, and } from 'astro:db';
 import bcrypt from 'bcryptjs';
 import { createToken } from '../../../lib/auth';
 import { checkRateLimit, getClientIp } from '../../../lib/rateLimit';
+import { jsonOk, jsonError } from '../../../lib/http';
 
 const LOGIN_MAX_ATTEMPTS = 5;
 const LOGIN_WINDOW_MS    = 15 * 60 * 1000;
@@ -29,15 +30,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const ip = getClientIp(request);
   const limit = checkRateLimit(`login:${ip}`, LOGIN_MAX_ATTEMPTS, LOGIN_WINDOW_MS);
   if (!limit.allowed) {
-    return new Response(JSON.stringify({
-      error: `Zu viele Anmeldeversuche. Bitte ${limit.retryAfterSec} Sekunden warten.`,
-    }), {
-      status: 429,
-      headers: {
-        'Content-Type': 'application/json',
-        'Retry-After': String(limit.retryAfterSec),
-      },
-    });
+    return jsonError(
+      `Zu viele Anmeldeversuche. Bitte ${limit.retryAfterSec} Sekunden warten.`,
+      429,
+      { 'Retry-After': String(limit.retryAfterSec) },
+    );
   }
 
   // 2) Body
@@ -45,17 +42,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     body = await request.json();
   } catch {
-    return new Response(JSON.stringify({ error: 'Ungültiger Request.' }), { status: 400 });
+    return jsonError('Ungültiger Request.', 400);
   }
 
   const email    = typeof body.email    === 'string' ? body.email.trim().toLowerCase() : '';
   const password = typeof body.password === 'string' ? body.password : '';
 
   if (!email || !password) {
-    return new Response(JSON.stringify({ error: 'E-Mail und Passwort sind erforderlich.' }), { status: 400 });
+    return jsonError('E-Mail und Passwort sind erforderlich.', 400);
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return new Response(JSON.stringify({ error: 'E-Mail-Adresse hat kein gültiges Format.' }), { status: 400 });
+    return jsonError('E-Mail-Adresse hat kein gültiges Format.', 400);
   }
 
   // 3) User + Passwort prüfen (timing-safe gegen Account-Enumeration)
@@ -64,10 +61,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const valid = await bcrypt.compare(password, passwordHash);
 
   if (!user || !valid) {
-    return new Response(JSON.stringify({ error: 'E-Mail oder Passwort falsch.' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonError('E-Mail oder Passwort falsch.', 401);
   }
 
   // 4) Token + Cookie
@@ -105,11 +99,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
   }
 
-  return new Response(JSON.stringify({
+  return jsonOk({
     success: true,
     user: { id: user.id, email: user.email, username: user.username, prename: user.prename },
-  }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
   });
 };

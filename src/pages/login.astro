@@ -39,6 +39,7 @@ if (user) {
           <label>Passwort</label>
           <input type="password" id="login-password" placeholder="••••••••" />
         </div>
+        <a href="/forgot-password" class="login__forgot">Passwort vergessen?</a>
         <button class="btn-primary login__submit" id="login-btn">Anmelden →</button>
       </div>
 
@@ -236,6 +237,18 @@ if (user) {
   }
   /* .form-field / label / __hint / input-Basis / .invalid: siehe global.css */
   .login__submit { margin-top: 0.5rem; width: 100%; }
+
+  .login__forgot {
+    align-self: flex-end;
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    text-decoration: underline;
+    margin-top: -0.6rem;
+  }
+  .login__forgot:hover { color: var(--red); }
 
   .login-toggle {
     text-align: center;

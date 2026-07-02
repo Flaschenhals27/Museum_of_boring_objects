@@ -52,7 +52,7 @@ export default function WishlistButton(props: Props) {
         setActive(!wasActive);
         // Andere Komponenten könnten interessiert sein (z.B. Counter in NavBar)
         window.dispatchEvent(new CustomEvent('wishlist-updated'));
-        (window as any).toast?.(
+        window.toast?.(
           wasActive
             ? 'Aus der Wunschliste entfernt.'
             : 'Auf die Wunschliste gesetzt.',
@@ -60,10 +60,10 @@ export default function WishlistButton(props: Props) {
         );
       } else {
         const data = await res.json().catch(() => ({}));
-        (window as any).toast?.(data.error ?? 'Aktion fehlgeschlagen.', 'error');
+        window.toast?.(data.error ?? 'Aktion fehlgeschlagen.', 'error');
       }
     } catch (err) {
-      (window as any).toast?.('Netzwerkfehler. Bitte erneut versuchen.', 'error');
+      window.toast?.('Netzwerkfehler. Bitte erneut versuchen.', 'error');
     } finally {
       setLoading(false);
     }

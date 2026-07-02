@@ -13,7 +13,7 @@
 
 import Layout from '../layouts/Layout.astro';
 import { db, Item, count } from 'astro:db';
-import AddToCart from '../components/AddToChart.tsx';
+import AddToCart from '../components/AddToCart.tsx';
 
 const countResult = await db.select({ value: count() }).from(Item);
 const itemCount = countResult[0].value;

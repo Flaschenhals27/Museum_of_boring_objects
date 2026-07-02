@@ -13,6 +13,7 @@
 import Layout from '../layouts/Layout.astro';
 import { getCart, loadCartItems, cartSubtotal } from '../lib/cart';
 import { resolveDiscount } from '../lib/coupon';
+import { SHIPPING_COST } from '../lib/shipping';
 
 // Aktuellen Warenkorb laden (User-Cart oder Session-Cart)
 const cartRecord = await getCart(Astro.cookies);
@@ -31,7 +32,7 @@ if (cartItems.length === 0) {
 // Gutschein vom Cart übernehmen (verwaltet wird er im Warenkorb)
 const { coupon, discount } = await resolveDiscount(cartRecord?.couponCode, total);
 
-const shippingCost = 12.00;
+const shippingCost = SHIPPING_COST;
 const grandTotal = Math.max(0, total - discount) + shippingCost;
 ---
 

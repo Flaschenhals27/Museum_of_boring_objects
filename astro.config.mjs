@@ -16,7 +16,10 @@ export default defineConfig({
     mode: 'standalone'
   }),
 
-  vite: { //Für Connection von externen Geräten, z.B. Handy
+  vite: {
+    // Für Connection von externen Geräten, z.B. Handy.
+    // Betrifft NUR den Dev-Server (astro dev) — der Production-Build
+    // mit dem Node-Adapter nutzt diese Vite-Server-Config nicht.
     server: {
       allowedHosts: true
     }

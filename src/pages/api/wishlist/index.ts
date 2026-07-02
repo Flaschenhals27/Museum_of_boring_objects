@@ -13,32 +13,25 @@
 // =====================================================================
 
 import type { APIRoute } from 'astro';
-import { db, Wishlist, Item, eq, and, or, sql } from 'astro:db';
+import type { AstroCookies } from 'astro';
+import { db, Wishlist, Item, eq, and, inArray } from 'astro:db';
 import { getUserFromCookie } from '../../../lib/auth';
+import { getOrCreateSessionId } from '../../../lib/cart';
+import { jsonOk, jsonError } from '../../../lib/http';
 
 // ---------------------------------------------------------------------
 // Helper: Identität des aktuellen Besuchers ermitteln
 // ---------------------------------------------------------------------
 // Gibt entweder { userId } für eingeloggte oder { sessionId } für Gäste
-// zurück. Bei Gästen wird notfalls eine neue Session-ID erzeugt.
+// zurück. Bei Gästen wird notfalls eine neue Session-ID erzeugt
+// (zentral in lib/cart.getOrCreateSessionId).
 // ---------------------------------------------------------------------
-async function getIdentity(cookies: any): Promise<{ userId: number | null; sessionId: string | null }> {
+async function getIdentity(cookies: AstroCookies): Promise<{ userId: number | null; sessionId: string | null }> {
   const userPayload = await getUserFromCookie(cookies);
   if (userPayload) {
     return { userId: userPayload.userId, sessionId: null };
   }
-
-  let sessionId = cookies.get('cart_session')?.value;
-  if (!sessionId) {
-    sessionId = crypto.randomUUID();
-    cookies.set('cart_session', sessionId, {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 30,
-      httpOnly: true,
-      sameSite: 'lax',
-    });
-  }
-  return { userId: null, sessionId };
+  return { userId: null, sessionId: getOrCreateSessionId(cookies) };
 }
 
 // Filterbedingung für DB-Queries: passt zur jeweiligen Identität
@@ -55,29 +48,31 @@ export const GET: APIRoute = async ({ cookies }) => {
   const identity = await getIdentity(cookies);
   const entries = await db.select().from(Wishlist).where(identityWhere(identity));
 
-  // Items dazuholen, verwaiste Einträge selbstheilend entfernen
-  const enriched = await Promise.all(
-    entries.map(async (entry) => {
-      const product = (await db.select().from(Item).where(eq(Item.id, entry.itemId)))[0];
-      if (!product) {
-        await db.delete(Wishlist).where(eq(Wishlist.id, entry.id));
-        return null;
-      }
-      return {
-        wishlistId: entry.id,
-        itemId: entry.itemId,
-        addedAt: entry.addedAt,
-        product,
-      };
-    })
-  );
+  if (entries.length === 0) {
+    return jsonOk({ items: [], count: 0 });
+  }
 
-  const items = enriched.filter((x): x is NonNullable<typeof x> => x !== null);
+  // Items in EINER Query dazuholen (kein N+1),
+  // verwaiste Einträge selbstheilend entfernen
+  const itemIds = [...new Set(entries.map((e) => e.itemId))];
+  const products = await db.select().from(Item).where(inArray(Item.id, itemIds));
+  const productById = new Map(products.map((p) => [p.id, p]));
 
-  return new Response(JSON.stringify({ items, count: items.length }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  const items: Array<{ wishlistId: number; itemId: number; addedAt: Date; product: typeof Item.$inferSelect }> = [];
+  const orphanedIds: number[] = [];
+  for (const entry of entries) {
+    const product = productById.get(entry.itemId);
+    if (!product) {
+      orphanedIds.push(entry.id);
+      continue;
+    }
+    items.push({ wishlistId: entry.id, itemId: entry.itemId, addedAt: entry.addedAt, product });
+  }
+  if (orphanedIds.length > 0) {
+    await db.delete(Wishlist).where(inArray(Wishlist.id, orphanedIds));
+  }
+
+  return jsonOk({ items, count: items.length });
 };
 
 // =====================================================================
@@ -88,17 +83,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     body = await request.json();
   } catch {
-    return new Response(JSON.stringify({ error: 'Ungültiger Request.' }), { status: 400 });
+    return jsonError('Ungültiger Request.', 400);
   }
 
   const itemId = Number(body.itemId);
   if (!Number.isInteger(itemId) || itemId <= 0) {
-    return new Response(JSON.stringify({ error: 'Ungültige itemId.' }), { status: 400 });
+    return jsonError('Ungültige itemId.', 400);
   }
 
   const product = (await db.select().from(Item).where(eq(Item.id, itemId)))[0];
   if (!product) {
-    return new Response(JSON.stringify({ error: 'Artikel existiert nicht.' }), { status: 404 });
+    return jsonError('Artikel existiert nicht.', 404);
   }
 
   const identity = await getIdentity(cookies);
@@ -109,10 +104,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   );
 
   if (existing.length > 0) {
-    return new Response(JSON.stringify({ success: true, alreadyExists: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonOk({ success: true, alreadyExists: true });
   }
 
   await db.insert(Wishlist).values({
@@ -122,10 +114,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     addedAt:   new Date(),
   });
 
-  return new Response(JSON.stringify({ success: true, alreadyExists: false }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  return jsonOk({ success: true, alreadyExists: false });
 };
 
 // =====================================================================
@@ -136,12 +125,12 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
   try {
     body = await request.json();
   } catch {
-    return new Response(JSON.stringify({ error: 'Ungültiger Request.' }), { status: 400 });
+    return jsonError('Ungültiger Request.', 400);
   }
 
   const itemId = Number(body.itemId);
   if (!Number.isInteger(itemId) || itemId <= 0) {
-    return new Response(JSON.stringify({ error: 'Ungültige itemId.' }), { status: 400 });
+    return jsonError('Ungültige itemId.', 400);
   }
 
   const identity = await getIdentity(cookies);
@@ -150,8 +139,5 @@ export const DELETE: APIRoute = async ({ request, cookies }) => {
     and(identityWhere(identity), eq(Wishlist.itemId, itemId))
   );
 
-  return new Response(JSON.stringify({ success: true }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  return jsonOk({ success: true });
 };

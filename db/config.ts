@@ -177,6 +177,29 @@ const OrderItem = defineTable({
 });
 
 // ---------------------------------------------------------------------
+// PasswordResetToken — Einmal-Token für "Passwort vergessen"
+// ---------------------------------------------------------------------
+// Sicherheitsprinzipien:
+//   - In der DB liegt NUR der SHA-256-Hash des Tokens (tokenHash).
+//     Der Klartext-Token existiert nur im Reset-Link der E-Mail.
+//     Grund: Wer die DB lesen kann (Backup, SQL-Injection, Admin),
+//     soll damit keine Konten übernehmen können.
+//   - expiresAt: Token ist nur kurz gültig (60 Minuten).
+//   - Einmal-Verwendung: beim erfolgreichen Reset wird der Token
+//     gelöscht; beim Anfordern eines neuen werden alte Tokens des
+//     Users entfernt (es gilt immer nur der jüngste Link).
+// ---------------------------------------------------------------------
+const PasswordResetToken = defineTable({
+  columns: {
+    id:        column.number({ primaryKey: true, autoIncrement: true }),
+    userId:    column.number({ references: () => User.columns.id }),
+    tokenHash: column.text({ unique: true }),
+    expiresAt: column.date(),
+    createdAt: column.date(),
+  }
+});
+
+// ---------------------------------------------------------------------
 // Wishlist — Gäste UND eingeloggte Nutzer
 // ---------------------------------------------------------------------
 // Entweder userId ODER sessionId gesetzt — niemals beides leer.
@@ -203,5 +226,6 @@ export default defineDb({
     Order,
     OrderItem,
     Wishlist,
+    PasswordResetToken,
   }
 });

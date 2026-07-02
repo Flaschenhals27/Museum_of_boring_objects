@@ -13,17 +13,36 @@
 // Setzt: Cookie 'order_placed' (für die Bestätigungsseite)
 // Antwortet: { ok: true, bordereauNr } -> Client navigiert zu /order-confirmed
 //
+// Nebenläufigkeit (astro:db kann keine Multi-Statement-Transaktionen):
+//   - Stock wird ATOMAR reduziert (UPDATE ... SET stock = stock - n
+//     WHERE stock >= n) — zwei gleichzeitige Bestellungen können denselben
+//     Bestand nicht doppelt verkaufen. Schlägt eine Position fehl, werden
+//     bereits abgezogene Positionen kompensiert (zurückgebucht).
+//   - Die Bordereau-Nummer kann bei parallelen Bestellungen kollidieren
+//     (unique-Constraint) — der Insert wird dann mit frischer Nummer
+//     wiederholt.
+//   - BEWUSSTE GRENZE: Stürzt der Prozess NACH der Stock-Reservierung,
+//     aber VOR dem erfolgreichen Order-Insert ab (Crash, Stromausfall),
+//     bleibt der Bestand abgezogen, ohne dass eine Bestellung existiert.
+//     Ohne echte Transaktionen ist das nicht vollständig schließbar —
+//     in Produktion bräuchte es ein Outbox-/Saga-Pattern oder einen
+//     periodischen Abgleich.
+//
 // Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
 
 import type { APIRoute } from 'astro';
-import { db, Cart, CartItem, Item, Order, OrderItem, Coupon, eq, sql } from 'astro:db';
+import { db, Cart, CartItem, Item, Order, OrderItem, Coupon, eq, and, gte, sql } from 'astro:db';
 import { Resend } from 'resend';
 import { getUserFromCookie } from '../../../lib/auth';
-import { getCart } from '../../../lib/cart';
+import { getCart, loadCartItems, cartSubtotal, type CartLine } from '../../../lib/cart';
 import { resolveDiscount } from '../../../lib/coupon';
+import { renderOrderEmail } from '../../../lib/email';
+import { jsonOk, jsonError } from '../../../lib/http';
+import { SHIPPING_COST } from '../../../lib/shipping';
+import { checkRateLimit, getClientIp } from '../../../lib/rateLimit';
 
-// Versandkosten — könnten später dynamisch werden
-const SHIPPING_COST = 12.00;
+const ORDER_MAX_ATTEMPTS = 10;
+const ORDER_WINDOW_MS    = 15 * 60 * 1000;
 
 // ---------------------------------------------------------------------
 // Hilfsfunktion: sprechende Bestellnummer (Bordereau) generieren
@@ -94,21 +113,69 @@ function validate(body: any): { ok: true; data: any } | { ok: false; error: stri
   };
 }
 
+// ---------------------------------------------------------------------
+// Stock atomar reservieren: pro Position stock = stock - n, aber nur
+// wenn noch genug da ist. Schlägt eine Position fehl, werden alle
+// vorherigen Abzüge zurückgebucht und der Name des Artikels gemeldet.
+// ---------------------------------------------------------------------
+async function reserveStock(lines: CartLine[]): Promise<{ ok: true } | { ok: false; error: string }> {
+  const reserved: Array<{ itemId: number; quantity: number }> = [];
+
+  for (const line of lines) {
+    const updated = await db.update(Item)
+      .set({ stock: sql`${Item.stock} - ${line.quantity}` })
+      .where(and(eq(Item.id, line.itemId), gte(Item.stock, line.quantity)))
+      .returning();
+
+    if (updated.length === 0) {
+      await releaseStock(reserved);
+      const current = (await db.select().from(Item).where(eq(Item.id, line.itemId)))[0];
+      return {
+        ok: false,
+        error: `Nur noch ${current?.stock ?? 0} × "${line.product.name}" verfügbar.`,
+      };
+    }
+    reserved.push({ itemId: line.itemId, quantity: line.quantity });
+  }
+
+  return { ok: true };
+}
+
+/** Kompensation: bereits abgezogenen Stock wieder zurückbuchen. */
+async function releaseStock(reserved: Array<{ itemId: number; quantity: number }>) {
+  for (const r of reserved) {
+    await db.update(Item)
+      .set({ stock: sql`${Item.stock} + ${r.quantity}` })
+      .where(eq(Item.id, r.itemId));
+  }
+}
+
 // =====================================================================
 // POST /api/orders
 // =====================================================================
 export const POST: APIRoute = async ({ request, cookies }) => {
+  // 0) Rate-Limit (der teuerste Endpoint: DB-Schreiblast + Mail-Versand)
+  const ip = getClientIp(request);
+  const limit = checkRateLimit(`orders:${ip}`, ORDER_MAX_ATTEMPTS, ORDER_WINDOW_MS);
+  if (!limit.allowed) {
+    return jsonError(
+      `Zu viele Bestellversuche. Bitte ${limit.retryAfterSec} Sekunden warten.`,
+      429,
+      { 'Retry-After': String(limit.retryAfterSec) },
+    );
+  }
+
   // 1) Body parsen + validieren
   let body: any;
   try {
     body = await request.json();
   } catch {
-    return new Response(JSON.stringify({ error: 'Body ist kein gültiges JSON.' }), { status: 400 });
+    return jsonError('Body ist kein gültiges JSON.', 400);
   }
 
   const validation = validate(body);
   if (!validation.ok) {
-    return new Response(JSON.stringify({ error: validation.error }), { status: 400 });
+    return jsonError(validation.error, 400);
   }
   const data = validation.data;
 
@@ -118,39 +185,17 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   const cartRecord = await getCart(cookies);
   if (!cartRecord) {
-    return new Response(JSON.stringify({ error: 'Kein Warenkorb gefunden.' }), { status: 400 });
+    return jsonError('Kein Warenkorb gefunden.', 400);
   }
 
-  // 3) Cart-Items + zugehörige Item-Daten laden
-  const rawItems = await db.select().from(CartItem).where(eq(CartItem.cartId, cartRecord.id));
-  if (rawItems.length === 0) {
-    return new Response(JSON.stringify({ error: 'Warenkorb ist leer.' }), { status: 400 });
+  // 3) Positionen inkl. Produktdaten laden (verwaiste werden ausgeräumt)
+  const lines = await loadCartItems(cartRecord.id, { prune: true });
+  if (lines.length === 0) {
+    return jsonError('Warenkorb ist leer.', 400);
   }
 
-  const productDetails = await Promise.all(
-    rawItems.map(async (ci) => {
-      const product = (await db.select().from(Item).where(eq(Item.id, ci.itemId)))[0];
-      return { cartItem: ci, product };
-    })
-  );
-
-  // 4) Lagerprüfung: jeder Artikel muss in ausreichender Menge vorhanden sein
-  for (const { cartItem, product } of productDetails) {
-    if (!product) {
-      return new Response(JSON.stringify({ error: `Artikel #${cartItem.itemId} existiert nicht mehr.` }), { status: 400 });
-    }
-    if (product.stock < cartItem.quantity) {
-      return new Response(JSON.stringify({
-        error: `Nur noch ${product.stock} × "${product.name}" verfügbar.`,
-      }), { status: 409 });
-    }
-  }
-
-  // 5) Beträge berechnen
-  const subtotal = productDetails.reduce(
-    (sum, { cartItem, product }) => sum + product.price * cartItem.quantity,
-    0
-  );
+  // 4) Beträge berechnen
+  const subtotal = cartSubtotal(lines);
 
   // Gutschein serverseitig erneut prüfen & Rabatt berechnen (nie dem Client trauen)
   const { coupon, discount } = await resolveDiscount(cartRecord.couponCode, subtotal);
@@ -159,129 +204,91 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const shippingCost = SHIPPING_COST;
   const total        = Math.max(0, subtotal - discount) + shippingCost;
 
-  // 6) Bestellnummer + unrätbaren Zugriffstoken generieren
-  const bordereauNr = await generateBordereauNr();
+  // 5) Stock atomar reservieren — schlägt bei Parallelbestellung sauber fehl
+  const reservation = await reserveStock(lines);
+  if (!reservation.ok) {
+    return jsonError(reservation.error, 409);
+  }
+
+  // 6) Order in die DB schreiben — mit Retry, falls die Bordereau-Nummer
+  //    durch eine parallele Bestellung kollidiert (unique-Constraint)
   const token = crypto.randomUUID();
   const now = new Date();
 
-  // 7) Order in die DB schreiben
-  // ----------------------------------------------------------------
-  // Hinweis: astro:db unterstützt aktuell keine Multi-Statement-Transaktionen
-  // (Drizzle/libSQL Limitation). Wir schreiben die Daten daher sequenziell.
-  // In einer echten Produktion mit hohen Anforderungen müsste man hier
-  // mit kompensierenden Aktionen arbeiten (Saga-Pattern), falls ein Schritt
-  // fehlschlägt. Für unser Projekt ist das ausreichend.
-  // ----------------------------------------------------------------
-  const orderInsert = await db.insert(Order).values({
-    bordereauNr,
-    token,
-    userId:        userPayload?.userId ?? null,
-    sessionId:     sessionId ?? null,
-    email:         data.email,
-    addrPrename:   data.prename,
-    addrSurname:   data.surname,
-    addrStreet:    data.street,
-    addrPostal:    data.postal,
-    addrCity:      data.city,
-    addrCountry:   data.country,
-    subtotal,
-    shippingCost,
-    discount,
-    couponCode,
-    total,
-    status:        'eingegangen',
-    paymentMethod: data.paymentMethod,
-    notes:         data.notes,
-    createdAt:     now,
-    updatedAt:     now,
-  }).returning();
-  const newOrder = orderInsert[0];
+  let newOrder: typeof Order.$inferSelect | undefined;
+  let bordereauNr = '';
+  for (let attempt = 0; attempt < 3 && !newOrder; attempt++) {
+    bordereauNr = await generateBordereauNr();
+    try {
+      newOrder = (await db.insert(Order).values({
+        bordereauNr,
+        token,
+        userId:        userPayload?.userId ?? null,
+        sessionId:     sessionId ?? null,
+        email:         data.email,
+        addrPrename:   data.prename,
+        addrSurname:   data.surname,
+        addrStreet:    data.street,
+        addrPostal:    data.postal,
+        addrCity:      data.city,
+        addrCountry:   data.country,
+        subtotal,
+        shippingCost,
+        discount,
+        couponCode,
+        total,
+        status:        'eingegangen',
+        paymentMethod: data.paymentMethod,
+        notes:         data.notes,
+        createdAt:     now,
+        updatedAt:     now,
+      }).returning())[0];
+    } catch (err) {
+      if (attempt === 2) {
+        // Aufgeben: reservierten Stock zurückbuchen, Fehler melden
+        await releaseStock(lines.map((l) => ({ itemId: l.itemId, quantity: l.quantity })));
+        console.error('Order-Insert nach 3 Versuchen fehlgeschlagen:', err);
+        return jsonError('Bestellung konnte nicht angelegt werden. Bitte erneut versuchen.', 500);
+      }
+    }
+  }
 
-  // 8) OrderItems schreiben (mit Preis-Snapshot)
+  // 7) OrderItems schreiben (mit Preis-Snapshot)
   await db.insert(OrderItem).values(
-    productDetails.map(({ cartItem, product }) => ({
-      orderId:       newOrder.id,
-      itemId:        product.id,
-      quantity:      cartItem.quantity,
-      nameSnapshot:  product.name,
-      priceSnapshot: product.price,
+    lines.map((line) => ({
+      orderId:       newOrder!.id,
+      itemId:        line.itemId,
+      quantity:      line.quantity,
+      nameSnapshot:  line.product.name,
+      priceSnapshot: line.product.price,
     }))
   );
 
-  // 9) Lager reduzieren (pro Item ein UPDATE)
-  for (const { cartItem, product } of productDetails) {
-    await db.update(Item)
-      .set({ stock: product.stock - cartItem.quantity })
-      .where(eq(Item.id, product.id));
-  }
-
-  // 10) Warenkorb leeren (Positionen + eingelösten Gutschein zurücksetzen)
+  // 8) Warenkorb leeren (Positionen + eingelösten Gutschein zurücksetzen)
   await db.delete(CartItem).where(eq(CartItem.cartId, cartRecord.id));
   if (cartRecord.couponCode) {
     await db.update(Cart).set({ couponCode: null }).where(eq(Cart.id, cartRecord.id));
   }
 
-  // 10b) Einlöse-Zähler des Gutscheins erhöhen (falls einer angewendet wurde)
+  // 8b) Einlöse-Zähler des Gutscheins atomar erhöhen (falls angewendet)
   if (coupon) {
     await db.update(Coupon)
-      .set({ redeemedCount: coupon.redeemedCount + 1 })
+      .set({ redeemedCount: sql`${Coupon.redeemedCount} + 1` })
       .where(eq(Coupon.id, coupon.id));
   }
 
-  // 11) E-Mails versenden (an Anbieter UND Kunde)
+  // 9) E-Mails versenden (an Anbieter UND Kunde) — Template in lib/email.ts
   try {
     const resend = new Resend(import.meta.env.RESEND_API_KEY);
-    const itemRows = productDetails.map(({ cartItem, product }) => `
-      <tr>
-        <td style="padding:10px 0; border-bottom:1px solid #e3d9c2; font-family:Lora,Georgia,serif;">${product.name}</td>
-        <td style="padding:10px 0; border-bottom:1px solid #e3d9c2; text-align:center; font-family:monospace; font-size:.85rem;">× ${cartItem.quantity}</td>
-        <td style="padding:10px 0; border-bottom:1px solid #e3d9c2; text-align:right; font-family:'Playfair Display',Georgia,serif; font-weight:700;">${(product.price * cartItem.quantity).toFixed(2)} €</td>
-      </tr>
-    `).join('');
-
-    const emailHtml = (heading: string, intro: string) => `
-      <div style="font-family:'Lora',Georgia,serif; max-width:600px; margin:0 auto; padding:2rem; background:#f3ede1; color:#1a1612;">
-        <div style="border-bottom:1px solid #1a1612; padding-bottom:1rem; text-align:center; margin-bottom:2rem;">
-          <h1 style="font-family:'Playfair Display',Georgia,serif; font-size:2rem; font-weight:800; margin:0;">The Ordinary Emporium</h1>
-          <p style="font-style:italic; color:#4a423a; font-size:.9rem; margin:.5rem 0 0;">Das Wochenblatt für vollkommen belanglose Gegenstände.</p>
-        </div>
-        <p style="font-family:monospace; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:#7a1f1f; margin:0 0 .5rem;">${heading}</p>
-        <h2 style="font-family:'Playfair Display',Georgia,serif; font-size:1.6rem; font-weight:800; margin:0 0 .5rem;">${intro}</h2>
-        <p style="font-family:monospace; font-size:.78rem; color:#7a6f5f; margin:0 0 1.5rem;">Bordereau ${bordereauNr}</p>
-        <table style="width:100%; border-collapse:collapse;">
-          <thead>
-            <tr>
-              <th style="text-align:left; font-family:monospace; font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; color:#7a6f5f; padding-bottom:8px; border-bottom:1px solid #1a1612;">Artikel</th>
-              <th style="text-align:center; font-family:monospace; font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; color:#7a6f5f; padding-bottom:8px; border-bottom:1px solid #1a1612;">Menge</th>
-              <th style="text-align:right; font-family:monospace; font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; color:#7a6f5f; padding-bottom:8px; border-bottom:1px solid #1a1612;">Summe</th>
-            </tr>
-          </thead>
-          <tbody>${itemRows}</tbody>
-        </table>
-        <div style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid #1a1612;">
-          <div style="display:flex; justify-content:space-between; padding:.3rem 0;">
-            <span style="color:#7a6f5f;">Zwischensumme</span>
-            <span>${subtotal.toFixed(2)} €</span>
-          </div>
-          ${discount > 0 ? `
-          <div style="display:flex; justify-content:space-between; padding:.3rem 0;">
-            <span style="color:#7a6f5f;">Gutschein${couponCode ? ` (${couponCode})` : ''}</span>
-            <span style="color:#7a1f1f;">−${discount.toFixed(2)} €</span>
-          </div>` : ''}
-          <div style="display:flex; justify-content:space-between; padding:.3rem 0;">
-            <span style="color:#7a6f5f;">Versand</span>
-            <span>${shippingCost.toFixed(2)} €</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; padding:.6rem 0 0; font-weight:700;">
-            <span>Gesamt</span>
-            <span style="font-family:'Playfair Display',Georgia,serif; font-size:1.4rem;">${total.toFixed(2)} €</span>
-          </div>
-        </div>
-        <p style="font-family:monospace; font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:#7a6f5f; margin:2rem 0 0; text-align:center;">
-          © ${now.getFullYear()} The Ordinary Emporium
-        </p>
-      </div>
-    `;
+    const emailData = {
+      bordereauNr,
+      lines: lines.map((l) => ({ name: l.product.name, quantity: l.quantity, price: l.product.price })),
+      subtotal,
+      discount,
+      couponCode,
+      shippingCost,
+      total,
+    };
 
     // An den Anbieter
     if (import.meta.env.MY_EMAIL) {
@@ -289,7 +296,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         from: 'onboarding@resend.dev',
         to:   import.meta.env.MY_EMAIL,
         subject: `Neuer Eingang im Bordereau ${bordereauNr}`,
-        html:    emailHtml('Eingang im Bordereau', 'Eine neue Bestellung ist eingegangen.'),
+        html:    renderOrderEmail('Eingang im Bordereau', 'Eine neue Bestellung ist eingegangen.', emailData),
       });
     }
 
@@ -298,14 +305,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       from: 'onboarding@resend.dev',
       to:   data.email,
       subject: `Ihre Bestellung ist aktenkundig · Bordereau ${bordereauNr}`,
-      html:    emailHtml('Bestätigung', 'Vielen Dank für Ihre angemessene Bestellung.'),
+      html:    renderOrderEmail('Bestätigung', 'Vielen Dank für Ihre angemessene Bestellung.', emailData),
     });
   } catch (err) {
     // Mail-Fehler darf den Bestell-Erfolg nicht kippen
     console.error('Mail-Versand fehlgeschlagen:', err);
   }
 
-  // 12) Cookie für die Bestätigungsseite setzen
+  // 10) Cookie für die Bestätigungsseite setzen
   cookies.set('order_placed', bordereauNr, {
     path: '/',
     httpOnly: false,
@@ -313,9 +320,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     maxAge: 60, // 60 Sekunden — nur für den Redirect
   });
 
-  // 13) Antworten — der Client navigiert mit dem Token (nicht der ratbaren Nr)
-  return new Response(JSON.stringify({ ok: true, bordereauNr, token }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  // 11) Antworten — der Client navigiert mit dem Token (nicht der ratbaren Nr)
+  return jsonOk({ ok: true, bordereauNr, token });
 };

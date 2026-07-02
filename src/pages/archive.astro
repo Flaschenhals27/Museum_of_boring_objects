@@ -11,6 +11,7 @@
 
 import Layout from '../layouts/Layout.astro';
 import { db, Item, lte, asc } from 'astro:db';
+import { makeSignatur, makeClassification } from '../lib/signatur';
 
 const items = await db
   .select()
@@ -18,15 +19,6 @@ const items = await db
   .where(lte(Item.boredom, 7))
   .orderBy(asc(Item.boredom));
 
-const classifications = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache', 'Apparat', 'Utensil'];
-function makeSignatur(id: number, boredom: number) {
-  const a = String(boredom).padStart(2, '0');
-  const b = String((id * 137) % 1000).padStart(3, '0');
-  return `${a}.${b}`;
-}
-function makeClassification(id: number) {
-  return classifications[id % classifications.length];
-}
 ---
 
 <Layout title="Archiv">

@@ -18,6 +18,7 @@
 import type { APIRoute } from 'astro';
 import { Resend } from 'resend';
 import { checkRateLimit, getClientIp } from '../../../lib/rateLimit';
+import { jsonOk, jsonError } from '../../../lib/http';
 
 const RATE_MAX_ATTEMPTS = 5;
 const RATE_WINDOW_MS    = 60 * 60 * 1000;  // 60 Minuten
@@ -27,9 +28,11 @@ export const POST: APIRoute = async ({ request }) => {
   const ip = getClientIp(request);
   const limit = checkRateLimit(`newsletter:${ip}`, RATE_MAX_ATTEMPTS, RATE_WINDOW_MS);
   if (!limit.allowed) {
-    return new Response(JSON.stringify({
-      error: `Zu viele Anmeldeversuche. Bitte ${Math.ceil(limit.retryAfterSec / 60)} Minuten warten.`,
-    }), { status: 429 });
+    return jsonError(
+      `Zu viele Anmeldeversuche. Bitte ${Math.ceil(limit.retryAfterSec / 60)} Minuten warten.`,
+      429,
+      { 'Retry-After': String(limit.retryAfterSec) },
+    );
   }
 
   // 2) Body parsen + validieren
@@ -37,15 +40,15 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     body = await request.json();
   } catch {
-    return new Response(JSON.stringify({ error: 'Ungültiger Request.' }), { status: 400 });
+    return jsonError('Ungültiger Request.', 400);
   }
 
   const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
   if (!email) {
-    return new Response(JSON.stringify({ error: 'E-Mail-Adresse fehlt.' }), { status: 400 });
+    return jsonError('E-Mail-Adresse fehlt.', 400);
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
-    return new Response(JSON.stringify({ error: 'E-Mail-Adresse hat kein gültiges Format.' }), { status: 400 });
+    return jsonError('E-Mail-Adresse hat kein gültiges Format.', 400);
   }
 
   // 3) Bestätigungsmail versenden
@@ -59,17 +62,12 @@ export const POST: APIRoute = async ({ request }) => {
     });
   } catch (err) {
     console.error('[NEWSLETTER] Mail-Versand fehlgeschlagen:', err);
-    return new Response(JSON.stringify({
-      error: 'Bestätigungsmail konnte nicht versendet werden. Bitte später erneut versuchen.',
-    }), { status: 502 });
+    return jsonError('Bestätigungsmail konnte nicht versendet werden. Bitte später erneut versuchen.', 502);
   }
 
-  return new Response(JSON.stringify({
+  return jsonOk({
     success: true,
     message: 'Eine Bestätigung wurde Ihnen zugestellt — sofern unsere Setzerei dazu gekommen ist.',
-  }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
   });
 };
 

@@ -12,10 +12,11 @@
 
 import Layout from '../../layouts/Layout.astro';
 import { db, Item, eq, ne } from 'astro:db';
-import AddToCart from '../../components/AddToChart.tsx';
+import AddToCart from '../../components/AddToCart.tsx';
 import ImageGallery from '../../components/ImageGallery.tsx';
 import RecentlyViewed from '../../components/RecentlyViewed.tsx';
 import WishlistButton from '../../components/WishlistButton.tsx';
+import { makeSignatur, makeClassification } from '../../lib/signatur';
 
 // --- 1) ID-Validierung ---
 const rawId = Astro.params.id ?? '';
@@ -47,9 +48,8 @@ const recommendation = allOthers[Math.floor(Math.random() * Math.max(allOthers.l
 const recImages = (recommendation?.images as string[]) ?? [];
 const recThumbnail = recImages[0];
 
-const classifications = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache'];
-const classification = classifications[item.id % classifications.length];
-const sign = `${String(item.boredom).padStart(2,'0')}.${String((item.id * 137) % 1000).padStart(3,'0')}`;
+const classification = makeClassification(item.id);
+const sign = makeSignatur(item.id, item.boredom);
 const isBegehrt = item.boredom >= 9;
 ---
 

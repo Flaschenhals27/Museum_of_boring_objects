@@ -33,13 +33,13 @@ export default function AddToCart(props: Props) {
         setQuantity(1);
         setTimeout(() => setIsAdded(false), 2000);
         window.dispatchEvent(new CustomEvent('cart-updated'));
-        (window as any).toast?.('Vermerkt — im Warenkorb.', 'success');
+        window.toast?.('Vermerkt — im Warenkorb.', 'success');
       } else {
         const data = await res.json().catch(() => ({}));
-        (window as any).toast?.(data.error ?? 'Konnte nicht hinzugefügt werden.', 'error');
+        window.toast?.(data.error ?? 'Konnte nicht hinzugefügt werden.', 'error');
       }
     } catch (err) {
-      (window as any).toast?.('Netzwerkfehler. Bitte erneut versuchen.', 'error');
+      window.toast?.('Netzwerkfehler. Bitte erneut versuchen.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -100,75 +100,6 @@ export default function AddToCart(props: Props) {
           {label()}
         </button>
       </div>
-
-      <style>{`
-        .addcart-block {
-          display: flex;
-          flex-direction: column;
-          gap: 0.7rem;
-          margin-top: 1rem;
-        }
-        .addcart-stock {
-          font-family: var(--font-meta);
-          font-size: 0.78rem;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--ink-mute);
-          margin: 0;
-        }
-        .addcart-stock strong {
-          color: var(--ink);
-          font-weight: 600;
-        }
-        .addcart-row {
-          display: flex;
-          gap: 0;
-          align-items: stretch;
-        }
-        .addcart-qty {
-          width: 70px;
-          padding: 0.85rem 0.5rem;
-          border: 1px solid var(--ink);
-          border-right: none;
-          background: var(--paper);
-          color: var(--ink);
-          font-family: var(--font-display);
-          font-size: 1.1rem;
-          text-align: center;
-          font-weight: 600;
-        }
-        .addcart-qty:focus {
-          outline: 2px solid var(--red);
-          outline-offset: -1px;
-        }
-        .addcart-btn {
-          flex: 1;
-          padding: 0.85rem 1.2rem;
-          background: var(--ochre);
-          color: var(--ink);
-          border: 1px solid var(--ink);
-          font-family: var(--font-meta);
-          font-size: 0.85rem;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.15s;
-        }
-        .addcart-btn:hover:not(:disabled) {
-          background: var(--ochre-deep);
-        }
-        .addcart-btn.is-added {
-          background: var(--ink);
-          color: var(--paper);
-        }
-        .addcart-btn.is-out,
-        .addcart-btn:disabled {
-          background: var(--paper-3);
-          color: var(--ink-mute);
-          cursor: not-allowed;
-        }
-      `}</style>
     </div>
   );
 }

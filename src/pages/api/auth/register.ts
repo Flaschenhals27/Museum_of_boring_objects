@@ -17,6 +17,7 @@ import { db, User, eq, or } from 'astro:db';
 import bcrypt from 'bcryptjs';
 import { createToken } from '../../../lib/auth';
 import { checkRateLimit, getClientIp } from '../../../lib/rateLimit';
+import { jsonOk, jsonError } from '../../../lib/http';
 
 const REG_MAX_ATTEMPTS = 3;
 const REG_WINDOW_MS    = 60 * 60 * 1000;  // 60 Minuten
@@ -26,12 +27,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const ip = getClientIp(request);
   const limit = checkRateLimit(`register:${ip}`, REG_MAX_ATTEMPTS, REG_WINDOW_MS);
   if (!limit.allowed) {
-    return new Response(JSON.stringify({
-      error: `Zu viele Registrierungsversuche. Bitte ${Math.ceil(limit.retryAfterSec / 60)} Minuten warten.`,
-    }), {
-      status: 429,
-      headers: { 'Retry-After': String(limit.retryAfterSec) },
-    });
+    return jsonError(
+      `Zu viele Registrierungsversuche. Bitte ${Math.ceil(limit.retryAfterSec / 60)} Minuten warten.`,
+      429,
+      { 'Retry-After': String(limit.retryAfterSec) },
+    );
   }
 
   // 2) Body parsen
@@ -39,7 +39,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     body = await request.json();
   } catch {
-    return new Response(JSON.stringify({ error: 'Ungültiger Request.' }), { status: 400 });
+    return jsonError('Ungültiger Request.', 400);
   }
 
   const email    = typeof body.email    === 'string' ? body.email.trim().toLowerCase() : '';
@@ -50,19 +50,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   // 3) Validierung
   if (!email || !username || !password || !prename || !surname) {
-    return new Response(JSON.stringify({ error: 'Alle Felder sind erforderlich.' }), { status: 400 });
+    return jsonError('Alle Felder sind erforderlich.', 400);
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return new Response(JSON.stringify({ error: 'E-Mail-Adresse hat kein gültiges Format.' }), { status: 400 });
+    return jsonError('E-Mail-Adresse hat kein gültiges Format.', 400);
   }
   if (!/^[a-zA-Z0-9_-]{3,32}$/.test(username)) {
-    return new Response(JSON.stringify({ error: 'Benutzername: 3-32 Zeichen, nur Buchstaben, Zahlen, _ und -.' }), { status: 400 });
+    return jsonError('Benutzername: 3-32 Zeichen, nur Buchstaben, Zahlen, _ und -.', 400);
   }
   if (password.length < 8 || password.length > 128) {
-    return new Response(JSON.stringify({ error: 'Passwort muss 8-128 Zeichen lang sein.' }), { status: 400 });
+    return jsonError('Passwort muss 8-128 Zeichen lang sein.', 400);
   }
   if (prename.length > 64 || surname.length > 64) {
-    return new Response(JSON.stringify({ error: 'Vor- bzw. Nachname zu lang.' }), { status: 400 });
+    return jsonError('Vor- bzw. Nachname zu lang.', 400);
   }
 
   // 4) Existenz-Check (entweder Email oder Username)
@@ -70,9 +70,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     or(eq(User.email, email), eq(User.username, username))
   );
   if (existing.length > 0) {
-    return new Response(JSON.stringify({
-      error: 'Diese E-Mail oder dieser Benutzername ist bereits registriert.',
-    }), { status: 409 });
+    return jsonError('Diese E-Mail oder dieser Benutzername ist bereits registriert.', 409);
   }
 
   // 5) Passwort hashen + User anlegen
@@ -96,11 +94,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     sameSite: 'lax',
   });
 
-  return new Response(JSON.stringify({
+  return jsonOk({
     success: true,
     user: { id: newUser.id, email: newUser.email, username: newUser.username, prename: newUser.prename },
-  }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
   });
 };

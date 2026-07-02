@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { db, Cart, eq } from 'astro:db';
 import { getUserFromCookie } from '../../../lib/auth';
+import { jsonOk } from '../../../lib/http';
 
 export const POST: APIRoute = async ({ cookies }) => {
   // NEU: Warenkorb bleibt per userId gespeichert – Session-Verknüpfung lösen
@@ -18,8 +19,5 @@ export const POST: APIRoute = async ({ cookies }) => {
   cookies.delete('auth_token', { path: '/' });
   cookies.delete('cart_session', { path: '/' });
 
-  return new Response(JSON.stringify({ success: true }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' }
-  });
+  return jsonOk({ success: true });
 };

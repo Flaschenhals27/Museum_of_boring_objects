@@ -13,23 +13,18 @@
 
 import type { APIRoute } from 'astro';
 import { getCart, loadCartItems, cartSubtotal } from '../../../lib/cart';
+import { jsonOk } from '../../../lib/http';
 
 export const GET: APIRoute = async ({ cookies }) => {
   const cart = await getCart(cookies);
 
   if (!cart) {
-    return new Response(JSON.stringify({ items: [], total: 0 }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonOk({ items: [], total: 0 });
   }
 
   // prune: verwaiste Positionen (Item gelöscht) gleich aus dem Cart räumen
   const items = await loadCartItems(cart.id, { prune: true });
   const total = cartSubtotal(items);
 
-  return new Response(JSON.stringify({ items, total }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
+  return jsonOk({ items, total });
 };

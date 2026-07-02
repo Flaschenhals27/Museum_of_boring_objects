@@ -11,6 +11,7 @@
 
 import Layout from '../layouts/Layout.astro';
 import { db, Item, like, or } from 'astro:db';
+import { makeSignatur, makeClassification } from '../lib/signatur';
 
 const rawQuery = Astro.url.searchParams.get('q') ?? '';
 const query = rawQuery.trim().slice(0, 100);   // Cap zur Sicherheit
@@ -32,15 +33,6 @@ if (query.length > 0) {
     );
 }
 
-const classifications = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache', 'Apparat', 'Utensil'];
-function makeSignatur(id: number, boredom: number) {
-  const a = String(boredom).padStart(2, '0');
-  const b = String((id * 137) % 1000).padStart(3, '0');
-  return `${a}.${b}`;
-}
-function makeClassification(id: number) {
-  return classifications[id % classifications.length];
-}
 ---
 
 <Layout title={query ? `Suche · ${query}` : 'Suchen'}>

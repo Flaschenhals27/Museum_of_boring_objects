@@ -2,6 +2,8 @@
 import Layout from '../layouts/Layout.astro';
 import { getCart, loadCartItems, cartSubtotal } from '../lib/cart';
 import { resolveDiscount, describeCoupon } from '../lib/coupon';
+import { makeSignatur } from '../lib/signatur';
+import { SHIPPING_COST } from '../lib/shipping';
 
 const cartRecord = await getCart(Astro.cookies);
 
@@ -13,20 +15,16 @@ if (cartRecord) {
 }
 
 const isEmpty = cartItems.length === 0;
-const shippingCost = isEmpty ? 0 : 12.00;
+const shippingCost = isEmpty ? 0 : SHIPPING_COST;
 
 // Gutschein: auf dem Cart vermerkten Code auflösen und Rabatt berechnen
 const { coupon, discount } = await resolveDiscount(cartRecord?.couponCode, total);
 const couponLabel = coupon ? describeCoupon(coupon) : null;
 
 const grandTotal = Math.max(0, total - discount) + shippingCost;
-const bordereauNr = `2026/${String(cartRecord?.id ?? 0).padStart(5, '0')}`;
-const classifications = ['Reliquie', 'Massenware', 'Vestige', 'Mobiliar', 'Fundsache'];
-function makeSignatur(id: number, boredom: number) {
-  const a = String(boredom).padStart(2, '0');
-  const b = String((id * 137) % 1000).padStart(3, '0');
-  return `${a}.${b}`;
-}
+// "K-"-Präfix: unterscheidet den Warenkorb-Vorgang vom Nummernkreis
+// echter Bestellungen (deren Bordereau-Nr. hat das Format "2026/00042").
+const bordereauNr = `K-${String(cartRecord?.id ?? 0).padStart(5, '0')}`;
 ---
 
 <Layout title="Warenkorb">
@@ -70,7 +68,6 @@ function makeSignatur(id: number, boredom: number) {
             const images = (item.product.images as string[]) ?? [];
             const thumbnail = images[0];
             const isBegehrt = item.product.boredom >= 9;
-            const classification = classifications[item.product.id % classifications.length];
             const sign = makeSignatur(item.product.id, item.product.boredom);
             return (
               <div class="cart-row">
