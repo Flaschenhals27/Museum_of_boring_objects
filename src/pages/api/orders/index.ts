@@ -100,8 +100,15 @@ function validate(body: any): { ok: true; data: any } | { ok: false; error: stri
     return { ok: false, error: 'E-Mail-Adresse hat kein gültiges Format.' };
   }
 
-  // PLZ: 4-10 Zeichen (DE: 5, andere Länder anders)
-  if (!/^[A-Za-z0-9 \-]{4,10}$/.test(body.postal)) {
+  // PLZ: für Deutschland (Default, das Formular bietet kein anderes Land)
+  // streng 5 Ziffern; für andere Länder (nur per API erreichbar) locker.
+  const country = (body.country ?? 'Deutschland').trim();
+  const postal  = body.postal.trim();
+  if (country === 'Deutschland') {
+    if (!/^\d{5}$/.test(postal)) {
+      return { ok: false, error: 'Die PLZ muss aus genau 5 Ziffern bestehen.' };
+    }
+  } else if (!/^[A-Za-z0-9 \-]{3,10}$/.test(postal)) {
     return { ok: false, error: 'Postleitzahl scheint ungültig.' };
   }
 
@@ -112,9 +119,9 @@ function validate(body: any): { ok: true; data: any } | { ok: false; error: stri
       prename:      body.prename.trim(),
       surname:      body.surname.trim(),
       street:       body.street.trim(),
-      postal:       body.postal.trim(),
+      postal,
       city:         body.city.trim(),
-      country:      (body.country ?? 'Deutschland').trim(),
+      country,
       paymentMethod: body.paymentMethod ?? 'milliardaer',
       notes:        body.notes?.trim() || null,
     }
