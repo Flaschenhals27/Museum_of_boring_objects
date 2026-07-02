@@ -223,8 +223,26 @@ const grandTotal = Math.max(0, total - discount) + shippingCost;
     return (document.getElementById(id) as HTMLInputElement)?.value?.trim() ?? '';
   }
 
+  // Pflichtfelder mit deutschen Labels — für Fehlermeldung und rote Markierung
+  const requiredFields = [
+    { key: 'prename', id: 'cf-prename', label: 'Vorname' },
+    { key: 'surname', id: 'cf-surname', label: 'Nachname' },
+    { key: 'street',  id: 'cf-street',  label: 'Straße & Hausnummer' },
+    { key: 'postal',  id: 'cf-postal',  label: 'PLZ' },
+    { key: 'city',    id: 'cf-city',    label: 'Ort' },
+    { key: 'email',   id: 'cf-email',   label: 'E-Mail' },
+  ] as const;
+
+  // Markierung löschen, sobald der Nutzer im Feld tippt
+  for (const field of requiredFields) {
+    document.getElementById(field.id)?.addEventListener('input', (e) => {
+      (e.currentTarget as HTMLInputElement).classList.remove('invalid');
+    });
+  }
+
   orderBtn.addEventListener('click', async () => {
     hideError();
+    requiredFields.forEach((f) => document.getElementById(f.id)?.classList.remove('invalid'));
 
     // 1) Werte einsammeln
     const payload = {
@@ -237,12 +255,17 @@ const grandTotal = Math.max(0, total - discount) + shippingCost;
       paymentMethod: (document.querySelector('input[name="payment"]:checked') as HTMLInputElement)?.value ?? 'milliardaer',
     };
 
-    // 2) Client-seitige Mindest-Prüfung — die richtige Validierung macht der Server
-    for (const [key, val] of Object.entries(payload)) {
-      if (!val) {
-        showError(`Bitte alle Felder ausfüllen (fehlt: ${key}).`);
-        return;
-      }
+    // 2) Client-seitige Mindest-Prüfung — leere Felder rot markieren und
+    //    auf Deutsch benennen (die richtige Validierung macht der Server)
+    const missing = requiredFields.filter((f) => !payload[f.key]);
+    if (missing.length > 0) {
+      missing.forEach((f) => document.getElementById(f.id)?.classList.add('invalid'));
+      showError(
+        missing.length === 1
+          ? `Bitte füllen Sie noch aus: ${missing[0].label}.`
+          : `Bitte füllen Sie noch aus: ${missing.map((f) => f.label).join(', ')}.`
+      );
+      return;
     }
 
     // 3) UI-Feedback: Button sperren

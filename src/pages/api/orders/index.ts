@@ -80,10 +80,18 @@ function validate(body: any): { ok: true; data: any } | { ok: false; error: stri
     return { ok: false, error: 'Ungültiger Request-Body.' };
   }
 
-  const required = ['email', 'prename', 'surname', 'street', 'postal', 'city'];
-  for (const field of required) {
+  // Feld-Keys mit deutschen Labels für die Fehlermeldung
+  const required: Record<string, string> = {
+    email:   'E-Mail',
+    prename: 'Vorname',
+    surname: 'Nachname',
+    street:  'Straße & Hausnummer',
+    postal:  'PLZ',
+    city:    'Ort',
+  };
+  for (const [field, label] of Object.entries(required)) {
     if (typeof body[field] !== 'string' || body[field].trim() === '') {
-      return { ok: false, error: `Feld "${field}" fehlt oder ist leer.` };
+      return { ok: false, error: `Das Feld "${label}" fehlt oder ist leer.` };
     }
   }
 
