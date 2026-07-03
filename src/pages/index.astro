@@ -90,7 +90,7 @@ function buildUrl(overrides: { filter?: Filter; sort?: Sort }) {
     {/* Section Header */}
     <div class="katalog-head">
       <div class="section-marker">
-        <span class="section-marker__no">N° 02</span>
+        <span class="section-marker__no">N° 01</span>
         <span class="section-marker__line"></span>
         <span class="section-marker__label">Katalog · Sämtliche Einträge</span>
       </div>
@@ -129,7 +129,10 @@ function buildUrl(overrides: { filter?: Filter; sort?: Sort }) {
       {items.map((item, idx) => {
         const images = (item.images as string[]) ?? [];
         const thumbnail = images[0];
-        const signum = String(idx + 2).padStart(2, '0');
+        // Laufende Position in der Liste, 1-basiert — einheitlich mit
+        // Archiv und Suche (dort i + 1). Vorher idx + 2, wodurch der
+        // Katalog grundlos bei N° 02 statt N° 01 begann.
+        const signum = String(idx + 1).padStart(2, '0');
         const classification = makeClassification(item.id);
         const sign = makeSignatur(item.id, item.boredom);
         const isBegehrt = item.boredom >= 9;
