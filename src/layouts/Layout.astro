@@ -1,5 +1,7 @@
 ---
 import NavBar from '../components/NavBar.tsx';
+import { company } from '../lib/company';
+import { getWeather } from '../lib/weather';
 import '../styles/global.css';
 interface Props {
 	title: string;
@@ -19,6 +21,14 @@ const siteName = 'The Ordinary Emporium';
 const fullTitle = `${title} · ${siteName}`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'http://localhost:4321').toString();
 const imageURL = new URL(image, Astro.site ?? 'http://localhost:4321').toString();
+
+// Echtes Wetter für die Banner-Zeile (Open-Meteo, gecacht in lib/weather).
+// Standort kommt aus der .env (IMPRESSUM_MAP_MARKER_LAT/LNG bzw. IMPRESSUM_CITY).
+const weather = await getWeather();
+const weatherText = weather
+  ? `${weather.temp} °C, ${weather.label}`
+  : 'WETTER UNBEKANNT. WIE SO VIELES.';
+const cityLabel = company.city.toUpperCase();
 
 // Datum auf Deutsch formatieren — wie ein Zeitungskopf
 const now = new Date();
@@ -101,9 +111,9 @@ const ausgabeNrRoman = toRoman(weekNumber);
 			<div class="top-banner__left">
 				<span>{dateString}</span>
 				<span class="top-banner__sep">·</span>
-				<span>BERLIN</span>
+				<span>{cityLabel}</span>
 				<span class="top-banner__sep">·</span>
-				<span class="top-banner__weather"><span class="top-banner__dot"></span> 17 °C, BEDECKT</span>
+				<span class="top-banner__weather"><span class="top-banner__dot"></span> {weatherText}</span>
 			</div>
 			<div class="top-banner__center">JAHRGANG {jahrgang} <span class="top-banner__sep">·</span> AUSGABE N° {ausgabeNr}</div>
 			<div class="top-banner__right">VERSAND WERKTAGS <span class="top-banner__sep">·</span> IRGENDWANN</div>
