@@ -183,6 +183,7 @@ const { name: firma, street, postal, city, email, tel, mapBbox, markerLat, marke
 </Layout>
 
 <script>
+  import { isValidEmail, isValidName } from '../lib/validate';
   const form = document.getElementById('kontakt-form') as HTMLFormElement;
   const submitBtn = document.getElementById('kf-submit') as HTMLButtonElement;
   const success = document.getElementById('form-success') as HTMLElement;
@@ -204,6 +205,14 @@ const { name: firma, street, postal, city, email, tel, mapBbox, markerLat, marke
       const el = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
       if (!el.value.trim()) { markInvalid(id); valid = false; }
     });
+
+    // Format-Checks für die befüllten Namens-/E-Mail-Felder
+    const prenameEl = document.getElementById('kf-prename') as HTMLInputElement;
+    const surnameEl = document.getElementById('kf-surname') as HTMLInputElement;
+    const emailEl   = document.getElementById('kf-email') as HTMLInputElement;
+    if (prenameEl.value.trim() && !isValidName(prenameEl.value.trim())) { markInvalid('kf-prename'); valid = false; }
+    if (surnameEl.value.trim() && !isValidName(surnameEl.value.trim())) { markInvalid('kf-surname'); valid = false; }
+    if (emailEl.value.trim() && !isValidEmail(emailEl.value.trim().toLowerCase())) { markInvalid('kf-email'); valid = false; }
 
     const privacy = document.getElementById('kf-privacy') as HTMLInputElement;
     if (!privacy.checked) { markInvalid('kf-privacy'); valid = false; }

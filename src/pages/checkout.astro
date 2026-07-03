@@ -199,6 +199,7 @@ const grandTotal = Math.max(0, total - discount) + shippingCost;
 </Layout>
 
 <script>
+  import { isValidEmail, isValidName, isValidCity, isValidStreet, isValidPostalDE } from '../lib/validate';
   // -------------------------------------------------------------------
   // Checkout-Submit-Logik
   // -------------------------------------------------------------------
@@ -268,15 +269,20 @@ const grandTotal = Math.max(0, total - discount) + shippingCost;
       return;
     }
 
-    // 2b) Format-Checks: PLZ (Deutschland: genau 5 Ziffern) und E-Mail
-    if (!/^\d{5}$/.test(payload.postal)) {
-      document.getElementById('cf-postal')?.classList.add('invalid');
-      showError('Die PLZ muss aus genau 5 Ziffern bestehen.');
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
-      document.getElementById('cf-email')?.classList.add('invalid');
-      showError('Die E-Mail-Adresse hat kein gültiges Format.');
+    // 2b) Format-Checks — dieselben Regeln wie serverseitig (lib/validate).
+    //     Erstes ungültiges Feld markieren und melden.
+    const formatChecks = [
+      { id: 'cf-prename', ok: isValidName(payload.prename),   msg: 'Vorname: nur Buchstaben, Bindestrich und Apostroph (keine Ziffern).' },
+      { id: 'cf-surname', ok: isValidName(payload.surname),   msg: 'Nachname: nur Buchstaben, Bindestrich und Apostroph (keine Ziffern).' },
+      { id: 'cf-street',  ok: isValidStreet(payload.street),  msg: 'Straße & Hausnummer scheint ungültig.' },
+      { id: 'cf-postal',  ok: isValidPostalDE(payload.postal), msg: 'Die PLZ muss aus genau 5 Ziffern bestehen.' },
+      { id: 'cf-city',    ok: isValidCity(payload.city),      msg: 'Ort: nur Buchstaben, Bindestrich und Punkt (keine Ziffern).' },
+      { id: 'cf-email',   ok: isValidEmail(payload.email),    msg: 'Die E-Mail-Adresse hat kein gültiges Format.' },
+    ];
+    const bad = formatChecks.find((c) => !c.ok);
+    if (bad) {
+      document.getElementById(bad.id)?.classList.add('invalid');
+      showError(bad.msg);
       return;
     }
 

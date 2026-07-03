@@ -18,6 +18,7 @@ import bcrypt from 'bcryptjs';
 import { createToken } from '../../../lib/auth';
 import { checkRateLimit, getClientIp } from '../../../lib/rateLimit';
 import { jsonOk, jsonError } from '../../../lib/http';
+import { isValidEmail, isValidName, isValidUsername } from '../../../lib/validate';
 
 const REG_MAX_ATTEMPTS = 3;
 const REG_WINDOW_MS    = 60 * 60 * 1000;  // 60 Minuten
@@ -52,17 +53,20 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   if (!email || !username || !password || !prename || !surname) {
     return jsonError('Alle Felder sind erforderlich.', 400);
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!isValidEmail(email)) {
     return jsonError('E-Mail-Adresse hat kein gültiges Format.', 400);
   }
-  if (!/^[a-zA-Z0-9_-]{3,32}$/.test(username)) {
+  if (!isValidUsername(username)) {
     return jsonError('Benutzername: 3-32 Zeichen, nur Buchstaben, Zahlen, _ und -.', 400);
   }
   if (password.length < 8 || password.length > 128) {
     return jsonError('Passwort muss 8-128 Zeichen lang sein.', 400);
   }
-  if (prename.length > 64 || surname.length > 64) {
-    return jsonError('Vor- bzw. Nachname zu lang.', 400);
+  if (!isValidName(prename)) {
+    return jsonError('Vorname: nur Buchstaben, Bindestrich und Apostroph (keine Ziffern).', 400);
+  }
+  if (!isValidName(surname)) {
+    return jsonError('Nachname: nur Buchstaben, Bindestrich und Apostroph (keine Ziffern).', 400);
   }
 
   // 4) Existenz-Check (entweder Email oder Username)

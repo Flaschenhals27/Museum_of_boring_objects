@@ -40,6 +40,7 @@ import { renderOrderEmail } from '../../../lib/email';
 import { jsonOk, jsonError } from '../../../lib/http';
 import { SHIPPING_COST } from '../../../lib/shipping';
 import { checkRateLimit, getClientIp } from '../../../lib/rateLimit';
+import { isValidEmail, isValidName, isValidCity, isValidStreet, isValidPostalDE } from '../../../lib/validate';
 
 const ORDER_MAX_ATTEMPTS = 10;
 const ORDER_WINDOW_MS    = 15 * 60 * 1000;
@@ -95,17 +96,36 @@ function validate(body: any): { ok: true; data: any } | { ok: false; error: stri
     }
   }
 
-  // E-Mail Plausibilität (sehr grobe Prüfung)
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
+  // Inhaltliche Einzelprüfung (nicht nur "vorhanden") — auf den
+  // getrimmten Werten. Regeln zentral in lib/validate.
+  const email   = body.email.trim();
+  const prename = body.prename.trim();
+  const surname = body.surname.trim();
+  const street  = body.street.trim();
+  const city    = body.city.trim();
+  const country = (body.country ?? 'Deutschland').trim();
+  const postal  = body.postal.trim();
+
+  if (!isValidEmail(email)) {
     return { ok: false, error: 'E-Mail-Adresse hat kein gültiges Format.' };
+  }
+  if (!isValidName(prename)) {
+    return { ok: false, error: 'Vorname: nur Buchstaben, Bindestrich und Apostroph (keine Ziffern).' };
+  }
+  if (!isValidName(surname)) {
+    return { ok: false, error: 'Nachname: nur Buchstaben, Bindestrich und Apostroph (keine Ziffern).' };
+  }
+  if (!isValidStreet(street)) {
+    return { ok: false, error: 'Straße & Hausnummer scheint ungültig.' };
+  }
+  if (!isValidCity(city)) {
+    return { ok: false, error: 'Ort: nur Buchstaben, Bindestrich und Punkt (keine Ziffern).' };
   }
 
   // PLZ: für Deutschland (Default, das Formular bietet kein anderes Land)
   // streng 5 Ziffern; für andere Länder (nur per API erreichbar) locker.
-  const country = (body.country ?? 'Deutschland').trim();
-  const postal  = body.postal.trim();
   if (country === 'Deutschland') {
-    if (!/^\d{5}$/.test(postal)) {
+    if (!isValidPostalDE(postal)) {
       return { ok: false, error: 'Die PLZ muss aus genau 5 Ziffern bestehen.' };
     }
   } else if (!/^[A-Za-z0-9 \-]{3,10}$/.test(postal)) {
@@ -115,13 +135,7 @@ function validate(body: any): { ok: true; data: any } | { ok: false; error: stri
   return {
     ok: true,
     data: {
-      email:        body.email.trim(),
-      prename:      body.prename.trim(),
-      surname:      body.surname.trim(),
-      street:       body.street.trim(),
-      postal,
-      city:         body.city.trim(),
-      country,
+      email, prename, surname, street, postal, city, country,
       paymentMethod: body.paymentMethod ?? 'milliardaer',
       notes:        body.notes?.trim() || null,
     }
