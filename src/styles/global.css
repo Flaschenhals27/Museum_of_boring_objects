@@ -296,14 +296,20 @@ a:hover { color: var(--red); }
 }
 
 .nav-anmelden {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
 	font-family: var(--font-meta);
 	font-size: 0.78rem;
 	text-transform: uppercase;
 	letter-spacing: 0.1em;
 	color: var(--ink);
 	text-decoration: none;
+	padding: 0.55rem 0.95rem;
+	border: 1px solid var(--ink);
+	transition: background 0.15s, color 0.15s;
 }
-.nav-anmelden:hover { color: var(--red); }
+.nav-anmelden:hover { background: var(--ink); color: var(--paper); }
 
 .nav-cart {
 	display: inline-flex;
