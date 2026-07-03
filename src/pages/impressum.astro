@@ -1,0 +1,142 @@
+---
+// =====================================================================
+// pages/impressum.astro — Impressum (Anbieterkennzeichnung)
+// =====================================================================
+// Alle personenbezogenen Angaben kommen aus lib/company.ts und damit
+// aus der .env — im Repo stehen nur die Max-Mustermann-Fallbacks.
+// Deshalb kann diese Datei gefahrlos committet werden (war früher
+// gitignored, als die Daten noch hart im Markup standen — dadurch
+// ist sie beim Rechnerwechsel einmal "verschwunden").
+//
+// Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
+// =====================================================================
+
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+import { company } from '../lib/company';
+import '../styles/legal.css';
+
+const { name: firma, street, postal, city, email, tel, boss, district, districtAddress, vatId } = company;
+
+const stand = '2. Juli 2026';
+
+const sections = [
+  { id: 'anbieter',   no: '§ 1', title: 'Angaben gemäß § 5 DDG' },
+  { id: 'kontakt',    no: '§ 2', title: 'Kontakt' },
+  { id: 'register',   no: '§ 3', title: 'Registereintrag' },
+  { id: 'umsatz',     no: '§ 4', title: 'Umsatzsteuer-Identifikationsnummer' },
+  { id: 'verantwort', no: '§ 5', title: 'Verantwortlich für den Inhalt' },
+  { id: 'streit',     no: '§ 6', title: 'Streitbeilegung' },
+  { id: 'haftung',    no: '§ 7', title: 'Haftung für Inhalte und Links' },
+];
+---
+
+<Layout title="Impressum">
+  <main class="page agb">
+
+    <header class="agb-head">
+      <p class="agb-head__rubrik">Rechtliches</p>
+      <h1 class="agb-head__title">Impressum</h1>
+      <dl class="agb-head__meta">
+        <div><dt>Stand</dt><dd>{stand}</dd></div>
+        <div><dt>Anbieter</dt><dd>{firma}</dd></div>
+        <div><dt>Rechtsgrundlage</dt><dd>§ 5 DDG · § 18 MStV</dd></div>
+      </dl>
+    </header>
+
+    <div class="rule-thick" style="margin: 1.5rem 0 2.5rem;"></div>
+
+    <div class="agb-layout">
+
+      <aside class="agb-toc">
+        <p class="agb-toc__heading">Inhaltsverzeichnis</p>
+        <ol class="agb-toc__list">
+          {sections.map(s => (
+            <li><a href={`#${s.id}`}><span class="agb-toc__no">{s.no}</span> {s.title}</a></li>
+          ))}
+        </ol>
+      </aside>
+
+      <article class="agb-body">
+
+        <p class="agb-praeambel">
+          Anbieterkennzeichnung nach § 5 Digitale-Dienste-Gesetz (DDG). Wir nennen
+          hier, wer hinter dem Wochenblatt steht — nüchtern, vollständig und in der
+          gebotenen Reihenfolge. Es ist die vielleicht sachlichste Seite dieses Hauses.
+        </p>
+
+        {/* § 1 */}
+        <section id="anbieter" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 1</span> Angaben gemäß § 5 DDG</h2>
+          <div class="agb-contact-card">
+            <p><strong>{firma}</strong></p>
+            <p>{street}</p>
+            <p>{postal} {city}, Deutschland</p>
+            <p>Vertreten durch den Geschäftsführer: {boss}</p>
+          </div>
+        </section>
+
+        {/* § 2 */}
+        <section id="kontakt" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 2</span> Kontakt</h2>
+          <ol class="agb-list">
+            <li>Telefon: {tel} <em>(zu den üblichen Zeiten; Dringlichkeit bitte vermeiden)</em></li>
+            <li>E-Mail: <a href={`mailto:${email}`}>{email}</a></li>
+            <li>Für förmliche Anliegen empfehlen wir den Postweg — er passt zu uns.</li>
+          </ol>
+        </section>
+
+        {/* § 3 */}
+        <section id="register" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 3</span> Registereintrag</h2>
+          <ol class="agb-list">
+            <li>Registergericht: {district}</li>
+            <li>Anschrift des Registergerichts: {districtAddress}</li>
+          </ol>
+        </section>
+
+        {/* § 4 */}
+        <section id="umsatz" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 4</span> Umsatzsteuer-Identifikationsnummer</h2>
+          <p class="agb-paragraph">
+            Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz: <strong>{vatId}</strong>
+          </p>
+        </section>
+
+        {/* § 5 */}
+        <section id="verantwort" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 5</span> Verantwortlich für den Inhalt</h2>
+          <p class="agb-paragraph">
+            Verantwortlich für journalistisch-redaktionelle Inhalte nach § 18 Abs. 2 MStV:
+          </p>
+          <div class="agb-contact-card">
+            <p><strong>{boss}</strong></p>
+            <p>{street}</p>
+            <p>{postal} {city}, Deutschland</p>
+          </div>
+        </section>
+
+        {/* § 6 */}
+        <section id="streit" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 6</span> Streitbeilegung</h2>
+          <ol class="agb-list">
+            <li>Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener noreferrer">https://ec.europa.eu/consumers/odr/</a>. Unsere E-Mail-Adresse finden Sie oben in § 2.</li>
+            <li>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen. Streit passt nicht zu unserem Sortiment.</li>
+          </ol>
+        </section>
+
+        {/* § 7 */}
+        <section id="haftung" class="agb-section">
+          <h2 class="agb-section__title"><span class="agb-section__no">§ 7</span> Haftung für Inhalte und Links</h2>
+          <ol class="agb-list">
+            <li>Als Diensteanbieter sind wir gemäß § 7 Abs. 1 DDG für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Nach den §§ 8 bis 10 DDG sind wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen.</li>
+            <li>Verpflichtungen zur Entfernung oder Sperrung der Nutzung von Informationen nach den allgemeinen Gesetzen bleiben hiervon unberührt. Eine diesbezügliche Haftung ist jedoch erst ab dem Zeitpunkt der Kenntnis einer konkreten Rechtsverletzung möglich.</li>
+            <li>Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.</li>
+          </ol>
+        </section>
+
+      </article>
+    </div>
+
+  </main>
+</Layout>

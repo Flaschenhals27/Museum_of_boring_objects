@@ -23,8 +23,6 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-src/pages/impressum.astro
-
 # local databases
 local.db
 dev.db
