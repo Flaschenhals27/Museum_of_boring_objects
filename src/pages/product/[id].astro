@@ -51,6 +51,27 @@ const recThumbnail = recImages[0];
 const classification = makeClassification(item.id);
 const sign = makeSignatur(item.id, item.boredom);
 const isBegehrt = item.boredom >= 9;
+
+// ---------------------------------------------------------------------
+// Archivnotiz — füllt die Fläche unter der Galerie (die Info-Spalte
+// rechts ist deutlich länger). Deterministisch aus den Produktdaten,
+// damit jedes Produkt bei jedem Aufruf denselben Vermerk trägt.
+// ---------------------------------------------------------------------
+const zustand =
+  item.boredom >= 9 ? 'Bemerkenswert unauffällig'
+  : item.boredom >= 7 ? 'Vollkommen unauffällig'
+  : 'Unauffällig, mit Restunruhe';
+
+const bemerkungen = [
+  'Wurde dreimal inventarisiert. Ergebnis jeweils identisch. Wir hören auf.',
+  'Bei der Erfassung ist nichts vorgefallen. Das ist der Vermerk.',
+  'Der Gegenstand hat auf Ansprache nicht reagiert. Vorbildlich.',
+  'Keine Auffälligkeiten. Auch beim zweiten Hinsehen nicht. Wir haben es geprüft.',
+  'Lag drei Wochen im Eingangsbereich, ohne dass es jemandem auffiel. Aufnahme in den Bestand daher zwingend.',
+  'Die Redaktion hat den Gegenstand einstimmig für unbedenklich langweilig befunden.',
+  'Provenienz ungeklärt. Interesse an einer Klärung ebenfalls.',
+];
+const bemerkung = bemerkungen[item.id % bemerkungen.length];
 ---
 
 <Layout title={item.name}>
@@ -76,6 +97,33 @@ const isBegehrt = item.boredom >= 9;
         <p class="produkt-galerie__caption">
           Tafel 01 — {item.name}. Eigene Aufnahme, Studio Berlin.
         </p>
+
+        {/* Archivnotiz: füllt die Fläche unter der Galerie */}
+        <aside class="archiv-notiz">
+          <p class="archiv-notiz__eyebrow">Vermerk des Archivars</p>
+          <dl class="archiv-notiz__liste">
+            <div class="archiv-notiz__zeile">
+              <dt>Signatur</dt>
+              <dd>{sign}</dd>
+            </div>
+            <div class="archiv-notiz__zeile">
+              <dt>Klassifikation</dt>
+              <dd>{classification}</dd>
+            </div>
+            <div class="archiv-notiz__zeile">
+              <dt>Zustand</dt>
+              <dd>{zustand}</dd>
+            </div>
+            <div class="archiv-notiz__zeile">
+              <dt>Verbleib</dt>
+              <dd>{item.stock > 0 ? `Im Bestand · ${item.stock} Expl.` : 'Restlos abgegeben'}</dd>
+            </div>
+          </dl>
+          <p class="archiv-notiz__bemerkung">
+            „{bemerkung}"
+          </p>
+          <p class="archiv-notiz__signatur">— gez. Der Archivar</p>
+        </aside>
       </div>
 
       {/* RECHTS: Info */}
@@ -199,6 +247,66 @@ const isBegehrt = item.boredom >= 9;
     text-transform: uppercase;
     color: var(--ink-mute);
     margin: 1rem 0 0;
+  }
+
+  /* ARCHIVNOTIZ — füllt die Fläche unter der Galerie */
+  .archiv-notiz {
+    margin-top: 2rem;
+    padding: 1.4rem 1.6rem;
+    background: var(--paper-2);
+    border: 1px solid var(--paper-3);
+    border-left: 3px solid var(--red);
+  }
+  .archiv-notiz__eyebrow {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--red);
+    font-weight: 600;
+    margin: 0 0 1rem;
+  }
+  .archiv-notiz__liste {
+    margin: 0 0 1.2rem;
+  }
+  .archiv-notiz__zeile {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.45rem 0;
+    border-bottom: var(--rule-soft);
+  }
+  .archiv-notiz__zeile:last-child { border-bottom: none; }
+  .archiv-notiz__zeile dt {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .archiv-notiz__zeile dd {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--ink);
+    margin: 0;
+    text-align: right;
+  }
+  .archiv-notiz__bemerkung {
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin: 0 0 0.5rem;
+  }
+  .archiv-notiz__signatur {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    text-align: right;
+    margin: 0;
   }
 
   /* INFO-SPALTE */
