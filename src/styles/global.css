@@ -594,6 +594,12 @@ a.nav-user-chip:hover { color: var(--red); }
 		rgba(122,111,95,0.10) 15px
 	);
 }
+/* Ist ein Bild vorhanden, sollen die Streifen NICHT durchscheinen
+   (die Bilder liegen mit mix-blend-mode: multiply darüber). Der
+   Streifen bleibt nur als Platzhalter für fehlende Bilder sichtbar. */
+.bg-stripes:has(img) {
+	background-image: none;
+}
 
 /* Form-Inputs */
 input[type="text"],

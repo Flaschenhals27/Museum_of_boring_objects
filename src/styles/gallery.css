@@ -24,6 +24,10 @@
 		rgba(122,111,95,0.10) 15px
 	);
 }
+/* Bei vorhandenem Bild keine Streifen durchscheinen lassen */
+.gallery-main:has(img) {
+	background-image: none;
+}
 .gallery-main-img {
 	width: 100%;
 	height: 100%;

@@ -50,6 +50,10 @@
 		rgba(122,111,95,0.10) 14px, rgba(122,111,95,0.10) 15px
 	);
 }
+/* Bei vorhandenem Bild keine Streifen durchscheinen lassen */
+.recent-img-wrapper:has(img) {
+	background-image: none;
+}
 .recent-img {
 	width: 100%;
 	height: 100%;
