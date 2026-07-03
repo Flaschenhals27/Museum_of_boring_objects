@@ -4,6 +4,11 @@ import { getCart, loadCartItems, cartSubtotal } from '../lib/cart';
 import { resolveDiscount, describeCoupon } from '../lib/coupon';
 import { makeSignatur } from '../lib/signatur';
 import { SHIPPING_COST } from '../lib/shipping';
+import { getUserFromCookie } from '../lib/auth';
+
+// Login-Status: bestimmt, ob wir zum Anmelden drängen oder direkt
+// zur Kasse leiten. Gäste bekommen beide Optionen.
+const user = await getUserFromCookie(Astro.cookies);
 
 const cartRecord = await getCart(Astro.cookies);
 
@@ -188,7 +193,15 @@ const bordereauNr = `K-${String(cartRecord?.id ?? 0).padStart(5, '0')}`;
             <span class="cart-summary__total-value">{grandTotal.toFixed(2)} €</span>
           </div>
 
-          <a href="/checkout" class="cart-summary__cta">Zur Kasse →</a>
+          {user ? (
+            <a href="/checkout" class="cart-summary__cta">Zur Kasse →</a>
+          ) : (
+            <div class="cart-summary__auth">
+              <p class="cart-summary__auth-hint">Mit Konto: Bestellungen einsehbar, Adresse gespeichert.</p>
+              <a href="/login?redirect=/checkout" class="cart-summary__cta">Anmelden &amp; zur Kasse →</a>
+              <a href="/checkout" class="cart-summary__guest">oder als Gast bestellen</a>
+            </div>
+          )}
 
           <p class="cart-summary__note">
             <em>Sichere Bezahlung. Gleichgültige Verpackung. Lieferung, sobald es uns passt.</em>
@@ -665,6 +678,27 @@ const bordereauNr = `K-${String(cartRecord?.id ?? 0).padStart(5, '0')}`;
     transition: background 0.15s;
   }
   .cart-summary__cta:hover { background: var(--red); color: var(--paper); }
+  .cart-summary__auth { margin: 1.5rem 0 1rem; }
+  .cart-summary__auth .cart-summary__cta { margin: 0 0 0.6rem; }
+  .cart-summary__auth-hint {
+    font-family: var(--font-meta);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    text-align: center;
+    margin: 0 0 0.8rem;
+  }
+  .cart-summary__guest {
+    display: block;
+    text-align: center;
+    font-family: var(--font-meta);
+    font-size: 0.78rem;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    text-decoration: underline;
+  }
+  .cart-summary__guest:hover { color: var(--red); }
   .cart-summary__note {
     font-family: var(--font-body);
     font-style: italic;

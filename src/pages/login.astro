@@ -2,9 +2,18 @@
 import Layout from '../layouts/Layout.astro';
 import { getUserFromCookie } from '../lib/auth';
 
+// Ziel nach dem Login (z.B. ?redirect=/checkout aus dem Warenkorb).
+// Nur lokale Pfade zulassen — "/foo" ja, "//evil.com" oder "https://…"
+// nein (sonst Open-Redirect: ein Angreifer könnte über einen präparierten
+// Login-Link auf eine fremde Seite umleiten).
+const rawRedirect = Astro.url.searchParams.get('redirect') ?? '';
+const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//')
+  ? rawRedirect
+  : '/';
+
 const user = await getUserFromCookie(Astro.cookies);
 if (user) {
-  return Astro.redirect('/');
+  return Astro.redirect(redirectTo);
 } else {
   Astro.cookies.delete('auth_token', { path: '/' });
 }
@@ -94,6 +103,13 @@ if (user) {
 
   let isRegister = false;
 
+  // Ziel nach erfolgreichem Login/Register: validiertes ?redirect oder '/'.
+  // Gleiche Local-Only-Prüfung wie im Frontmatter (kein Open-Redirect).
+  function safeRedirect() {
+    const raw = new URLSearchParams(window.location.search).get('redirect') || '/';
+    return raw.startsWith('/') && !raw.startsWith('//') ? raw : '/';
+  }
+
   toggleBtn.addEventListener('click', (e) => {
     e.preventDefault();
     isRegister = !isRegister;
@@ -136,7 +152,7 @@ if (user) {
       body: JSON.stringify({ email: emailEl.value, password: passwordEl.value }),
     });
     const data = await res.json();
-    if (res.ok) window.location.href = '/';
+    if (res.ok) window.location.href = safeRedirect();
     else {
       markInvalid('login-email'); markInvalid('login-password');
       errorMsg.textContent = data.error;
@@ -177,7 +193,7 @@ if (user) {
       }),
     });
     const data = await res.json();
-    if (res.ok) window.location.href = '/';
+    if (res.ok) window.location.href = safeRedirect();
     else {
       errorMsg.textContent = data.error;
       errorMsg.style.display = 'block';
