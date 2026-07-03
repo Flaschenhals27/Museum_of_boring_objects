@@ -41,6 +41,12 @@ const weekdays = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag
 const months = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 const datumLang = `${weekdays[now.getDay()]}, ${now.getDate()}. ${months[now.getMonth()]} ${now.getFullYear()}`;
 const isBegehrt = randomItem.boredom >= 9;
+
+// Initialbuchstabe (Dropcap) für den Lead-Text: MUSS der erste Buchstabe
+// des folgenden Textes sein — also der Beschreibung, nicht des Namens.
+// Sonst steht z.B. "L" (von "Lineal") vor "Misst Abstände …".
+const descFirst = randomItem.description.charAt(0);
+const descRest  = randomItem.description.slice(1);
 ---
 
 <Layout title={randomItem.name}>
@@ -79,8 +85,7 @@ const isBegehrt = randomItem.boredom >= 9;
     {/* LEAD-TEXT */}
     <section class="lead reveal">
       <p class="lead__body">
-        <span class="dropcap">{randomItem.name.charAt(0)}</span>
-        {randomItem.description} Er war einmal funktional, möglicherweise sogar elegant —
+        <span class="dropcap">{descFirst}</span>{descRest} Er war einmal funktional, möglicherweise sogar elegant —
         in einer Zeit, in der niemand auf solche Dinge achtete. Heute aber, gerade jetzt,
         ist er etwas anderes geworden. Stiller. Bedächtiger. Vielleicht sogar nachdenklich,
         wenn man Gegenständen so etwas zuschreiben möchte.
