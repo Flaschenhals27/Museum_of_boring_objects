@@ -13,6 +13,7 @@
 
 import { SignJWT, jwtVerify } from 'jose';
 import type { AstroCookies } from 'astro';
+import { db, User, eq } from 'astro:db';
 
 const rawSecret = import.meta.env.JWT_SECRET;
 if (!rawSecret || rawSecret.length < 32) {
@@ -48,11 +49,28 @@ export async function verifyToken(token: string) {
 }
 
 /**
- * Liest das auth_token-Cookie und gibt das verifizierte Payload zurück.
- * Gibt null zurück, wenn kein Cookie da oder Token ungültig.
+ * Liest das auth_token-Cookie und gibt das verifizierte Payload zurück —
+ * aber NUR, wenn der Nutzer auch wirklich (noch) in der DB existiert.
+ * Gibt sonst null zurück (kein Cookie, ungültiges Token, ODER gelöschter/
+ * unbekannter Nutzer).
+ *
+ * Warum die DB-Prüfung? Ein Token kann gültig signiert sein und trotzdem
+ * auf einen Nutzer zeigen, den es nicht (mehr) gibt — z.B. nach dem
+ * Löschen eines Kontos oder wenn ein altes Token aus einer anderen
+ * Datenbank stammt. Ohne diese Prüfung würden Inserts mit dieser userId
+ * (Cart, Order, Wishlist) an der Foreign-Key-Beziehung zu User scheitern.
  */
 export async function getUserFromCookie(cookies: AstroCookies) {
   const token = cookies.get('auth_token')?.value;
   if (!token) return null;
-  return verifyToken(token);
+
+  const payload = await verifyToken(token);
+  if (!payload) return null;
+
+  const stillExists = (
+    await db.select({ id: User.id }).from(User).where(eq(User.id, payload.userId))
+  )[0];
+  if (!stillExists) return null;
+
+  return payload;
 }
