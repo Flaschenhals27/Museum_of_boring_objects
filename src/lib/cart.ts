@@ -84,8 +84,21 @@ export async function getOrCreateCart(cookies: AstroCookies) {
     }).returning())[0];
   }
   if (userPayload && !cart.userId) {
-    await db.update(Cart).set({ userId: userPayload.userId }).where(eq(Cart.id, cart.id));
-    cart = { ...cart, userId: userPayload.userId };
+    // Privilegien-Wechsel: Gast-Cart wird einem User zugeordnet (z.B. nach
+    // Registrierung). Dabei die sessionId ROTIEREN — die alte Gast-ID darf
+    // keinen Zugriff auf den nun user-gebundenen Cart mehr gewähren
+    // (gleiche Session-Rotation wie bei Login/Logout).
+    const rotatedSessionId = crypto.randomUUID();
+    await db.update(Cart)
+      .set({ userId: userPayload.userId, sessionId: rotatedSessionId })
+      .where(eq(Cart.id, cart.id));
+    cookies.set('cart_session', rotatedSessionId, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30,
+      httpOnly: true,
+      sameSite: 'lax',
+    });
+    cart = { ...cart, userId: userPayload.userId, sessionId: rotatedSessionId };
   }
   return cart;
 }

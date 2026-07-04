@@ -97,6 +97,21 @@ export const POST: APIRoute = async ({ request, cookies }) => {
           .where(eq(Wishlist.id, entry.id));
       }
     }
+
+    // 5c) Session-Rotation beim Privilegien-Wechsel (Gegenstück zum Logout):
+    // Die alte Gast-sessionId darf nach dem Login keinen Zugriff mehr auf
+    // den nun user-gebundenen Cart gewähren — falls sie vor dem Login
+    // abgegriffen wurde. Cookie UND Cart-Datensatz bekommen eine frische ID.
+    const rotatedSessionId = crypto.randomUUID();
+    if (sessionCart) {
+      await db.update(Cart).set({ sessionId: rotatedSessionId }).where(eq(Cart.id, sessionCart.id));
+    }
+    cookies.set('cart_session', rotatedSessionId, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30,
+      httpOnly: true,
+      sameSite: 'lax',
+    });
   }
 
   return jsonOk({
