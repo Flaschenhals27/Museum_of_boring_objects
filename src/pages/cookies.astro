@@ -21,34 +21,20 @@ const sections = [
   { id: 'paragraph-9', no: '§ 9', title: 'Änderungen dieser Richtlinie' },
 ];
 
-// Konkrete Cookie-Tabelle — was wir wirklich setzen (Cart-Session, Auth, Order)
+// Konkrete Cookie-Tabelle — was wir wirklich setzen (Cart-Session und Auth)
 const cookies = [
   {
     name: 'cart_session',
-    zweck: 'Identifikation des Warenkorbs während eines Besuchs.',
+    zweck: 'Identifikation des Warenkorbs (auch für Gäste über den Besuch hinaus).',
     typ: 'Technisch notwendig',
-    dauer: 'Sitzung',
+    dauer: '30 Tage',
     anbieter: 'Erstanbieter',
   },
   {
     name: 'auth_token',
     zweck: 'Authentifizierung eingeloggter Nutzer (signiertes JWT-Token).',
     typ: 'Technisch notwendig',
-    dauer: '30 Tage',
-    anbieter: 'Erstanbieter',
-  },
-  {
-    name: 'customer_email',
-    zweck: 'Vorübergehende Speicherung der E-Mail-Adresse zur Versendung der Bestellbestätigung.',
-    typ: 'Technisch notwendig',
-    dauer: 'Sitzung',
-    anbieter: 'Erstanbieter',
-  },
-  {
-    name: 'order_placed',
-    zweck: 'Verhinderung doppelter Bestellbestätigungen beim Reload der Bestätigungsseite.',
-    typ: 'Technisch notwendig',
-    dauer: 'Sitzung',
+    dauer: '7 Tage',
     anbieter: 'Erstanbieter',
   },
 ];

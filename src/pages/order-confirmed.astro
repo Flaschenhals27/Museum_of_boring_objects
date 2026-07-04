@@ -58,9 +58,6 @@ const enrichedItems = await Promise.all(
     };
   })
 );
-
-// Cookie aufräumen (falls noch da von früheren Versionen)
-Astro.cookies.delete('order_placed', { path: '/' });
 ---
 
 <Layout title="Bestellung eingegangen">

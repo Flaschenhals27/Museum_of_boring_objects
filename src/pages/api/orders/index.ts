@@ -10,8 +10,7 @@
 // Liest:    aktuellen Warenkorb (über cart_session oder User)
 // Schreibt: Order + OrderItems, reduziert Item.stock, löscht CartItems
 // Versendet: Bestätigungsmails (Resend) — Anbieter + Kunde
-// Setzt: Cookie 'order_placed' (für die Bestätigungsseite)
-// Antwortet: { ok: true, bordereauNr } -> Client navigiert zu /order-confirmed
+// Antwortet: { ok: true, bordereauNr, token } -> Client navigiert zu /order-confirmed
 //
 // Nebenläufigkeit (astro:db kann keine Multi-Statement-Transaktionen):
 //   - Stock wird ATOMAR reduziert (UPDATE ... SET stock = stock - n
@@ -341,14 +340,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     console.error('Mail-Versand fehlgeschlagen:', err);
   }
 
-  // 10) Cookie für die Bestätigungsseite setzen
-  cookies.set('order_placed', bordereauNr, {
-    path: '/',
-    httpOnly: false,
-    sameSite: 'lax',
-    maxAge: 60, // 60 Sekunden — nur für den Redirect
-  });
-
-  // 11) Antworten — der Client navigiert mit dem Token (nicht der ratbaren Nr)
+  // 10) Antworten — der Client navigiert mit dem Token (nicht der ratbaren Nr)
   return jsonOk({ ok: true, bordereauNr, token });
 };
