@@ -244,7 +244,8 @@ const bordereauNr = `K-${String(cartRecord?.id ?? 0).padStart(5, '0')}`;
     ) as HTMLInputElement | null;
     if (!input) return;
     const oldQuantity = Number(input.dataset.oldQuantity);
-    const newQuantity = Math.max(1, Number(input.value) + delta);
+    // `|| oldQuantity`: leeres/ungültiges Feld (NaN) fällt auf den alten Wert zurück
+    const newQuantity = Math.max(1, (Number(input.value) || oldQuantity) + delta);
     const itemId = Number(input.dataset.itemId);
     if (newQuantity === oldQuantity) return;
     fetch('/api/cart/update', {
@@ -275,7 +276,8 @@ const bordereauNr = `K-${String(cartRecord?.id ?? 0).padStart(5, '0')}`;
     input.addEventListener('change', () => {
       const el = input as HTMLInputElement;
       const oldQuantity = Number(el.dataset.oldQuantity);
-      const newQuantity = Math.max(1, Number(el.value));
+      // Leeres/ungültiges Feld (NaN) => alten Wert wiederherstellen statt NaN zu senden
+      const newQuantity = Math.max(1, Number(el.value) || oldQuantity);
       const cartItemId = Number(el.dataset.cartItemId);
       const itemId = Number(el.dataset.itemId);
       if (newQuantity === oldQuantity) return;

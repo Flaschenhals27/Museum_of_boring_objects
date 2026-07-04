@@ -185,17 +185,20 @@ if (user) {
       errorMsg.style.display = 'block';
       return;
     }
-    // Format-Checks (gleiche Regeln wie serverseitig, lib/validate)
+    // Format-Checks (gleiche Regeln wie serverseitig, lib/validate) —
+    // ALLE ungültigen Felder markieren, konsistent mit den anderen Formularen
     const regChecks = [
-      { el: prename,  id: 'reg-prename',  ok: isValidName(prename.value.trim()),   msg: 'Vorname: nur Buchstaben, Bindestrich und Apostroph (keine Ziffern).' },
-      { el: surname,  id: 'reg-surname',  ok: isValidName(surname.value.trim()),   msg: 'Nachname: nur Buchstaben, Bindestrich und Apostroph (keine Ziffern).' },
-      { el: username, id: 'reg-username', ok: isValidUsername(username.value.trim()), msg: 'Benutzername: 3–32 Zeichen, nur Buchstaben, Zahlen, _ und -.' },
-      { el: email,    id: 'reg-email',    ok: isValidEmail(email.value.trim().toLowerCase()), msg: 'E-Mail-Adresse hat kein gültiges Format.' },
+      { id: 'reg-prename',  ok: isValidName(prename.value.trim()),   msg: 'Vorname: nur Buchstaben, Bindestrich und Apostroph (keine Ziffern).' },
+      { id: 'reg-surname',  ok: isValidName(surname.value.trim()),   msg: 'Nachname: nur Buchstaben, Bindestrich und Apostroph (keine Ziffern).' },
+      { id: 'reg-username', ok: isValidUsername(username.value.trim()), msg: 'Benutzername: 3–32 Zeichen, nur Buchstaben, Zahlen, _ und -.' },
+      { id: 'reg-email',    ok: isValidEmail(email.value.trim().toLowerCase()), msg: 'E-Mail-Adresse hat kein gültiges Format.' },
     ];
-    const badReg = regChecks.find((c) => !c.ok);
-    if (badReg) {
-      markInvalid(badReg.id);
-      errorMsg.textContent = badReg.msg;
+    const badRegs = regChecks.filter((c) => !c.ok);
+    if (badRegs.length > 0) {
+      badRegs.forEach((c) => markInvalid(c.id));
+      errorMsg.textContent = badRegs.length === 1
+        ? badRegs[0].msg
+        : 'Bitte prüfen Sie die rot markierten Felder.';
       errorMsg.style.display = 'block';
       return;
     }

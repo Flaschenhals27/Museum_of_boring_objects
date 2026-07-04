@@ -45,6 +45,36 @@ export default function AddToCart(props: Props) {
     }
   };
 
+  // Fallback bei Ausverkauft (Inline-Variante): Der Button ist mit
+  // "Auf Wunschliste" beschriftet — dann muss er das auch TUN, statt
+  // nur disabled herumzustehen (vorher ein toter Knopf).
+  const handleWishlist = async () => {
+    if (isLoading()) return;
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId: props.itemId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        window.dispatchEvent(new CustomEvent('wishlist-updated'));
+        window.toast?.(
+          data.alreadyExists ? 'Steht bereits auf der Wunschliste.' : 'Auf die Wunschliste gesetzt.',
+          'success'
+        );
+      } else {
+        const data = await res.json().catch(() => ({}));
+        window.toast?.(data.error ?? 'Aktion fehlgeschlagen.', 'error');
+      }
+    } catch (err) {
+      window.toast?.('Netzwerkfehler. Bitte erneut versuchen.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const variant = props.variant ?? 'block';
   const outOfStock = stock() === 0;
 
@@ -58,14 +88,15 @@ export default function AddToCart(props: Props) {
       : 'In den Warenkorb';
 
   if (variant === 'inline') {
-    // Kompakte Variante für Listen — nur Button, Menge=1
+    // Kompakte Variante für Listen — nur Button, Menge=1.
+    // Ausverkauft => Wunschlisten-Aktion statt totem Button.
     return (
       <button
-        onClick={handleBuy}
-        disabled={outOfStock || isLoading()}
+        onClick={outOfStock ? handleWishlist : handleBuy}
+        disabled={isLoading()}
         class={'addcart-btn-inline ' + (outOfStock ? 'is-out' : isAdded() ? 'is-added' : '')}
       >
-        {outOfStock ? 'Auf Wunschliste' : isAdded() ? '✓ Vermerkt' : 'In den Warenkorb'}
+        {outOfStock ? '♡ Auf Wunschliste' : isAdded() ? '✓ Vermerkt' : 'In den Warenkorb'}
       </button>
     );
   }

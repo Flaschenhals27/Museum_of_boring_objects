@@ -17,6 +17,7 @@ import { For, createSignal, onMount } from 'solid-js';
 interface Props {
   ausgabeRoman?: string;
   jahrgangRoman?: string;
+  itemCount?: number;   // echte Katalog-Größe, kommt aus Layout.astro (DB-Count)
 }
 
 const sections = [
@@ -130,7 +131,7 @@ export default function NavBar(props: Props) {
           <span class="nav-meta">
             <span>Inhalt</span>
             <span class="nav-meta__sep">·</span>
-            <span>14 Einträge</span>
+            <span>{props.itemCount ?? '–'} Einträge</span>
           </span>
         </div>
 

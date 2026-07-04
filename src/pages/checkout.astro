@@ -270,7 +270,9 @@ const grandTotal = Math.max(0, total - discount) + shippingCost;
     }
 
     // 2b) Format-Checks — dieselben Regeln wie serverseitig (lib/validate).
-    //     Erstes ungültiges Feld markieren und melden.
+    //     ALLE ungültigen Felder auf einmal markieren (konsistent mit dem
+    //     Kontaktformular und dem Leere-Felder-Check oben) — bei genau
+    //     einem Fehler die konkrete Meldung, sonst eine Sammelmeldung.
     const formatChecks = [
       { id: 'cf-prename', ok: isValidName(payload.prename),   msg: 'Vorname: nur Buchstaben, Bindestrich und Apostroph (keine Ziffern).' },
       { id: 'cf-surname', ok: isValidName(payload.surname),   msg: 'Nachname: nur Buchstaben, Bindestrich und Apostroph (keine Ziffern).' },
@@ -279,10 +281,14 @@ const grandTotal = Math.max(0, total - discount) + shippingCost;
       { id: 'cf-city',    ok: isValidCity(payload.city),      msg: 'Ort: nur Buchstaben, Bindestrich und Punkt (keine Ziffern).' },
       { id: 'cf-email',   ok: isValidEmail(payload.email),    msg: 'Die E-Mail-Adresse hat kein gültiges Format.' },
     ];
-    const bad = formatChecks.find((c) => !c.ok);
-    if (bad) {
-      document.getElementById(bad.id)?.classList.add('invalid');
-      showError(bad.msg);
+    const badFields = formatChecks.filter((c) => !c.ok);
+    if (badFields.length > 0) {
+      badFields.forEach((c) => document.getElementById(c.id)?.classList.add('invalid'));
+      showError(
+        badFields.length === 1
+          ? badFields[0].msg
+          : 'Bitte prüfen Sie die rot markierten Felder.'
+      );
       return;
     }
 

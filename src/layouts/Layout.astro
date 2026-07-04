@@ -1,5 +1,6 @@
 ---
 import NavBar from '../components/NavBar.tsx';
+import { db, Item, count } from 'astro:db';
 import { company } from '../lib/company';
 import { getWeather } from '../lib/weather';
 import '../styles/global.css';
@@ -21,6 +22,10 @@ const siteName = 'The Ordinary Emporium';
 const fullTitle = `${title} · ${siteName}`;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'http://localhost:4321').toString();
 const imageURL = new URL(image, Astro.site ?? 'http://localhost:4321').toString();
+
+// Echte Katalog-Größe für "Inhalt · N Einträge" in der NavBar
+// (war vorher hart kodiert auf 14 und wäre beim nächsten Produkt falsch)
+const itemCount = (await db.select({ value: count() }).from(Item))[0].value;
 
 // Echtes Wetter für die Banner-Zeile (Open-Meteo, gecacht in lib/weather).
 // Standort kommt aus der .env (IMPRESSUM_MAP_MARKER_LAT/LNG bzw. IMPRESSUM_CITY).
@@ -130,7 +135,7 @@ const ausgabeNrRoman = toRoman(weekNumber);
 			</div>
 
 			{/* Hauptzeile: links Login-Chip, mittig Logo + Stempel, rechts Wishlist + Cart */}
-			<NavBar client:load ausgabeRoman={ausgabeNrRoman} jahrgangRoman={jahrgang} />
+			<NavBar client:load ausgabeRoman={ausgabeNrRoman} jahrgangRoman={jahrgang} itemCount={itemCount} />
 		</header>
 
 		<slot />

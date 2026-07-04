@@ -29,8 +29,12 @@
 	background: transparent;
 	border: 1px solid var(--ink);
 	color: var(--ink);
-	cursor: not-allowed;
 }
+/* is-out ist jetzt klickbar (Wunschlisten-Aktion) — nur echtes
+   disabled (während eines Requests) zeigt den Verbotscursor */
+.addcart-btn-inline:disabled { cursor: not-allowed; }
+.addcart-btn-inline.is-out:not(:disabled) { cursor: pointer; }
+.addcart-btn-inline.is-out:not(:disabled):hover { border-color: var(--red); color: var(--red); background: transparent; }
 .addcart-btn-inline.is-added {
 	background: var(--ink);
 	color: var(--paper);
