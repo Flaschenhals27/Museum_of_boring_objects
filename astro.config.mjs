@@ -7,6 +7,8 @@ import node from '@astrojs/node';
 
 import db from '@astrojs/db';
 
+import tailwindcss from '@tailwindcss/vite';
+
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
@@ -17,6 +19,7 @@ export default defineConfig({
   }),
 
   vite: {
+    plugins: [tailwindcss()],
     // Für Connection von externen Geräten, z.B. Handy.
     // Betrifft NUR den Dev-Server (astro dev) — der Production-Build
     // mit dem Node-Adapter nutzt diese Vite-Server-Config nicht.

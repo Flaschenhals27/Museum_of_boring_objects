@@ -1,0 +1,46 @@
+/* ====================================================================
+   tailwind.css — Tailwind v4, CSS-first-Konfiguration
+   --------------------------------------------------------------------
+   MIGRATIONS-MODUS: Wir importieren bewusst NUR theme + utilities,
+   NICHT das Preflight (Tailwinds globaler Browser-Reset). Grund: Die
+   noch nicht migrierten Seiten verlassen sich auf die bestehenden
+   Styles in global.css — Preflight würde ihnen z.B. alle h1-Margins
+   und Input-Rahmen wegresetten. Sobald ALLE Seiten auf Utilities
+   umgestellt sind, kann Preflight aktiviert und global.css bis auf
+   Fonts/Keyframes gelöscht werden.
+
+   Konsequenz ohne Preflight: border-Utilities brauchen explizit
+   `border-solid` (Preflight würde border-style global vorbelegen).
+
+   Die @theme-Tokens spiegeln 1:1 die Design-Tokens aus global.css
+   (:root) und erzeugen die Utilities bg-paper, text-ink, border-red,
+   font-display, font-body, font-meta usw.
+
+   Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
+   ==================================================================== */
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme {
+  /* Papier-Töne (Hintergründe) */
+  --color-paper:      #f3ede1;
+  --color-paper-2:    #ece4d3;
+  --color-paper-3:    #e3d9c2;
+
+  /* Tinten-Töne (Text) */
+  --color-ink:        #1a1612;
+  --color-ink-soft:   #4a423a;
+  --color-ink-mute:   #7a6f5f;
+
+  /* Akzente */
+  --color-red:        #7a1f1f;
+  --color-red-deep:   #5e1414;
+  --color-ochre:      #c8961d;
+  --color-ochre-deep: #a87c10;
+
+  /* Typografie (Zeitungs-Kanon) */
+  --font-display: 'Playfair Display', 'Times New Roman', Georgia, serif;
+  --font-body:    'Lora', Georgia, 'Times New Roman', serif;
+  --font-meta:    'JetBrains Mono', 'Courier New', monospace;
+}
