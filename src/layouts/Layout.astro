@@ -1,4 +1,14 @@
 ---
+// =====================================================================
+// layouts/Layout.astro — Grundgerüst jeder Seite (Banner, Kopf, Footer)
+// =====================================================================
+// TAILWIND-MIGRATION: Top-Banner, Masthead und Footer sind auf
+// Utility-Klassen umgestellt. Das Toast-System behält seine Klassen
+// aus global.css, weil dessen Elemente per JS erzeugt werden —
+// es wird in der letzten Migrations-Etappe umgestellt.
+//
+// Diese Datei wurde mit Hilfe von Claude (Anthropic) angepasst.
+// =====================================================================
 import NavBar from '../components/NavBar.tsx';
 import { db, Item, count } from 'astro:db';
 import { company } from '../lib/company';
@@ -113,26 +123,27 @@ const ausgabeNrRoman = toRoman(weekNumber);
 	</head>
 	<body>
 
-		<div class="top-banner">
-			<div class="top-banner__left">
+		{/* TOP-BANNER: Datum · Ort · Wetter | Jahrgang | Versand-Hinweis */}
+		<div class="grid min-h-[28px] grid-cols-[1fr_auto_1fr] items-center gap-4 border-0 border-b border-solid border-ink px-6 py-2 font-meta text-[0.7rem] font-medium uppercase tracking-[0.08em] text-ink-soft max-[720px]:grid-cols-1 max-[720px]:text-center max-[540px]:px-0 max-[540px]:py-[0.4rem]">
+			<div class="flex items-center gap-2 justify-self-start max-[720px]:flex-wrap max-[720px]:justify-center max-[720px]:justify-self-center">
 				<span>{dateString}</span>
-				<span class="top-banner__sep">·</span>
+				<span class="text-paper-3">·</span>
 				<span>{cityLabel}</span>
-				<span class="top-banner__sep">·</span>
-				<span class="top-banner__weather"><span class="top-banner__dot"></span> {weatherText}</span>
+				<span class="text-paper-3">·</span>
+				<span class="inline-flex items-center gap-[0.4rem]"><span class="inline-block h-[7px] w-[7px] rounded-full bg-ochre"></span> {weatherText}</span>
 			</div>
-			<div class="top-banner__center">JAHRGANG {jahrgang} <span class="top-banner__sep">·</span> AUSGABE N° {ausgabeNr}</div>
-			<div class="top-banner__right">VERSAND WERKTAGS <span class="top-banner__sep">·</span> IRGENDWANN</div>
+			<div class="justify-self-center max-[720px]:justify-self-center max-[540px]:hidden">JAHRGANG {jahrgang} <span class="text-paper-3">·</span> AUSGABE N° {ausgabeNr}</div>
+			<div class="justify-self-end max-[720px]:justify-self-center">VERSAND WERKTAGS <span class="text-paper-3">·</span> IRGENDWANN</div>
 		</div>
 
-		<header class="masthead">
+		<header class="border-0 border-b border-solid border-ink px-6 pt-[1.6rem] pb-0 max-[720px]:px-0 max-[720px]:pt-6 max-[720px]:pb-4">
 			{/* Zierlinie über dem Titel: ──── ✧ Seit MMXXVI gedruckt auf indifferentem Papier ✧ ──── */}
-			<div class="masthead__ornament" aria-hidden="true">
-				<span class="masthead__ornament-line"></span>
-				<span class="masthead__ornament-mark">✦</span>
-				<span class="masthead__ornament-text">Seit {jahrgang} gedruckt auf indifferentem Papier</span>
-				<span class="masthead__ornament-mark">✦</span>
-				<span class="masthead__ornament-line"></span>
+			<div class="mx-auto mb-[1.2rem] flex max-w-[1200px] items-center justify-center gap-[0.9rem] font-display text-[0.95rem] italic text-ink-soft max-[720px]:gap-[0.6rem] max-[720px]:text-[0.78rem]" aria-hidden="true">
+				<span class="h-px flex-[0_1_220px] bg-ink-mute opacity-50 max-[720px]:hidden"></span>
+				<span class="text-[0.85rem] text-ochre">✦</span>
+				<span class="whitespace-nowrap">Seit {jahrgang} gedruckt auf indifferentem Papier</span>
+				<span class="text-[0.85rem] text-ochre">✦</span>
+				<span class="h-px flex-[0_1_220px] bg-ink-mute opacity-50 max-[720px]:hidden"></span>
 			</div>
 
 			{/* Hauptzeile: links Login-Chip, mittig Logo + Stempel, rechts Wishlist + Cart */}
@@ -141,49 +152,55 @@ const ausgabeNrRoman = toRoman(weekNumber);
 
 		<slot />
 
-		<footer class="footer">
-			<div class="footer__inner">
-				<div class="footer__brand">
-					<p class="footer__logo">The Ordinary<br/>Emporium.</p>
-					<p class="footer__motto">Das Wochenblatt für vollkommen belanglose Gegenstände. Hebdomadär, aus Anstand.</p>
-					<form class="footer__newsletter" id="footer-newsletter-form" data-newsletter-form>
-						<input type="email" name="email" placeholder="ihre.adresse@beispiel.de" aria-label="E-Mail-Adresse" required />
-						<button type="submit">Abonnieren</button>
+		<footer class="mt-16 bg-ink px-6 pt-16 pb-0 text-paper max-[720px]:px-0 max-[720px]:pt-8 max-[720px]:pb-4">
+			<div class="mx-auto grid max-w-[1200px] grid-cols-[1.6fr_1fr_1fr_1fr] gap-12 pb-12 max-[900px]:grid-cols-2 max-[900px]:gap-8 max-[720px]:grid-cols-1 max-[720px]:gap-[1.8rem]">
+				<div class="max-[720px]:px-4">
+					<p class="mt-0 mb-4 font-display text-[1.7rem] font-bold leading-[1.05] text-paper max-[720px]:text-[1.6rem]">The Ordinary<br/>Emporium.</p>
+					<p class="mt-0 mb-6 max-w-[320px] font-body text-[0.95rem] italic text-paper/65">Das Wochenblatt für vollkommen belanglose Gegenstände. Hebdomadär, aus Anstand.</p>
+					<form class="mb-2 flex max-w-[360px] max-[720px]:flex-col max-[720px]:gap-2" id="footer-newsletter-form" data-newsletter-form>
+						<input
+							type="email" name="email" placeholder="ihre.adresse@beispiel.de" aria-label="E-Mail-Adresse" required
+							class="flex-1 border border-solid border-paper/30 bg-transparent px-[0.8rem] py-[0.6rem] font-body text-[0.9rem] text-paper placeholder:italic placeholder:text-paper/40 max-[720px]:w-full"
+						/>
+						<button
+							type="submit"
+							class="cursor-pointer border-0 bg-ochre px-4 py-[0.6rem] font-meta text-[0.75rem] font-semibold uppercase tracking-[0.12em] text-ink hover:bg-paper pointer-coarse:min-h-11 max-[720px]:w-full"
+						>Abonnieren</button>
 					</form>
-					<p class="footer__newsletter-note" data-newsletter-status>Einmal pro Woche. Keine dringenden Nachrichten. Versprochen.</p>
+					<p class="m-0 text-[0.8rem] italic text-paper/50" data-newsletter-status>Einmal pro Woche. Keine dringenden Nachrichten. Versprochen.</p>
 				</div>
 
-				<div class="footer__col">
-					<p class="footer__heading">Rubriken</p>
-					<a href="/">Katalog</a>
-					<a href="/daily-object">Objekt des Tages</a>
-					<a href="/wishlist">Wunschliste</a>
-					<a href="/about">Die Redaktion</a>
+				<div class="max-[720px]:px-4">
+					<p class="mt-0 mb-4 font-meta text-[0.72rem] uppercase tracking-[0.14em] text-ochre">Rubriken</p>
+					<a href="/" class="block py-[0.3rem] font-body text-[0.95rem] text-paper opacity-85 hover:text-ochre hover:opacity-100">Katalog</a>
+					<a href="/daily-object" class="block py-[0.3rem] font-body text-[0.95rem] text-paper opacity-85 hover:text-ochre hover:opacity-100">Objekt des Tages</a>
+					<a href="/wishlist" class="block py-[0.3rem] font-body text-[0.95rem] text-paper opacity-85 hover:text-ochre hover:opacity-100">Wunschliste</a>
+					<a href="/about" class="block py-[0.3rem] font-body text-[0.95rem] text-paper opacity-85 hover:text-ochre hover:opacity-100">Die Redaktion</a>
 				</div>
 
-				<div class="footer__col">
-					<p class="footer__heading">Service</p>
-					<a href="/shipping">Versand &amp; Rücksendung</a>
-					<a href="/faq">Häufige Fragen</a>
-					<a href="/contact">Kontakt</a>
+				<div class="max-[720px]:px-4">
+					<p class="mt-0 mb-4 font-meta text-[0.72rem] uppercase tracking-[0.14em] text-ochre">Service</p>
+					<a href="/shipping" class="block py-[0.3rem] font-body text-[0.95rem] text-paper opacity-85 hover:text-ochre hover:opacity-100">Versand &amp; Rücksendung</a>
+					<a href="/faq" class="block py-[0.3rem] font-body text-[0.95rem] text-paper opacity-85 hover:text-ochre hover:opacity-100">Häufige Fragen</a>
+					<a href="/contact" class="block py-[0.3rem] font-body text-[0.95rem] text-paper opacity-85 hover:text-ochre hover:opacity-100">Kontakt</a>
 				</div>
 
-				<div class="footer__col">
-					<p class="footer__heading">Rechtliches</p>
-					<a href="/impressum">Impressum</a>
-					<a href="/agb">AGB</a>
-					<a href="/datenschutz">Datenschutz</a>
-					<a href="/cookies">Cookies</a>
+				<div class="max-[720px]:px-4">
+					<p class="mt-0 mb-4 font-meta text-[0.72rem] uppercase tracking-[0.14em] text-ochre">Rechtliches</p>
+					<a href="/impressum" class="block py-[0.3rem] font-body text-[0.95rem] text-paper opacity-85 hover:text-ochre hover:opacity-100">Impressum</a>
+					<a href="/agb" class="block py-[0.3rem] font-body text-[0.95rem] text-paper opacity-85 hover:text-ochre hover:opacity-100">AGB</a>
+					<a href="/datenschutz" class="block py-[0.3rem] font-body text-[0.95rem] text-paper opacity-85 hover:text-ochre hover:opacity-100">Datenschutz</a>
+					<a href="/cookies" class="block py-[0.3rem] font-body text-[0.95rem] text-paper opacity-85 hover:text-ochre hover:opacity-100">Cookies</a>
 				</div>
 			</div>
 
-			<div class="footer__legal">
+			<div class="mx-auto flex max-w-[1200px] items-center justify-between border-0 border-t border-solid border-paper/15 py-6 font-meta text-[0.72rem] uppercase tracking-[0.1em] text-paper/50 max-[900px]:flex-col max-[900px]:gap-[0.6rem] max-[900px]:text-center max-[720px]:gap-2 max-[720px]:px-4 max-[720px]:py-[1.2rem] max-[720px]:text-[0.65rem]">
 				<span>© {now.getFullYear()} THE ORDINARY EMPORIUM · ALLE RECHTE GLEICHGÜLTIG VORBEHALTEN</span>
 				<span>GEDRUCKT (INNERLICH) AUF INDIFFERENTEM PAPIER</span>
 			</div>
 		</footer>
 
-		{/* Toast-Container: globales Feedback-System */}
+		{/* Toast-Container: globales Feedback-System (Klassen bleiben bis zur letzten Etappe in global.css) */}
 		<div id="toast-stack" class="toast-stack" aria-live="polite" aria-atomic="false"></div>
 
 		<script is:inline>
