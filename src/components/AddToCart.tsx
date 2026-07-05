@@ -1,5 +1,16 @@
+// =====================================================================
+// components/AddToCart.tsx — "In den Warenkorb" (Solid-Insel)
+// =====================================================================
+// TAILWIND-MIGRATION: Styles sind vollständig auf Utility-Klassen
+// umgestellt (vorher src/styles/add-to-cart.css, jetzt gelöscht).
+// Farb-/Font-Tokens kommen aus src/styles/tailwind.css (@theme).
+// Hinweis: `border-solid` steht überall explizit, weil wir Tailwinds
+// Preflight (das border-style global vorbelegt) bewusst nicht laden.
+//
+// Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
+// =====================================================================
+
 import { createSignal } from 'solid-js';
-import '../styles/add-to-cart.css';
 
 interface Props {
   itemId: number;
@@ -7,8 +18,13 @@ interface Props {
   variant?: 'inline' | 'block';
 }
 
+// Wiederkehrende Utility-Kombis einmal benannt (lesbarer als 3x inline)
+const metaButton =
+  'font-meta uppercase font-semibold tracking-[0.12em] cursor-pointer ' +
+  'transition-colors duration-150 disabled:cursor-not-allowed';
+
 export default function AddToCart(props: Props) {
-  const [stock, setStock] = createSignal(props.initialStock);
+  const [stock] = createSignal(props.initialStock);
   const [isAdded, setIsAdded] = createSignal(false);
   const [isLoading, setIsLoading] = createSignal(false);
   const [quantity, setQuantity] = createSignal(1);
@@ -94,7 +110,14 @@ export default function AddToCart(props: Props) {
       <button
         onClick={outOfStock ? handleWishlist : handleBuy}
         disabled={isLoading()}
-        class={'addcart-btn-inline ' + (outOfStock ? 'is-out' : isAdded() ? 'is-added' : '')}
+        class={
+          `${metaButton} px-4 py-[0.6rem] text-[0.78rem] ` +
+          (outOfStock
+            ? 'bg-transparent border border-solid border-ink text-ink enabled:hover:border-red enabled:hover:text-red'
+            : isAdded()
+            ? 'bg-ink text-paper border-0'
+            : 'bg-ochre text-ink border-0 enabled:hover:bg-ochre-deep')
+        }
       >
         {outOfStock ? '♡ Auf Wunschliste' : isAdded() ? '✓ Vermerkt' : 'In den Warenkorb'}
       </button>
@@ -102,12 +125,15 @@ export default function AddToCart(props: Props) {
   }
 
   return (
-    <div class="addcart-block">
-      <p class="addcart-stock">
-        Vermerkter Restbestand: <strong>{stock()} {stock() === 1 ? 'Exemplar' : 'Exemplare'}</strong>
+    <div class="mt-4 flex flex-col gap-[0.7rem]">
+      <p class="m-0 font-meta text-[0.78rem] uppercase tracking-[0.08em] text-ink-mute">
+        Vermerkter Restbestand:{' '}
+        <strong class="font-semibold text-ink">
+          {stock()} {stock() === 1 ? 'Exemplar' : 'Exemplare'}
+        </strong>
       </p>
 
-      <div class="addcart-row">
+      <div class="flex items-stretch">
         <input
           type="number"
           min="1"
@@ -120,13 +146,22 @@ export default function AddToCart(props: Props) {
               setQuantity(val);
             }
           }}
-          class="addcart-qty"
+          class="w-[70px] border border-solid border-ink border-r-0 bg-paper px-2 py-[0.85rem]
+                 text-center font-display text-[1.1rem] font-semibold text-ink
+                 focus:outline-2 focus:outline-red focus:-outline-offset-1"
           aria-label="Menge"
         />
         <button
           onClick={handleBuy}
           disabled={outOfStock || isLoading()}
-          class={'addcart-btn ' + (outOfStock ? 'is-out' : isAdded() ? 'is-added' : '')}
+          class={
+            `${metaButton} flex-1 border border-solid border-ink px-5 py-[0.85rem] text-[0.85rem] ` +
+            (outOfStock
+              ? 'bg-paper-3 text-ink-mute'
+              : isAdded()
+              ? 'bg-ink text-paper'
+              : 'bg-ochre text-ink enabled:hover:bg-ochre-deep')
+          }
         >
           {label()}
         </button>
