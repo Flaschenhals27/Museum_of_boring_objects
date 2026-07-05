@@ -1,4 +1,13 @@
 ---
+// =====================================================================
+// pages/login.astro — Anmelden / Registrieren (umschaltbares Formular)
+// =====================================================================
+// TAILWIND-MIGRATION: vollständig auf Utility-Klassen umgestellt
+// (kein <style>-Block mehr). Tokens aus src/styles/tailwind.css.
+//
+// Diese Datei wurde mit Hilfe von Claude (Anthropic) angepasst.
+// =====================================================================
+
 import Layout from '../layouts/Layout.astro';
 import { getUserFromCookie } from '../lib/auth';
 
@@ -20,72 +29,118 @@ if (user) {
 ---
 
 <Layout title="Anmelden">
-  <main class="page login">
+  <main class="mx-auto max-w-[560px] px-6 pt-12 pb-16 text-center">
 
-    <div class="section-marker" style="justify-content: center;">
-      <span class="section-marker__no">N° 01</span>
-      <span class="section-marker__line"></span>
-      <span class="section-marker__label" id="form-marker">Anmelden · Bei der Redaktion</span>
+    <div class="mb-4 flex items-center justify-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em]">
+      <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 01</span>
+      <span class="h-px w-8 bg-ink"></span>
+      <span class="font-medium text-red" id="form-marker">Anmelden · Bei der Redaktion</span>
     </div>
 
-    <h1 class="display-headline login__title" id="form-title">
+    <h1 class="mt-4 mb-2 text-center font-display text-[clamp(3rem,6vw,4.5rem)] font-extrabold leading-[0.98] tracking-[-0.02em] text-ink" id="form-title">
       Anmelden.
     </h1>
-    <p class="login__sub" id="form-sub">
+    <p class="mb-10 text-center font-body text-[1.05rem] text-ink-soft" id="form-sub">
       <em>Willkommen zurück im Reich der wohlwollenden Langeweile.</em>
     </p>
 
-    <div class="login-card">
+    <div class="flex flex-col gap-6 border-0 border-t border-b border-solid border-ink py-10 text-left">
 
-      <div id="error-msg" class="login-error" style="display:none"></div>
+      <div id="error-msg" class="border-0 border-l-[3px] border-solid border-red bg-red/8 px-4 py-[0.8rem] font-meta text-[0.85rem] text-red" style="display:none"></div>
 
-      <div class="login-form" id="login-form">
-        <div class="form-field">
-          <label>Email</label>
-          <input type="email" id="login-email" placeholder="ihre.adresse@beispiel.de" />
+      <div class="flex flex-col gap-[1.2rem]" id="login-form">
+        <div class="flex flex-col gap-[0.4rem]">
+          <label class="font-meta text-[0.72rem] font-medium uppercase tracking-[0.14em] text-ink-mute">Email</label>
+          <input
+            type="email" id="login-email" placeholder="ihre.adresse@beispiel.de"
+            class="w-full border border-solid border-ink bg-paper px-[0.9rem] py-[0.85rem] font-body text-base text-ink
+                   focus:outline-2 focus:outline-red focus:-outline-offset-1
+                   [&.invalid]:border-red [&.invalid]:bg-red/5 max-[540px]:text-[16px]"
+          />
         </div>
-        <div class="form-field">
-          <label>Passwort</label>
-          <input type="password" id="login-password" placeholder="••••••••" />
+        <div class="flex flex-col gap-[0.4rem]">
+          <label class="font-meta text-[0.72rem] font-medium uppercase tracking-[0.14em] text-ink-mute">Passwort</label>
+          <input
+            type="password" id="login-password" placeholder="••••••••"
+            class="w-full border border-solid border-ink bg-paper px-[0.9rem] py-[0.85rem] font-body text-base text-ink
+                   focus:outline-2 focus:outline-red focus:-outline-offset-1
+                   [&.invalid]:border-red [&.invalid]:bg-red/5 max-[540px]:text-[16px]"
+          />
         </div>
-        <a href="/forgot-password" class="login__forgot">Passwort vergessen?</a>
-        <button class="btn-primary login__submit" id="login-btn">Anmelden →</button>
+        <a href="/forgot-password" class="-mt-[0.6rem] self-end font-meta text-[0.72rem] uppercase tracking-[0.1em] text-ink-mute underline hover:text-red">Passwort vergessen?</a>
+        <button
+          id="login-btn"
+          class="mt-2 w-full cursor-pointer border-0 bg-ink px-6 py-4 font-meta text-[0.85rem] uppercase tracking-[0.12em] text-paper
+                 transition-colors duration-150 hover:bg-red pointer-coarse:min-h-11"
+        >Anmelden →</button>
       </div>
 
-      <div class="register-form" id="register-form" style="display:none">
-        <div class="form-grid">
-          <div class="form-field">
-            <label>Vorname</label>
-            <input type="text" id="reg-prename" placeholder="Max" />
+      <div class="flex flex-col gap-[1.2rem]" id="register-form" style="display:none">
+        <div class="grid grid-cols-2 gap-[1.2rem] max-[540px]:grid-cols-1">
+          <div class="flex flex-col gap-[0.4rem]">
+            <label class="font-meta text-[0.72rem] font-medium uppercase tracking-[0.14em] text-ink-mute">Vorname</label>
+            <input
+              type="text" id="reg-prename" placeholder="Max"
+              class="w-full border border-solid border-ink bg-paper px-[0.9rem] py-[0.85rem] font-body text-base text-ink
+                     focus:outline-2 focus:outline-red focus:-outline-offset-1
+                     [&.invalid]:border-red [&.invalid]:bg-red/5 max-[540px]:text-[16px]"
+            />
           </div>
-          <div class="form-field">
-            <label>Nachname</label>
-            <input type="text" id="reg-surname" placeholder="Mustermann" />
+          <div class="flex flex-col gap-[0.4rem]">
+            <label class="font-meta text-[0.72rem] font-medium uppercase tracking-[0.14em] text-ink-mute">Nachname</label>
+            <input
+              type="text" id="reg-surname" placeholder="Mustermann"
+              class="w-full border border-solid border-ink bg-paper px-[0.9rem] py-[0.85rem] font-body text-base text-ink
+                     focus:outline-2 focus:outline-red focus:-outline-offset-1
+                     [&.invalid]:border-red [&.invalid]:bg-red/5 max-[540px]:text-[16px]"
+            />
           </div>
         </div>
-        <div class="form-field">
-          <label>Benutzername</label>
-          <input type="text" id="reg-username" placeholder="maxmuster" />
+        <div class="flex flex-col gap-[0.4rem]">
+          <label class="font-meta text-[0.72rem] font-medium uppercase tracking-[0.14em] text-ink-mute">Benutzername</label>
+          <input
+            type="text" id="reg-username" placeholder="maxmuster"
+            class="w-full border border-solid border-ink bg-paper px-[0.9rem] py-[0.85rem] font-body text-base text-ink
+                   focus:outline-2 focus:outline-red focus:-outline-offset-1
+                   [&.invalid]:border-red [&.invalid]:bg-red/5 max-[540px]:text-[16px]"
+          />
         </div>
-        <div class="form-field">
-          <label>Email</label>
-          <input type="email" id="reg-email" placeholder="ihre.adresse@beispiel.de" />
+        <div class="flex flex-col gap-[0.4rem]">
+          <label class="font-meta text-[0.72rem] font-medium uppercase tracking-[0.14em] text-ink-mute">Email</label>
+          <input
+            type="email" id="reg-email" placeholder="ihre.adresse@beispiel.de"
+            class="w-full border border-solid border-ink bg-paper px-[0.9rem] py-[0.85rem] font-body text-base text-ink
+                   focus:outline-2 focus:outline-red focus:-outline-offset-1
+                   [&.invalid]:border-red [&.invalid]:bg-red/5 max-[540px]:text-[16px]"
+          />
         </div>
-        <div class="form-field">
-          <label>Passwort <span class="form-field__hint">(min. 8 Zeichen)</span></label>
-          <input type="password" id="reg-password" placeholder="••••••••" />
+        <div class="flex flex-col gap-[0.4rem]">
+          <label class="font-meta text-[0.72rem] font-medium uppercase tracking-[0.14em] text-ink-mute">
+            Passwort
+            <span class="ml-[0.4rem] font-body text-[0.75rem] normal-case italic tracking-normal text-ink-mute">(min. 8 Zeichen)</span>
+          </label>
+          <input
+            type="password" id="reg-password" placeholder="••••••••"
+            class="w-full border border-solid border-ink bg-paper px-[0.9rem] py-[0.85rem] font-body text-base text-ink
+                   focus:outline-2 focus:outline-red focus:-outline-offset-1
+                   [&.invalid]:border-red [&.invalid]:bg-red/5 max-[540px]:text-[16px]"
+          />
         </div>
-        <button class="btn-primary login__submit" id="register-btn">Eintragen →</button>
+        <button
+          id="register-btn"
+          class="mt-2 w-full cursor-pointer border-0 bg-ink px-6 py-4 font-meta text-[0.85rem] uppercase tracking-[0.12em] text-paper
+                 transition-colors duration-150 hover:bg-red pointer-coarse:min-h-11"
+        >Eintragen →</button>
       </div>
 
-      <div class="login-toggle">
+      <div class="text-center font-meta text-[0.78rem] uppercase tracking-[0.1em] text-ink-mute">
         <span id="toggle-text">Noch nicht eingeschrieben?</span>
-        <a href="#" id="toggle-btn">Eintragen lassen</a>
+        <a href="#" id="toggle-btn" class="ml-2 font-semibold text-red underline hover:text-red-deep">Eintragen lassen</a>
       </div>
     </div>
 
-    <p class="login__motto">
-      „Wir öffnen die Tür leise. Die Begrüßung ist <em>angemessen unauffällig</em>."
+    <p class="mx-auto mt-12 max-w-[480px] text-center font-display text-[1.1rem] italic leading-[1.5] text-ink-soft">
+      „Wir öffnen die Tür leise. Die Begrüßung ist <em class="text-red">angemessen unauffällig</em>."
     </p>
 
   </main>
@@ -132,7 +187,10 @@ if (user) {
     (document.getElementById(id) as HTMLInputElement).classList.add('invalid');
   };
   const clearInvalid = () => {
-    document.querySelectorAll('.form-field input').forEach(el => el.classList.remove('invalid'));
+    // Über die Form-IDs statt einer Styling-Klasse selektieren
+    // (Tailwind-Migration: die frühere .form-field-Klasse existiert nicht mehr)
+    document.querySelectorAll('#login-form input, #register-form input')
+      .forEach(el => el.classList.remove('invalid'));
   };
 
   document.getElementById('login-btn')!.addEventListener('click', async () => {
@@ -218,104 +276,3 @@ if (user) {
     }
   });
 </script>
-
-<style>
-  .login {
-    max-width: 560px;
-    text-align: center;
-    padding-top: 3rem;
-  }
-  .login__title {
-    text-align: center;
-    margin: 1rem 0 0.5rem;
-    font-size: clamp(3rem, 6vw, 4.5rem);
-  }
-  .login__sub {
-    text-align: center;
-    font-family: var(--font-body);
-    color: var(--ink-soft);
-    margin: 0 0 2.5rem;
-    font-size: 1.05rem;
-  }
-  .login__sub em { font-style: italic; }
-
-  .login-card {
-    text-align: left;
-    border-top: var(--rule);
-    border-bottom: var(--rule);
-    padding: 2.5rem 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .login-error {
-    background: rgba(122,31,31,0.08);
-    color: var(--red);
-    padding: 0.8rem 1rem;
-    font-family: var(--font-meta);
-    font-size: 0.85rem;
-    border-left: 3px solid var(--red);
-  }
-
-  .login-form,
-  .register-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
-  }
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.2rem;
-  }
-  /* .form-field / label / __hint / input-Basis / .invalid: siehe global.css */
-  .login__submit { margin-top: 0.5rem; width: 100%; }
-
-  .login__forgot {
-    align-self: flex-end;
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    text-decoration: underline;
-    margin-top: -0.6rem;
-  }
-  .login__forgot:hover { color: var(--red); }
-
-  .login-toggle {
-    text-align: center;
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-  .login-toggle a {
-    color: var(--red);
-    text-decoration: underline;
-    margin-left: 0.5rem;
-    font-weight: 600;
-  }
-  .login-toggle a:hover { color: var(--red-deep); }
-
-  .login__motto {
-    margin: 3rem auto 0;
-    max-width: 480px;
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: 1.1rem;
-    line-height: 1.5;
-    color: var(--ink-soft);
-    text-align: center;
-  }
-  .login__motto em {
-    color: var(--red);
-    font-style: italic;
-  }
-
-  @media (max-width: 540px) {
-    .form-grid { grid-template-columns: 1fr; }
-  }
-</style>
