@@ -58,8 +58,14 @@ body {
 
 main { flex: 1; }
 
-a { color: var(--ink); text-decoration: none; }
-a:hover { color: var(--red); }
+/* TAILWIND-MIGRATION: Generische Element-Regeln liegen in @layer base,
+   damit Utility-Klassen (layer utilities) sie auf migrierten Seiten
+   überstimmen können. Ungelayerte Regeln würden IMMER gewinnen.
+   Auf nicht migrierten Seiten ändert der Layer nichts. */
+@layer base {
+	a { color: var(--ink); text-decoration: none; }
+	a:hover { color: var(--red); }
+}
 
 /* ===================================================================== */
 /* TOP BANNER                                                             */
@@ -607,27 +613,8 @@ a.nav-user-chip:hover { color: var(--red); }
 	background-image: none;
 }
 
-/* Form-Inputs */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-input[type="search"],
-textarea,
-select {
-	font-family: var(--font-body);
-	font-size: 1rem;
-	padding: 0.7rem 0.9rem;
-	border: 1px solid var(--ink);
-	background: var(--paper);
-	color: var(--ink);
-}
-input:focus, textarea:focus, select:focus {
-	outline: 2px solid var(--red);
-	outline-offset: -1px;
-}
-/* Auf iOS löst alles < 16px Auto-Zoom beim Tap aus — explizit verhindern */
-@media (max-width: 540px) {
+/* Form-Inputs — in @layer base (siehe Migrations-Hinweis oben bei a{}) */
+@layer base {
 	input[type="text"],
 	input[type="email"],
 	input[type="password"],
@@ -635,7 +622,28 @@ input:focus, textarea:focus, select:focus {
 	input[type="search"],
 	textarea,
 	select {
-		font-size: 16px;
+		font-family: var(--font-body);
+		font-size: 1rem;
+		padding: 0.7rem 0.9rem;
+		border: 1px solid var(--ink);
+		background: var(--paper);
+		color: var(--ink);
+	}
+	input:focus, textarea:focus, select:focus {
+		outline: 2px solid var(--red);
+		outline-offset: -1px;
+	}
+	/* Auf iOS löst alles < 16px Auto-Zoom beim Tap aus — explizit verhindern */
+	@media (max-width: 540px) {
+		input[type="text"],
+		input[type="email"],
+		input[type="password"],
+		input[type="number"],
+		input[type="search"],
+		textarea,
+		select {
+			font-size: 16px;
+		}
 	}
 }
 
