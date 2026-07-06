@@ -8,6 +8,10 @@
 // Pseudo-Hash aus dem ISO-Datum als Seed -> deterministisch, simpel,
 // ausreichend für den Demo-Zweck.
 //
+// TAILWIND-MIGRATION: seitenlokale Styles als Utilities; geteilte
+// Designsystem-Klassen (.stamp, .btn-ochre, .rule-thick, .bg-stripes,
+// .reveal) bleiben vorerst in global.css.
+//
 // Diese Datei wurde mit Hilfe von Claude (Anthropic) angepasst.
 // =====================================================================
 
@@ -50,142 +54,123 @@ const descRest  = randomItem.description.slice(1);
 ---
 
 <Layout title={randomItem.name}>
-  <main class="page tagesobjekt">
+  <main class="mx-auto max-w-[1200px] px-6 pt-8 pb-16 max-[540px]:px-4">
 
     {/* HERO */}
-    <section class="tageshero reveal">
-      <div class="section-marker">
-        <span class="section-marker__no">N° 01</span>
-        <span class="section-marker__line"></span>
-        <span class="section-marker__label">Objekt des Tages · {datumLang}</span>
+    <section class="reveal mb-12 text-center">
+      <div class="mb-4 flex items-center justify-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] max-[540px]:flex-wrap max-[540px]:gap-[0.4rem]">
+        <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 01</span>
+        <span class="h-px w-8 bg-ink"></span>
+        <span class="font-medium text-red max-[540px]:text-[0.65rem]">Objekt des Tages · {datumLang}</span>
       </div>
 
-      <h1 class="display-headline tageshero__title">
+      <h1 class="mt-4 mb-6 font-display text-[clamp(3rem,9vw,7rem)] font-extrabold leading-[0.98] tracking-[-0.02em] text-ink max-[540px]:text-[clamp(1.8rem,8vw,2.6rem)] max-[540px]:leading-[1.05]">
         {randomItem.name.split(' ').slice(0, Math.ceil(randomItem.name.split(' ').length / 2)).join(' ')}<br/>
-        <em>{randomItem.name.split(' ').slice(Math.ceil(randomItem.name.split(' ').length / 2)).join(' ') || '.'}</em>
+        <em class="text-red">{randomItem.name.split(' ').slice(Math.ceil(randomItem.name.split(' ').length / 2)).join(' ') || '.'}</em>
       </h1>
 
-      <p class="tageshero__sub">
-        Eine Würdigung des Objekts — <em>{randomItem.description.toLowerCase()}</em>
+      <p class="mx-auto mt-0 mb-4 max-w-[720px] font-body text-[1.2rem] italic leading-normal text-ink-soft">
+        Eine Würdigung des Objekts — <em class="text-ink">{randomItem.description.toLowerCase()}</em>
       </p>
 
-      <p class="tageshero__meta">
+      <p class="mt-0 mb-10 font-meta text-[0.78rem] uppercase tracking-[0.14em] text-ink-mute">
         Von der Redaktion · Kolumnen · Lesedauer 8 min.
       </p>
 
-      <div class="tageshero__media bg-stripes">
+      <div class="bg-stripes relative aspect-video w-full overflow-hidden border border-solid border-paper-3">
         {getImageSrc(0)
-          ? <img src={getImageSrc(0)} alt={randomItem.name} />
+          ? <img src={getImageSrc(0)} alt={randomItem.name} class="h-full w-full object-cover mix-blend-multiply [filter:sepia(0.1)_contrast(0.95)]" />
           : null
         }
-        <span class="tageshero__caption">{randomItem.name} — Studio Berlin, {months[now.getMonth()]} {now.getFullYear()}</span>
+        <span class="absolute bottom-4 left-4 border border-solid border-paper-3 bg-paper px-[0.9rem] py-[0.4rem] font-meta text-[0.75rem] uppercase tracking-[0.1em] text-ink-soft">{randomItem.name} — Studio Berlin, {months[now.getMonth()]} {now.getFullYear()}</span>
       </div>
     </section>
 
     {/* LEAD-TEXT */}
-    <section class="lead reveal">
-      <p class="lead__body">
-        <span class="dropcap">{descFirst}</span>{descRest} Er war einmal funktional, möglicherweise sogar elegant —
+    <section class="reveal mx-auto max-w-[760px] pt-12 pb-8">
+      <p class="mt-0 mb-[1.2rem] font-body text-[1.15rem] leading-[1.7] text-ink">
+        <span class="float-left pt-[0.2rem] pr-2 font-display text-[4.5rem] font-bold leading-[0.85] text-red">{descFirst}</span>{descRest} Er war einmal funktional, möglicherweise sogar elegant —
         in einer Zeit, in der niemand auf solche Dinge achtete. Heute aber, gerade jetzt,
         ist er etwas anderes geworden. Stiller. Bedächtiger. Vielleicht sogar nachdenklich,
         wenn man Gegenständen so etwas zuschreiben möchte.
       </p>
-      <p>
+      <p class="mt-0 mb-[1.2rem] font-body text-[1.05rem] leading-[1.7] text-ink-soft">
         Wir haben ihn drei Stunden lang betrachtet. Er sagt nach wie vor nichts. Das ist,
         unseres Erachtens, das Ehrlichste, was ein Büroartikel je vollbracht hat.
       </p>
     </section>
 
     {/* GROSSES ZITAT */}
-    <section class="tageszitat reveal">
-      <blockquote>
-        <em>„Ein Gegenstand ohne Funktion</em> ist kein Müll.<br/>
-        Er ist ein <em>Thema.</em>"
+    <section class="reveal mt-8 border-0 border-t border-b border-solid border-ink px-4 py-12 text-center">
+      <blockquote class="mx-0 mt-0 mb-4 font-display text-[clamp(1.8rem,3.6vw,2.8rem)] font-bold leading-[1.25] text-ink">
+        <em class="text-red">„Ein Gegenstand ohne Funktion</em> ist kein Müll.<br/>
+        Er ist ein <em class="text-red">Thema.</em>"
       </blockquote>
-      <cite>— Die Redaktion</cite>
+      <cite class="font-meta text-[0.78rem] not-italic uppercase tracking-[0.14em] text-ink-mute">— Die Redaktion</cite>
     </section>
 
     {/* DIE ZAHLEN, KURZ */}
     <div class="rule-thick"></div>
 
-    <section class="zahlen reveal">
-      <div class="section-marker">
-        <span class="section-marker__no">N° 02</span>
-        <span class="section-marker__line"></span>
-        <span class="section-marker__label">Die Zahlen, kurz</span>
+    <section class="reveal py-10">
+      <div class="mb-4 flex items-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] max-[540px]:flex-wrap max-[540px]:gap-[0.4rem]">
+        <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 02</span>
+        <span class="h-px w-8 bg-ink"></span>
+        <span class="font-medium text-red max-[540px]:text-[0.65rem]">Die Zahlen, kurz</span>
       </div>
-      <div class="zahlen__grid">
-        <div class="zahl">
-          <span class="zahl__num">2017</span>
-          <span class="zahl__label">Vermutetes Anschaffungsjahr</span>
-        </div>
-        <div class="zahl">
-          <span class="zahl__num">0 %</span>
-          <span class="zahl__label">Aktueller Tintenstand</span>
-        </div>
-        <div class="zahl">
-          <span class="zahl__num">{randomItem.boredom}/10</span>
-          <span class="zahl__label">Index der Langeweile</span>
-        </div>
-        <div class="zahl">
-          <span class="zahl__num">{randomItem.stock}</span>
-          <span class="zahl__label">Verbleibende Exemplare</span>
-        </div>
+      <div class="mt-6 grid grid-cols-4 max-[900px]:grid-cols-2 max-[600px]:grid-cols-1">
+        {[
+          { num: '2017',                     label: 'Vermutetes Anschaffungsjahr' },
+          { num: '0 %',                      label: 'Aktueller Tintenstand' },
+          { num: `${randomItem.boredom}/10`, label: 'Index der Langeweile' },
+          { num: String(randomItem.stock),   label: 'Verbleibende Exemplare' },
+        ].map((z) => (
+          <div class="border-0 border-r border-solid border-paper-3 px-6 py-4 text-left last:border-r-0 max-[900px]:[&:nth-child(2)]:border-r-0 max-[900px]:pl-0! max-[600px]:border-r-0 max-[600px]:border-b max-[600px]:px-0! max-[600px]:py-4">
+            <span class="mb-[0.6rem] block font-display text-[3.5rem] font-extrabold leading-none tracking-[-0.02em] text-red">{z.num}</span>
+            <span class="font-meta text-[0.72rem] uppercase tracking-[0.12em] text-ink-mute">{z.label}</span>
+          </div>
+        ))}
       </div>
     </section>
 
     {/* IN DREI KAPITELN */}
     <div class="rule-thick"></div>
 
-    <section class="kapitel reveal">
-      <div class="section-marker">
-        <span class="section-marker__no">N° 03</span>
-        <span class="section-marker__line"></span>
-        <span class="section-marker__label">In drei Kapiteln</span>
+    <section class="reveal py-10">
+      <div class="mb-4 flex items-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] max-[540px]:flex-wrap max-[540px]:gap-[0.4rem]">
+        <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 03</span>
+        <span class="h-px w-8 bg-ink"></span>
+        <span class="font-medium text-red max-[540px]:text-[0.65rem]">In drei Kapiteln</span>
       </div>
 
-      <div class="kapitel__grid">
-        {features.length > 0 ? features.slice(0, 3).map((f, i) => (
-          <div class="kapitel-item">
-            <p class="kapitel-item__num">{String(i + 1).padStart(2, '0')}</p>
-            <h3 class="kapitel-item__head">{f.headline}</h3>
-            <p class="kapitel-item__body">{f.subtext}</p>
+      <div class="mt-6 grid grid-cols-3 max-[900px]:grid-cols-2 max-[600px]:grid-cols-1">
+        {(features.length > 0 ? features.slice(0, 3) : [
+          { headline: 'Strahlend, einst.',       subtext: 'Er war einmal leuchtend. Heute ist er trocken — und gerade deshalb unvergesslich.' },
+          { headline: 'Geräusch als Geste.',     subtext: 'Das Kratzen erinnert an Kreide auf einer Tafel, jedoch zu deutlich höheren Anschaffungskosten.' },
+          { headline: 'Seltenheit als Feature.', subtext: 'Nur noch wenige Exemplare. Nicht weil wir wenig bestellten — sondern weil die Nachfrage uns überraschte.' },
+        ]).map((f, i) => (
+          <div class="border-0 border-r border-solid border-paper-3 pr-8 [&:nth-child(3n)]:border-r-0 [&:not(:first-child)]:pl-8 max-[900px]:[&:nth-child(2)]:border-r-0 max-[900px]:pl-0! max-[600px]:border-r-0! max-[600px]:border-b max-[600px]:px-0! max-[600px]:py-4">
+            <p class="mt-0 mb-2 font-display text-[2.5rem] font-bold italic leading-none text-red">{String(i + 1).padStart(2, '0')}</p>
+            <h3 class="mt-0 mb-3 font-display text-[1.4rem] font-bold leading-[1.2]">{f.headline}</h3>
+            <p class="m-0 font-body text-[0.95rem] leading-[1.6] text-ink-soft">{f.subtext}</p>
           </div>
-        )) : (
-          <>
-            <div class="kapitel-item">
-              <p class="kapitel-item__num">01</p>
-              <h3 class="kapitel-item__head">Strahlend, einst.</h3>
-              <p class="kapitel-item__body">Er war einmal leuchtend. Heute ist er trocken — und gerade deshalb unvergesslich.</p>
-            </div>
-            <div class="kapitel-item">
-              <p class="kapitel-item__num">02</p>
-              <h3 class="kapitel-item__head">Geräusch als Geste.</h3>
-              <p class="kapitel-item__body">Das Kratzen erinnert an Kreide auf einer Tafel, jedoch zu deutlich höheren Anschaffungskosten.</p>
-            </div>
-            <div class="kapitel-item">
-              <p class="kapitel-item__num">03</p>
-              <h3 class="kapitel-item__head">Seltenheit als Feature.</h3>
-              <p class="kapitel-item__body">Nur noch wenige Exemplare. Nicht weil wir wenig bestellten — sondern weil die Nachfrage uns überraschte.</p>
-            </div>
-          </>
-        )}
+        ))}
       </div>
     </section>
 
     {/* KAUF-SEKTION */}
-    <section class="erwerb reveal">
-      <div class="erwerb__left">
-        <p class="eyebrow" style="color: var(--ochre);">Das heutige Objekt erwerben</p>
-        <h2 class="erwerb__title">{randomItem.name}.</h2>
-        <p class="erwerb__sub">
+    <section class="reveal mt-12 grid grid-cols-[1.4fr_1fr] items-center gap-12 bg-ink px-12 py-10 text-paper max-[900px]:grid-cols-1 max-[900px]:px-6 max-[900px]:py-8">
+      <div>
+        <p class="m-0 font-meta text-[0.78rem] font-medium uppercase tracking-[0.14em] text-ochre">Das heutige Objekt erwerben</p>
+        <h2 class="mt-2 mb-4 font-display text-[clamp(1.8rem,3.6vw,2.8rem)] font-extrabold leading-none text-paper">{randomItem.name}.</h2>
+        <p class="m-0 font-body italic text-paper/70">
           <em>{randomItem.stock} {randomItem.stock === 1 ? 'Exemplar' : 'Exemplare'} verbleibend. Eine Nachbestellung ist nicht geplant — auch nicht aus konzeptionellen Gründen.</em>
         </p>
       </div>
-      <div class="erwerb__right">
-        <p class="erwerb__price">{randomItem.price.toFixed(2)} €</p>
-        <div class="erwerb__cta">
-          {isBegehrt && <span class="stamp stamp--red" style="color: var(--ochre);">Sehr begehrt</span>}
+      <div class="flex flex-col items-end gap-4 max-[900px]:items-start">
+        <p class="m-0 font-display text-[3rem] font-extrabold leading-none text-paper">{randomItem.price.toFixed(2)} €</p>
+        <div class="flex items-center gap-4">
+          {isBegehrt && <span class="stamp" style="color: var(--ochre);">Sehr begehrt</span>}
           <a href={`/product/${randomItem.id}`} class="btn-ochre">Zum Objekt →</a>
         </div>
       </div>
@@ -193,247 +178,3 @@ const descRest  = randomItem.description.slice(1);
 
   </main>
 </Layout>
-
-<style>
-  .tagesobjekt { padding-top: 2rem; }
-
-  /* HERO */
-  .tageshero { text-align: center; margin-bottom: 3rem; }
-  .tageshero .section-marker { justify-content: center; }
-  .tageshero__title {
-    font-size: clamp(3rem, 9vw, 7rem);
-    margin: 1rem 0 1.5rem;
-  }
-  .tageshero__sub {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 1.2rem;
-    line-height: 1.5;
-    color: var(--ink-soft);
-    max-width: 720px;
-    margin: 0 auto 1rem;
-  }
-  .tageshero__sub em { color: var(--ink); font-style: italic; }
-  .tageshero__meta {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0 0 2.5rem;
-  }
-  .tageshero__media {
-    width: 100%;
-    aspect-ratio: 16/9;
-    position: relative;
-    border: 1px solid var(--paper-3);
-    overflow: hidden;
-  }
-  .tageshero__media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: sepia(0.1) contrast(0.95);
-    mix-blend-mode: multiply;
-  }
-  .tageshero__caption {
-    position: absolute;
-    bottom: 1rem;
-    left: 1rem;
-    background: var(--paper);
-    padding: 0.4rem 0.9rem;
-    font-family: var(--font-meta);
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    border: 1px solid var(--paper-3);
-  }
-
-  /* LEAD */
-  .lead {
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 3rem 0 2rem;
-  }
-  .lead__body {
-    font-family: var(--font-body);
-    font-size: 1.15rem;
-    line-height: 1.7;
-    color: var(--ink);
-    margin: 0 0 1.2rem;
-  }
-  .lead p {
-    font-family: var(--font-body);
-    font-size: 1.05rem;
-    line-height: 1.7;
-    color: var(--ink-soft);
-    margin: 0 0 1.2rem;
-  }
-  .dropcap {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 4.5rem;
-    line-height: 0.85;
-    float: left;
-    padding: 0.2rem 0.5rem 0 0;
-    color: var(--red);
-  }
-
-  /* ZITAT */
-  .tageszitat {
-    text-align: center;
-    padding: 3rem 1rem;
-    border-top: var(--rule);
-    border-bottom: var(--rule);
-    margin: 2rem 0 0;
-  }
-  .tageszitat blockquote {
-    font-family: var(--font-display);
-    font-size: clamp(1.8rem, 3.6vw, 2.8rem);
-    font-weight: 700;
-    line-height: 1.25;
-    margin: 0 0 1rem;
-    color: var(--ink);
-  }
-  .tageszitat blockquote em {
-    font-style: italic;
-    color: var(--red);
-  }
-  .tageszitat cite {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    font-style: normal;
-  }
-
-  /* ZAHLEN */
-  .zahlen { padding: 2.5rem 0; }
-  .zahlen__grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    margin-top: 1.5rem;
-  }
-  .zahl {
-    padding: 1rem 1.5rem;
-    border-right: var(--rule-soft);
-    text-align: left;
-  }
-  .zahl:last-child { border-right: none; }
-  .zahl__num {
-    display: block;
-    font-family: var(--font-display);
-    font-size: 3.5rem;
-    font-weight: 800;
-    color: var(--red);
-    line-height: 1;
-    letter-spacing: -0.02em;
-    margin-bottom: 0.6rem;
-  }
-  .zahl__label {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-
-  /* KAPITEL */
-  .kapitel { padding: 2.5rem 0; }
-  .kapitel__grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0;
-    margin-top: 1.5rem;
-  }
-  .kapitel-item {
-    padding: 0 2rem 0 0;
-    border-right: var(--rule-soft);
-  }
-  .kapitel-item:nth-child(3n) { border-right: none; }
-  .kapitel-item:not(:first-child) { padding-left: 2rem; }
-  .kapitel-item__num {
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--red);
-    margin: 0 0 0.5rem;
-    line-height: 1;
-  }
-  .kapitel-item__head {
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-    font-weight: 700;
-    line-height: 1.2;
-    margin: 0 0 0.75rem;
-  }
-  .kapitel-item__body {
-    font-family: var(--font-body);
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: var(--ink-soft);
-    margin: 0;
-  }
-
-  /* ERWERB */
-  .erwerb {
-    background: var(--ink);
-    color: var(--paper);
-    padding: 2.5rem 3rem;
-    margin-top: 3rem;
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 3rem;
-    align-items: center;
-  }
-  .erwerb__title {
-    font-family: var(--font-display);
-    font-size: clamp(1.8rem, 3.6vw, 2.8rem);
-    font-weight: 800;
-    line-height: 1;
-    margin: 0.5rem 0 1rem;
-    color: var(--paper);
-  }
-  .erwerb__sub {
-    font-family: var(--font-body);
-    font-style: italic;
-    color: rgba(243,237,225,0.7);
-    margin: 0;
-  }
-  .erwerb__right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 1rem;
-  }
-  .erwerb__price {
-    font-family: var(--font-display);
-    font-size: 3rem;
-    font-weight: 800;
-    color: var(--paper);
-    margin: 0;
-    line-height: 1;
-  }
-  .erwerb__cta {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-  }
-
-  /* Responsive */
-  @media (max-width: 900px) {
-    .zahlen__grid, .kapitel__grid { grid-template-columns: repeat(2, 1fr); }
-    .zahl:nth-child(2), .kapitel-item:nth-child(2) { border-right: none; }
-    .kapitel-item, .zahl { padding-left: 0 !important; }
-    .erwerb { grid-template-columns: 1fr; padding: 2rem 1.5rem; }
-    .erwerb__right { align-items: flex-start; }
-  }
-  @media (max-width: 600px) {
-    .zahlen__grid, .kapitel__grid { grid-template-columns: 1fr; }
-    .zahl, .kapitel-item { border-right: none; padding: 1rem 0 !important; border-bottom: var(--rule-soft); }
-  }
-</style>
