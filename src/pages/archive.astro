@@ -6,6 +6,9 @@
 // strengen Langeweile-Standards rangiert und daher selten beworben wird.
 // Eine Form redaktioneller Selbstkritik.
 //
+// TAILWIND-MIGRATION: seitenlokale Styles als Utilities; geteilte
+// Designsystem-Klassen (.stamp, .bg-stripes) bleiben vorerst.
+//
 // Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
 // =====================================================================
 
@@ -22,34 +25,34 @@ const items = await db
 ---
 
 <Layout title="Archiv">
-  <main class="page archiv">
+  <main class="mx-auto max-w-[1100px] px-6 pt-8 pb-16 max-[540px]:px-4">
 
-    <div class="section-marker">
-      <span class="section-marker__no">N° 01</span>
-      <span class="section-marker__line"></span>
-      <span class="section-marker__label">Archiv · Das Vergessene</span>
+    <div class="mb-4 flex items-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] max-[540px]:flex-wrap max-[540px]:gap-[0.4rem]">
+      <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 01</span>
+      <span class="h-px w-8 bg-ink"></span>
+      <span class="font-medium text-red max-[540px]:text-[0.65rem]">Archiv · Das Vergessene</span>
     </div>
 
-    <header class="archiv-head">
-      <h1 class="display-headline">Das <em>Vergessene.</em></h1>
-      <p class="archiv-head__sub">
+    <header class="mt-4">
+      <h1 class="mt-4 mb-4 font-display text-[clamp(3rem,8vw,6rem)] font-extrabold leading-[0.98] tracking-[-0.02em] text-ink max-[540px]:text-[clamp(1.8rem,8vw,2.6rem)] max-[540px]:leading-[1.05]">Das <em class="text-red">Vergessene.</em></h1>
+      <p class="m-0 max-w-[720px] font-body text-[1.15rem] italic leading-[1.6] text-ink-soft">
         Artikel, deren Langeweile-Wert unter den redaktionellen Standards rangiert.
         Sie verweilen hier — geduldig, leise, in der zweiten Reihe — und harren der
         Wiederentdeckung durch geneigte Kundschaft.
       </p>
     </header>
 
-    <div class="rule-thick" style="margin: 1rem 0 2.5rem;"></div>
+    <div class="mt-4 mb-10 border-0 border-t border-solid border-ink"></div>
 
     {/* Praeambel: warum gibt es das Archiv überhaupt */}
-    <section class="archiv-intro">
-      <p class="archiv-intro__eyebrow">Anmerkung der Redaktion</p>
-      <p>
+    <section class="mb-10 max-w-[720px] border-0 border-l-[3px] border-solid border-ochre bg-paper-2 px-[1.8rem] py-6">
+      <p class="mt-0 mb-[0.8rem] font-meta text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-ochre">Anmerkung der Redaktion</p>
+      <p class="mt-0 mb-[0.7rem] font-body leading-[1.7] text-ink-soft">
         Unser Katalog folgt strengen Aufnahmekriterien. Ein Artikel benötigt eine
-        Mindest-Langeweile von <strong>acht von zehn Punkten</strong>, um regelmäßig
+        Mindest-Langeweile von <strong class="font-semibold text-ink">acht von zehn Punkten</strong>, um regelmäßig
         beworben zu werden.
       </p>
-      <p>
+      <p class="m-0 font-body leading-[1.7] text-ink-soft">
         Die hier versammelten Objekte erreichen diesen Wert nicht — was sie nicht
         schlechter macht, sondern lediglich weniger zeitgemäß. Wir möchten sie
         dennoch nicht ungenannt lassen. Manchmal sind die zweite Wahl und die
@@ -58,16 +61,16 @@ const items = await db
     </section>
 
     {items.length === 0 ? (
-      <div class="archiv-empty">
-        <p class="archiv-empty__title">Vorerst nichts vergessen.</p>
-        <p class="archiv-empty__sub">
+      <div class="border-0 border-t border-b border-solid border-ink px-4 py-14 text-center">
+        <p class="mt-0 mb-[0.8rem] font-display text-[1.6rem] font-bold">Vorerst nichts vergessen.</p>
+        <p class="mx-auto m-0 max-w-[460px] font-body leading-[1.65] text-ink-soft">
           <em>Unser Bestand ist gegenwärtig durchweg langweilig genug. Schauen Sie
           später wieder vorbei — möglicherweise haben sich unsere Standards
           weiterentwickelt.</em>
         </p>
       </div>
     ) : (
-      <section class="archiv-grid">
+      <section class="grid grid-cols-2 border-0 border-t border-solid border-ink max-[900px]:grid-cols-1">
         {items.map((item: any, i: number) => {
           const idx = String(i + 1).padStart(2, '0');
           const classification = makeClassification(item.id);
@@ -77,32 +80,32 @@ const items = await db
           const ausverkauft = item.stock <= 0;
 
           return (
-            <article class="archiv-card">
-              <p class="archiv-card__no">N° {idx}</p>
+            <article class="grid grid-cols-[60px_130px_1fr] items-start gap-[1.4rem] border-0 border-b border-solid border-paper-3 px-[1.4rem] py-[1.8rem] odd:border-r max-[900px]:odd:border-r-0 max-[540px]:grid-cols-[40px_1fr] max-[540px]:gap-[0.9rem]">
+              <p class="m-0 font-display text-[1.4rem] italic leading-none text-ink-mute">N° {idx}</p>
 
-              <a href={`/product/${item.id}`} class="archiv-card__img-link">
-                <div class="archiv-card__img bg-stripes">
-                  {thumbnail && <img src={thumbnail} alt={item.name} loading="lazy" />}
+              <a href={`/product/${item.id}`} class="group max-[540px]:col-span-full">
+                <div class="bg-stripes h-[130px] w-[130px] overflow-hidden max-[540px]:h-[200px] max-[540px]:w-full">
+                  {thumbnail && <img src={thumbnail} alt={item.name} loading="lazy" class="h-full w-full object-cover mix-blend-multiply transition-transform duration-300 [filter:sepia(0.18)_contrast(0.95)_saturate(0.85)] group-hover:scale-[1.03]" />}
                 </div>
               </a>
 
-              <div class="archiv-card__body">
-                <p class="archiv-card__rubrik">
-                  Schreibwaren <span>·</span> {classification} <span>·</span> Sign. {sign}
+              <div class="min-w-0 max-[540px]:col-span-full">
+                <p class="mt-0 mb-2 font-meta text-[0.68rem] uppercase tracking-[0.14em] text-red">
+                  Schreibwaren <span class="mx-[0.3em] text-ink-mute">·</span> {classification} <span class="mx-[0.3em] text-ink-mute">·</span> Sign. {sign}
                 </p>
-                <h2 class="archiv-card__title">
-                  <a href={`/product/${item.id}`}>{item.name}</a>
+                <h2 class="mt-0 mb-2 font-display text-[1.3rem] font-bold leading-[1.2]">
+                  <a href={`/product/${item.id}`} class="text-ink transition-colors duration-150 hover:text-red">{item.name}</a>
                 </h2>
-                <p class="archiv-card__desc">{item.description}</p>
+                <p class="mt-0 mb-[0.8rem] font-body text-[0.92rem] leading-[1.55] text-ink-soft">{item.description}</p>
 
-                <div class="archiv-card__meta">
-                  <span class="archiv-card__langeweile">Langeweile {item.boredom}/10</span>
+                <div class="mb-[0.8rem] flex items-center gap-[0.8rem]">
+                  <span class="font-meta text-[0.7rem] uppercase tracking-[0.1em] text-ink-mute">Langeweile {item.boredom}/10</span>
                   {ausverkauft && <span class="stamp stamp--neutral stamp--open">Ausverkauft</span>}
                 </div>
 
-                <div class="archiv-card__foot">
-                  <span class="archiv-card__price">{item.price.toFixed(2)} €</span>
-                  <a href={`/product/${item.id}`} class="archiv-card__link">Zum Eintrag →</a>
+                <div class="flex items-baseline justify-between gap-[0.8rem] border-0 border-t border-dotted border-paper-3 pt-[0.6rem]">
+                  <span class="font-display text-[1.2rem] font-extrabold text-ink">{item.price.toFixed(2)} €</span>
+                  <a href={`/product/${item.id}`} class="border-0 border-b border-solid border-ink pb-px font-meta text-[0.72rem] uppercase tracking-[0.1em] text-ink hover:border-red hover:text-red">Zum Eintrag →</a>
                 </div>
               </div>
             </article>
@@ -111,207 +114,11 @@ const items = await db
       </section>
     )}
 
-    <div class="rule-thick" style="margin: 3rem 0 2rem;"></div>
+    <div class="mt-12 mb-8 border-0 border-t border-solid border-ink"></div>
 
-    <p class="archiv-footer">
+    <p class="m-0 text-center font-meta text-[0.78rem] uppercase tracking-[0.1em] text-ink-mute">
       <em>Stand der Akten · {new Date().toLocaleDateString('de-DE', { day:'2-digit', month:'long', year:'numeric' })}</em>
     </p>
 
   </main>
 </Layout>
-
-<style>
-  .archiv { max-width: 1100px; padding-top: 2rem; }
-
-  .archiv-head { margin-top: 1rem; }
-  .archiv-head .display-headline { margin: 1rem 0 1rem; }
-  .archiv-head__sub {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 1.15rem;
-    line-height: 1.6;
-    color: var(--ink-soft);
-    max-width: 720px;
-    margin: 0;
-  }
-
-  .archiv-intro {
-    background: var(--paper-2);
-    border-left: 3px solid var(--ochre);
-    padding: 1.5rem 1.8rem;
-    margin-bottom: 2.5rem;
-    max-width: 720px;
-  }
-  .archiv-intro__eyebrow {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ochre);
-    margin: 0 0 0.8rem;
-    font-weight: 600;
-  }
-  .archiv-intro p {
-    font-family: var(--font-body);
-    line-height: 1.7;
-    color: var(--ink-soft);
-    margin: 0 0 0.7rem;
-  }
-  .archiv-intro p:last-child { margin-bottom: 0; }
-  .archiv-intro strong { color: var(--ink); font-weight: 600; }
-
-  /* .archiv-empty / __title: Basis in global.css */
-  .archiv-empty__sub {
-    font-family: var(--font-body);
-    color: var(--ink-soft);
-    max-width: 460px;
-    margin: 0 auto;
-    line-height: 1.65;
-  }
-
-  .archiv-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0;
-    border-top: var(--rule);
-  }
-
-  .archiv-card {
-    display: grid;
-    grid-template-columns: 60px 130px 1fr;
-    gap: 1.4rem;
-    padding: 1.8rem 1.4rem;
-    border-bottom: var(--rule-soft);
-    align-items: start;
-  }
-  .archiv-card:nth-child(odd) {
-    border-right: var(--rule-soft);
-  }
-
-  .archiv-card__no {
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: 1.4rem;
-    color: var(--ink-mute);
-    margin: 0;
-    line-height: 1;
-  }
-
-  .archiv-card__img-link { text-decoration: none; }
-  .archiv-card__img {
-    width: 130px;
-    height: 130px;
-    overflow: hidden;
-  }
-  .archiv-card__img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: sepia(0.18) contrast(0.95) saturate(0.85);
-    mix-blend-mode: multiply;
-    transition: transform 0.3s;
-  }
-  .archiv-card__img-link:hover img { transform: scale(1.03); }
-
-  .archiv-card__body { min-width: 0; }
-  .archiv-card__rubrik {
-    font-family: var(--font-meta);
-    font-size: 0.68rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--red);
-    margin: 0 0 0.5rem;
-  }
-  .archiv-card__rubrik span { color: var(--ink-mute); margin: 0 0.3em; }
-
-  .archiv-card__title {
-    font-family: var(--font-display);
-    font-size: 1.3rem;
-    font-weight: 700;
-    line-height: 1.2;
-    margin: 0 0 0.5rem;
-  }
-  .archiv-card__title a {
-    color: var(--ink);
-    text-decoration: none;
-    transition: color 0.15s;
-  }
-  .archiv-card__title a:hover { color: var(--red); }
-
-  .archiv-card__desc {
-    font-family: var(--font-body);
-    font-size: 0.92rem;
-    line-height: 1.55;
-    color: var(--ink-soft);
-    margin: 0 0 0.8rem;
-  }
-
-  .archiv-card__meta {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    margin-bottom: 0.8rem;
-  }
-  .archiv-card__langeweile {
-    font-family: var(--font-meta);
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-
-  .archiv-card__foot {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 0.8rem;
-    padding-top: 0.6rem;
-    border-top: 1px dotted var(--paper-3);
-  }
-  .archiv-card__price {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 1.2rem;
-    color: var(--ink);
-  }
-  .archiv-card__link {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink);
-    text-decoration: none;
-    border-bottom: 1px solid var(--ink);
-    padding-bottom: 1px;
-  }
-  .archiv-card__link:hover { color: var(--red); border-bottom-color: var(--red); }
-
-  .archiv-footer {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    text-align: center;
-    margin: 0;
-  }
-
-  @media (max-width: 900px) {
-    .archiv-grid { grid-template-columns: 1fr; }
-    .archiv-card:nth-child(odd) { border-right: none; }
-  }
-  @media (max-width: 540px) {
-    .archiv-card {
-      grid-template-columns: 40px 1fr;
-      gap: 0.9rem;
-    }
-    .archiv-card__img-link {
-      grid-column: 1 / -1;
-    }
-    .archiv-card__img {
-      width: 100%;
-      height: 200px;
-    }
-    .archiv-card__body { grid-column: 1 / -1; }
-  }
-</style>
