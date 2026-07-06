@@ -10,6 +10,10 @@
 //   2. Wishlist-Einträge laden + Item-Details dazu
 //   3. Items anzeigen, optional mit Aktion "in den Warenkorb"
 //
+// TAILWIND-MIGRATION: vollständig auf Utility-Klassen umgestellt —
+// inkl. der Produktkarte (Wunschlisten-Variante, kompaktere Schrift).
+// Das Karten-Skelett in global.css bleibt, bis auch der Katalog dran ist.
+//
 // Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
 // =====================================================================
 
@@ -47,45 +51,45 @@ const isLoggedIn = userPayload !== null;
 ---
 
 <Layout title="Wunschliste">
-  <main class="page wunschliste">
+  <main class="mx-auto max-w-[1100px] px-6 pt-8 pb-16 max-[540px]:px-4">
 
-    <div class="section-marker">
-      <span class="section-marker__no">N° 01</span>
-      <span class="section-marker__line"></span>
-      <span class="section-marker__label">Wunschliste · Vorgemerkt fürs Belanglose</span>
+    <div class="mb-4 flex items-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] max-[540px]:flex-wrap max-[540px]:gap-[0.4rem]">
+      <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 01</span>
+      <span class="h-px w-8 bg-ink"></span>
+      <span class="font-medium text-red max-[540px]:text-[0.65rem]">Wunschliste · Vorgemerkt fürs Belanglose</span>
     </div>
 
-    <header class="wl-head">
-      <h1 class="display-headline">Wunschliste.</h1>
-      <p class="wl-head__sub">
+    <header class="mt-4">
+      <h1 class="mt-4 mb-4 font-display text-[clamp(3rem,8vw,6rem)] font-extrabold leading-[0.98] tracking-[-0.02em] text-ink max-[540px]:text-[clamp(1.8rem,8vw,2.6rem)] max-[540px]:leading-[1.05]">Wunschliste.</h1>
+      <p class="m-0 max-w-[640px] font-body text-[1.15rem] italic text-ink-soft">
         Belangloses, das Sie zur Kenntnis genommen haben — aber noch nicht
         entschlossen genug, um es zu erwerben.
       </p>
     </header>
 
-    <div class="rule-thick" style="margin: 1rem 0 2.5rem;"></div>
+    <div class="mt-4 mb-10 border-0 border-t border-solid border-ink"></div>
 
     {!isLoggedIn && entries.length > 0 && (
-      <div class="wl-hint">
-        <p>
+      <div class="mb-8 border-0 border-l-[3px] border-solid border-ochre bg-paper-2 px-[1.2rem] py-4">
+        <p class="m-0 font-body leading-normal text-ink-soft">
           <strong>Hinweis:</strong> Sie sind nicht angemeldet. Ihre Wunschliste wird
-          nur in dieser Sitzung gespeichert. <a href="/login">Melden Sie sich an</a>,
+          nur in dieser Sitzung gespeichert. <a href="/login" class="text-ink underline hover:text-red">Melden Sie sich an</a>,
           damit die Einträge dauerhaft erhalten bleiben.
         </p>
       </div>
     )}
 
     {entries.length === 0 ? (
-      <div class="wl-empty">
-        <p class="wl-empty__title">Nichts vorgemerkt.</p>
-        <p class="wl-empty__sub">
+      <div class="border-0 border-t border-b border-solid border-ink px-4 py-16 text-center">
+        <p class="mt-0 mb-2 font-display text-[2rem] font-bold">Nichts vorgemerkt.</p>
+        <p class="mx-auto mt-0 mb-6 max-w-[520px] font-body leading-[1.65] text-ink-soft">
           <em>Ihre Wunschliste ist leer. Stöbern Sie in Ruhe — vielleicht entdecken
           Sie etwas, das Ihres Interesses nicht würdig ist, aber doch irgendwie hängenbleibt.</em>
         </p>
         <a href="/" class="btn-primary">Zum Katalog →</a>
       </div>
     ) : (
-      <section class="product-grid">
+      <section class="grid grid-cols-3 border-0 border-t border-solid border-paper-3 max-[900px]:grid-cols-2 max-[600px]:grid-cols-1">
         {entries.map((entry) => {
           const images = (entry.product.images as string[]) ?? [];
           const thumbnail = images[0];
@@ -93,27 +97,27 @@ const isLoggedIn = userPayload !== null;
           const isOut = entry.product.stock === 0;
 
           return (
-            <article class="product-card">
+            <article class="flex flex-col gap-4 border-0 border-b border-r border-solid border-paper-3 p-6 [&:nth-child(3n)]:border-r-0 max-[900px]:[&:nth-child(3n)]:border-r max-[900px]:[&:nth-child(2n)]:border-r-0 max-[600px]:border-r-0!">
 
-              <a href={`/product/${entry.product.id}`} class="product-card__media bg-stripes">
-                {thumbnail ? <img src={thumbnail} alt={entry.product.name} /> : null}
-                <span class="product-card__boredom">Langeweile {entry.product.boredom}/10</span>
+              <a href={`/product/${entry.product.id}`} class="bg-stripes relative block aspect-[4/3] w-full overflow-hidden">
+                {thumbnail ? <img src={thumbnail} alt={entry.product.name} class="block h-full w-full object-cover mix-blend-multiply [filter:sepia(0.15)_contrast(0.95)]" /> : null}
+                <span class="absolute top-[0.6rem] right-[0.6rem] bg-ink px-[0.55rem] py-[0.2rem] font-meta text-[0.7rem] uppercase tracking-[0.1em] text-paper">Langeweile {entry.product.boredom}/10</span>
                 {isBegehrt && (
-                  <span class="product-card__stamp">
+                  <span class="absolute right-[0.6rem] bottom-[0.6rem]">
                     <span class="stamp stamp--red">Sehr begehrt</span>
                   </span>
                 )}
               </a>
 
-              <div class="product-card__body">
-                <h3 class="product-card__name">
-                  <a href={`/product/${entry.product.id}`}>{entry.product.name}</a>
+              <div class="flex flex-1 flex-col gap-2">
+                <h3 class="m-0 font-display text-[1.4rem] font-bold leading-[1.1] tracking-[-0.01em]">
+                  <a href={`/product/${entry.product.id}`} class="text-ink hover:text-red">{entry.product.name}</a>
                 </h3>
-                <p class="product-card__desc">{entry.product.description}</p>
+                <p class="m-0 flex-1 font-body text-[0.9rem] italic leading-normal text-ink-soft">{entry.product.description}</p>
 
-                <div class="product-card__footer">
-                  <span class="product-card__price">{entry.product.price.toFixed(2)} €</span>
-                  <div class="product-card__actions">
+                <div class="mt-2 flex items-center justify-between gap-4">
+                  <span class="font-display text-[1.4rem] font-bold text-ink">{entry.product.price.toFixed(2)} €</span>
+                  <div class="flex items-center gap-2">
                     {!isOut && <AddToCart client:load itemId={entry.product.id} initialStock={entry.product.stock} variant="inline" />}
                     <WishlistButton client:load itemId={entry.product.id} />
                   </div>
@@ -127,54 +131,3 @@ const isLoggedIn = userPayload !== null;
 
   </main>
 </Layout>
-
-<style>
-  .wunschliste {
-    max-width: 1100px;
-    padding-top: 2rem;
-  }
-
-  .wl-head { margin-top: 1rem; }
-  .wl-head .display-headline { margin: 1rem 0 1rem; }
-  .wl-head__sub {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 1.15rem;
-    color: var(--ink-soft);
-    margin: 0;
-    max-width: 640px;
-  }
-
-  /* LEER — .wl-empty Basis in global.css */
-  .wl-empty__title {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem;
-  }
-  /* HINT */
-  .wl-hint {
-    background: var(--paper-2);
-    border-left: 3px solid var(--ochre);
-    padding: 1rem 1.2rem;
-    margin-bottom: 2rem;
-  }
-  .wl-hint p {
-    font-family: var(--font-body);
-    margin: 0;
-    color: var(--ink-soft);
-    line-height: 1.5;
-  }
-  .wl-hint a { color: var(--ink); text-decoration: underline; }
-  .wl-hint a:hover { color: var(--red); }
-
-  /* PRODUKTKARTE — Skelett in global.css; hier nur Wishlist-Deltas (kompakter) */
-  .product-card__name { font-size: 1.4rem; }
-  .product-card__desc { font-size: 0.9rem; }
-  .product-card__price { font-size: 1.4rem; }
-  .product-card__actions {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-  }
-</style>
