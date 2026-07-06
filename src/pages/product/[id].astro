@@ -7,6 +7,9 @@
 //   - Item muss existieren
 // In allen anderen Fällen: 404-Seite mit korrektem HTTP-Status.
 //
+// TAILWIND-MIGRATION: seitenlokale Styles als Utilities; geteilte
+// Designsystem-Klassen (.stamp, .bg-stripes, .reveal) bleiben vorerst.
+//
 // Diese Datei wurde mit Hilfe von Claude (Anthropic) angepasst.
 // =====================================================================
 
@@ -72,70 +75,67 @@ const bemerkungen = [
   'Provenienz ungeklärt. Interesse an einer Klärung ebenfalls.',
 ];
 const bemerkung = bemerkungen[item.id % bemerkungen.length];
+
+const archivZeilen = [
+  { dt: 'Signatur',       dd: sign },
+  { dt: 'Klassifikation', dd: classification },
+  { dt: 'Zustand',        dd: zustand },
+  { dt: 'Verbleib',       dd: item.stock > 0 ? `Im Bestand · ${item.stock} Expl.` : 'Restlos abgegeben' },
+];
 ---
 
 <Layout title={item.name}>
-  <main class="page produkt">
+  <main class="mx-auto max-w-[1200px] px-6 pt-8 pb-16 max-[540px]:px-4">
 
     {/* BREADCRUMB */}
-    <nav class="produkt-breadcrumb">
-      <a href="/">Katalog</a>
-      <span class="produkt-breadcrumb__sep">·</span>
+    <nav class="mb-4 flex flex-wrap items-center gap-3 font-meta text-[0.75rem] uppercase tracking-[0.1em] text-ink-mute">
+      <a href="/" class="text-ink hover:text-red">Katalog</a>
+      <span>·</span>
       <span>Schreibwaren · {classification}</span>
-      <span class="produkt-breadcrumb__sep">·</span>
-      <span class="produkt-breadcrumb__active">Sign. {sign}</span>
+      <span>·</span>
+      <span class="text-red">Sign. {sign}</span>
     </nav>
 
-    <div class="rule-thick" style="margin: 0.5rem 0 0;"></div>
+    <div class="mt-2 border-0 border-t border-solid border-ink"></div>
 
     {/* HAUPTBEREICH */}
-    <div class="produkt-layout">
+    <div class="grid grid-cols-[1.1fr_1fr] items-start gap-16 py-8 max-[900px]:grid-cols-1 max-[900px]:gap-10">
 
       {/* LINKS: Galerie */}
-      <div class="produkt-galerie">
+      <div>
         <ImageGallery client:load images={images} alt={item.name} />
-        <p class="produkt-galerie__caption">
+        <p class="mt-4 mb-0 font-meta text-[0.72rem] uppercase tracking-[0.1em] text-ink-mute">
           Tafel 01 — {item.name}. Eigene Aufnahme, Studio Berlin.
         </p>
 
         {/* Archivnotiz: füllt die Fläche unter der Galerie */}
-        <aside class="archiv-notiz">
-          <p class="archiv-notiz__eyebrow">Vermerk des Archivars</p>
-          <dl class="archiv-notiz__liste">
-            <div class="archiv-notiz__zeile">
-              <dt>Signatur</dt>
-              <dd>{sign}</dd>
-            </div>
-            <div class="archiv-notiz__zeile">
-              <dt>Klassifikation</dt>
-              <dd>{classification}</dd>
-            </div>
-            <div class="archiv-notiz__zeile">
-              <dt>Zustand</dt>
-              <dd>{zustand}</dd>
-            </div>
-            <div class="archiv-notiz__zeile">
-              <dt>Verbleib</dt>
-              <dd>{item.stock > 0 ? `Im Bestand · ${item.stock} Expl.` : 'Restlos abgegeben'}</dd>
-            </div>
+        <aside class="mt-8 border border-solid border-paper-3 border-l-[3px] border-l-red bg-paper-2 px-[1.6rem] py-[1.4rem]">
+          <p class="mt-0 mb-4 font-meta text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-red">Vermerk des Archivars</p>
+          <dl class="mt-0 mb-[1.2rem] ml-0">
+            {archivZeilen.map((z) => (
+              <div class="flex justify-between gap-4 border-0 border-b border-solid border-paper-3 py-[0.45rem] last:border-b-0">
+                <dt class="font-meta text-[0.72rem] uppercase tracking-[0.12em] text-ink-mute">{z.dt}</dt>
+                <dd class="m-0 text-right font-body text-[0.9rem] text-ink">{z.dd}</dd>
+              </div>
+            ))}
           </dl>
-          <p class="archiv-notiz__bemerkung">
+          <p class="mt-0 mb-2 font-body text-[0.95rem] italic leading-[1.6] text-ink-soft">
             „{bemerkung}"
           </p>
-          <p class="archiv-notiz__signatur">— gez. Der Archivar</p>
+          <p class="m-0 text-right font-meta text-[0.72rem] uppercase tracking-[0.1em] text-ink-mute">— gez. Der Archivar</p>
         </aside>
       </div>
 
-      {/* RECHTS: Info */}
-      <div class="produkt-info">
+      {/* RECHTS: Info (sticky, wandert beim Scrollen mit) */}
+      <div class="sticky top-8 flex flex-col gap-4 max-[900px]:static">
 
-        <p class="produkt-info__rubrik">Schreibwaren · {classification} · Sign. {sign}</p>
+        <p class="m-0 font-meta text-[0.78rem] font-medium uppercase tracking-[0.14em] text-red max-[640px]:text-[0.65rem]">Schreibwaren · {classification} · Sign. {sign}</p>
 
-        <h1 class="produkt-info__title">{item.name}</h1>
+        <h1 class="m-0 font-display text-[clamp(2.2rem,4.5vw,3.6rem)] font-extrabold leading-none tracking-[-0.02em] text-ink max-[640px]:text-[clamp(1.6rem,7vw,2.2rem)]">{item.name}</h1>
 
-        <p class="produkt-info__desc">{item.description}</p>
+        <p class="m-0 font-body text-[1.1rem] italic leading-[1.55] text-ink-soft">{item.description}</p>
 
-        <div class="produkt-info__stamps">
+        <div class="mt-2 flex flex-wrap gap-[0.6rem]">
           {isBegehrt && <span class="stamp stamp--red">Sehr begehrt</span>}
           {item.stock > 0
             ? <span class="stamp stamp--green stamp--open">Auf Lager · {item.stock} Stk.</span>
@@ -144,39 +144,39 @@ const bemerkung = bemerkungen[item.id % bemerkungen.length];
           <span class="stamp stamp--neutral stamp--open">Langeweile {item.boredom}/10</span>
         </div>
 
-        <div class="rule-thick" style="margin: 1.5rem 0;"></div>
+        <div class="my-6 border-0 border-t border-solid border-ink"></div>
 
-        <p class="produkt-info__price-label">Tagespreis</p>
-        <p class="produkt-info__price">{item.price.toFixed(2)} €</p>
+        <p class="m-0 font-meta text-[0.78rem] uppercase tracking-[0.14em] text-ink-mute">Tagespreis</p>
+        <p class="m-0 font-display text-[3rem] font-extrabold leading-none text-ink max-[640px]:text-[clamp(2rem,8vw,2.6rem)]">{item.price.toFixed(2)} €</p>
 
         <AddToCart client:load itemId={item.id} initialStock={item.stock} />
 
         <WishlistButton client:load itemId={item.id} variant="block" />
 
         {features.length > 0 && (
-          <div class="produkt-info__features">
-            <p class="produkt-info__features-eyebrow">Produkthighlights</p>
+          <div class="mt-6 flex flex-col gap-[0.8rem] border-0 border-t border-solid border-paper-3 pt-6">
+            <p class="mt-0 mb-[0.3rem] font-meta text-[0.72rem] uppercase tracking-[0.14em] text-ink-mute">Produkthighlights</p>
             {features.map((f) => (
-              <div class="produkt-feature">
-                <p class="produkt-feature__head">{f.headline}</p>
-                <p class="produkt-feature__sub">{f.subtext}</p>
+              <div class="border-0 border-l-2 border-solid border-red bg-paper-2 px-4 py-[0.85rem]">
+                <p class="mt-0 mb-[0.3rem] font-display text-base font-bold">{f.headline}</p>
+                <p class="m-0 font-body text-[0.9rem] italic leading-normal text-ink-soft">{f.subtext}</p>
               </div>
             ))}
           </div>
         )}
 
         {recommendation && (
-          <a href={`/product/${recommendation.id}`} class="produkt-rec">
-            <div class="produkt-rec__thumb bg-stripes">
+          <a href={`/product/${recommendation.id}`} class="mt-4 flex gap-4 border border-solid border-paper-3 bg-paper-2 p-4 text-ink transition-colors duration-150 hover:bg-paper-3">
+            <div class="bg-stripes h-20 w-20 shrink-0">
               {recThumbnail
-                ? <img src={recThumbnail} alt={recommendation.name} />
+                ? <img src={recThumbnail} alt={recommendation.name} class="h-full w-full object-cover mix-blend-multiply [filter:sepia(0.15)_contrast(0.95)]" />
                 : null
               }
             </div>
             <div>
-              <p class="produkt-rec__eyebrow">Das könnte Sie auch langweilen</p>
-              <p class="produkt-rec__name">{recommendation.name}</p>
-              <p class="produkt-rec__price">{recommendation.price.toFixed(2)} €</p>
+              <p class="mt-0 mb-[0.3rem] font-meta text-[0.7rem] uppercase tracking-[0.12em] text-red">Das könnte Sie auch langweilen</p>
+              <p class="mt-0 mb-[0.3rem] font-display text-[1.1rem] font-bold leading-[1.1]">{recommendation.name}</p>
+              <p class="m-0 font-display text-base font-bold">{recommendation.price.toFixed(2)} €</p>
             </div>
           </a>
         )}
@@ -185,18 +185,18 @@ const bemerkung = bemerkungen[item.id % bemerkungen.length];
 
     {/* TECHNISCHE DATEN */}
     {hasSpecs && (
-      <section class="produkt-specs reveal">
-        <div class="section-marker">
-          <span class="section-marker__no">N° 02</span>
-          <span class="section-marker__line"></span>
-          <span class="section-marker__label">Technisches Datenblatt</span>
+      <section class="reveal mt-12 border-0 border-t border-solid border-ink pt-8">
+        <div class="mb-4 flex items-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] max-[540px]:flex-wrap max-[540px]:gap-[0.4rem]">
+          <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 02</span>
+          <span class="h-px w-8 bg-ink"></span>
+          <span class="font-medium text-red max-[540px]:text-[0.65rem]">Technisches Datenblatt</span>
         </div>
-        <table class="specs-table">
+        <table class="mt-6 w-full border-collapse font-body text-base">
           <tbody>
             {Object.entries(specs).map(([key, value]) => (
-              <tr>
-                <td class="specs-key">{key}</td>
-                <td class="specs-value">{value}</td>
+              <tr class="border-0 border-b border-solid border-paper-3">
+                <td class="w-[35%] py-[0.9rem] align-top font-meta text-[0.78rem] uppercase tracking-[0.1em] text-ink-mute">{key}</td>
+                <td class="py-[0.9rem] font-medium text-ink">{value}</td>
               </tr>
             ))}
           </tbody>
@@ -209,286 +209,3 @@ const bemerkung = bemerkungen[item.id % bemerkungen.length];
 
   </main>
 </Layout>
-
-<style>
-  .produkt { padding-top: 2rem; }
-
-  .produkt-breadcrumb {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-    font-family: var(--font-meta);
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
-  .produkt-breadcrumb a { color: var(--ink); text-decoration: none; }
-  .produkt-breadcrumb a:hover { color: var(--red); }
-  .produkt-breadcrumb__sep { color: var(--ink-mute); }
-  .produkt-breadcrumb__active { color: var(--red); }
-
-  /* LAYOUT */
-  .produkt-layout {
-    display: grid;
-    grid-template-columns: 1.1fr 1fr;
-    gap: 4rem;
-    align-items: start;
-    padding: 2rem 0;
-  }
-
-  /* GALERIE */
-  .produkt-galerie__caption {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 1rem 0 0;
-  }
-
-  /* ARCHIVNOTIZ — füllt die Fläche unter der Galerie */
-  .archiv-notiz {
-    margin-top: 2rem;
-    padding: 1.4rem 1.6rem;
-    background: var(--paper-2);
-    border: 1px solid var(--paper-3);
-    border-left: 3px solid var(--red);
-  }
-  .archiv-notiz__eyebrow {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--red);
-    font-weight: 600;
-    margin: 0 0 1rem;
-  }
-  .archiv-notiz__liste {
-    margin: 0 0 1.2rem;
-  }
-  .archiv-notiz__zeile {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.45rem 0;
-    border-bottom: var(--rule-soft);
-  }
-  .archiv-notiz__zeile:last-child { border-bottom: none; }
-  .archiv-notiz__zeile dt {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-  .archiv-notiz__zeile dd {
-    font-family: var(--font-body);
-    font-size: 0.9rem;
-    color: var(--ink);
-    margin: 0;
-    text-align: right;
-  }
-  .archiv-notiz__bemerkung {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: var(--ink-soft);
-    margin: 0 0 0.5rem;
-  }
-  .archiv-notiz__signatur {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    text-align: right;
-    margin: 0;
-  }
-
-  /* INFO-SPALTE */
-  .produkt-info {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    position: sticky;
-    top: 2rem;
-  }
-  .produkt-info__rubrik {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--red);
-    margin: 0;
-    font-weight: 500;
-  }
-  .produkt-info__title {
-    font-family: var(--font-display);
-    font-size: clamp(2.2rem, 4.5vw, 3.6rem);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.02em;
-    margin: 0;
-    color: var(--ink);
-  }
-  .produkt-info__desc {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 1.1rem;
-    line-height: 1.55;
-    color: var(--ink-soft);
-    margin: 0;
-  }
-  .produkt-info__stamps {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-top: 0.5rem;
-  }
-  .produkt-info__price-label {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0;
-  }
-  .produkt-info__price {
-    font-family: var(--font-display);
-    font-size: 3rem;
-    font-weight: 800;
-    line-height: 1;
-    margin: 0;
-    color: var(--ink);
-  }
-
-  /* FEATURES */
-  .produkt-info__features {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: var(--rule-soft);
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-  .produkt-info__features-eyebrow {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0 0 0.3rem;
-  }
-  .produkt-feature {
-    padding: 0.85rem 1rem;
-    background: var(--paper-2);
-    border-left: 2px solid var(--red);
-  }
-  .produkt-feature__head {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 1rem;
-    margin: 0 0 0.3rem;
-  }
-  .produkt-feature__sub {
-    font-family: var(--font-body);
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: var(--ink-soft);
-    margin: 0;
-    font-style: italic;
-  }
-
-  /* REC */
-  .produkt-rec {
-    display: flex;
-    gap: 1rem;
-    padding: 1rem;
-    background: var(--paper-2);
-    text-decoration: none;
-    color: var(--ink);
-    margin-top: 1rem;
-    border: 1px solid var(--paper-3);
-    transition: background 0.15s;
-  }
-  .produkt-rec:hover { background: var(--paper-3); }
-  .produkt-rec__thumb {
-    width: 80px;
-    height: 80px;
-    flex-shrink: 0;
-  }
-  /* .produkt-rec__thumb img: Basis in global.css */
-  .produkt-rec__eyebrow {
-    font-family: var(--font-meta);
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--red);
-    margin: 0 0 0.3rem;
-  }
-  .produkt-rec__name {
-    font-family: var(--font-display);
-    font-size: 1.1rem;
-    font-weight: 700;
-    line-height: 1.1;
-    margin: 0 0 0.3rem;
-  }
-  .produkt-rec__price {
-    font-family: var(--font-display);
-    font-size: 1rem;
-    font-weight: 700;
-    margin: 0;
-  }
-
-  /* SPECS */
-  .produkt-specs {
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: var(--rule);
-  }
-  .specs-table {
-    width: 100%;
-    margin-top: 1.5rem;
-    border-collapse: collapse;
-    font-family: var(--font-body);
-    font-size: 1rem;
-  }
-  .specs-table tr {
-    border-bottom: var(--rule-soft);
-  }
-  .specs-key {
-    padding: 0.9rem 0;
-    color: var(--ink-mute);
-    width: 35%;
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    vertical-align: top;
-  }
-  .specs-value {
-    padding: 0.9rem 0;
-    color: var(--ink);
-    font-weight: 500;
-  }
-
-  /* Responsive */
-  @media (max-width: 900px) {
-    .produkt-layout { grid-template-columns: 1fr; gap: 2.5rem; }
-    .produkt-info { position: static; }
-  }
-  @media (max-width: 640px) {
-    .produkt-info__title { font-size: clamp(1.6rem, 7vw, 2.2rem); }
-    .produkt-info__price { font-size: clamp(2rem, 8vw, 2.6rem); }
-    .produkt-info__rubrik { font-size: 0.65rem; }
-    .produkt-info__features { padding-top: 1.5rem; }
-    .produkt-feature__head { font-size: 1rem; }
-    .produkt-feature__sub { font-size: 0.9rem; }
-    .produkt-specs { grid-template-columns: 1fr; }
-    .produkt-specs__row { padding: 0.4rem 0; }
-  }
-</style>
