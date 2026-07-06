@@ -6,6 +6,9 @@
 // Suchstring kommt als ?q=... aus der URL — teilbar, SEO-tauglich,
 // funktioniert auch ohne JavaScript.
 //
+// TAILWIND-MIGRATION: seitenlokale Styles als Utilities; geteilte
+// Designsystem-Klassen (.stamp, .btn-outline) bleiben vorerst.
+//
 // Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
 // =====================================================================
 
@@ -36,26 +39,26 @@ if (query.length > 0) {
 ---
 
 <Layout title={query ? `Suche · ${query}` : 'Suchen'}>
-  <main class="page suchen">
+  <main class="mx-auto max-w-[1100px] px-6 pt-8 pb-16 max-[540px]:px-4">
 
-    <div class="section-marker">
-      <span class="section-marker__no">N° 01</span>
-      <span class="section-marker__line"></span>
-      <span class="section-marker__label">Suche · Im Bestand recherchieren</span>
+    <div class="mb-4 flex items-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] max-[540px]:flex-wrap max-[540px]:gap-[0.4rem]">
+      <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 01</span>
+      <span class="h-px w-8 bg-ink"></span>
+      <span class="font-medium text-red max-[540px]:text-[0.65rem]">Suche · Im Bestand recherchieren</span>
     </div>
 
-    <header class="suchen-head">
-      <h1 class="display-headline">Suchen.</h1>
-      <p class="suchen-head__sub">
+    <header class="mt-4">
+      <h1 class="mt-4 mb-4 font-display text-[clamp(3rem,8vw,6rem)] font-extrabold leading-[0.98] tracking-[-0.02em] text-ink max-[540px]:text-[clamp(1.8rem,8vw,2.6rem)] max-[540px]:leading-[1.05]">Suchen.</h1>
+      <p class="m-0 max-w-[680px] font-body text-[1.15rem] italic leading-[1.55] text-ink-soft">
         Recherchieren Sie im Bestand. Wir durchsuchen Bezeichnungen und Beschreibungen —
         leise, wie es sich gehört.
       </p>
     </header>
 
-    <div class="rule-thick" style="margin: 1rem 0 2rem;"></div>
+    <div class="mt-4 mb-8 border-0 border-t border-solid border-ink"></div>
 
     {/* Suchformular */}
-    <form class="suchen-form" method="get">
+    <form class="mb-10 flex max-w-[640px] gap-[0.6rem] max-[720px]:flex-col" method="get">
       <input
         type="search"
         name="q"
@@ -64,15 +67,21 @@ if (query.length > 0) {
         autofocus
         aria-label="Suchbegriff"
         maxlength="100"
+        class="flex-1 border border-solid border-ink bg-paper px-[1.1rem] py-4 font-body text-[1.1rem] text-ink
+               focus:outline-2 focus:outline-red focus:-outline-offset-1"
       />
-      <button type="submit" class="btn-primary">Suchen →</button>
+      <button
+        type="submit"
+        class="cursor-pointer whitespace-nowrap border-0 bg-ink px-[1.4rem] py-4 font-meta text-[0.85rem] uppercase tracking-[0.12em] text-paper
+               transition-colors duration-150 hover:bg-red pointer-coarse:min-h-11 max-[720px]:w-full"
+      >Suchen →</button>
     </form>
 
     {/* Ergebnisse */}
     {query.length === 0 && (
-      <div class="suchen-empty">
-        <p class="suchen-empty__title">Was möchten Sie finden?</p>
-        <p class="suchen-empty__sub">
+      <div class="border-0 border-t border-b border-solid border-ink px-4 py-14 text-center">
+        <p class="mt-0 mb-[0.8rem] font-display text-[1.6rem] font-bold">Was möchten Sie finden?</p>
+        <p class="mx-auto mt-0 mb-6 max-w-[520px] font-body leading-[1.7] text-ink-soft">
           <em>Geben Sie oben einen Begriff ein. Wir durchsuchen unsere Bestände
           mit der Gründlichkeit, die wir Ihnen schuldig sind.</em>
         </p>
@@ -80,9 +89,9 @@ if (query.length > 0) {
     )}
 
     {query.length > 0 && items.length === 0 && (
-      <div class="suchen-empty">
-        <p class="suchen-empty__title">Nichts gefunden.</p>
-        <p class="suchen-empty__sub">
+      <div class="border-0 border-t border-b border-solid border-ink px-4 py-14 text-center">
+        <p class="mt-0 mb-[0.8rem] font-display text-[1.6rem] font-bold">Nichts gefunden.</p>
+        <p class="mx-auto mt-0 mb-6 max-w-[520px] font-body leading-[1.7] text-ink-soft">
           <em>Zum Begriff „{query}" fehlt uns ein Eintrag. Versuchen Sie es mit
           einer anderen Bezeichnung — oder akzeptieren Sie die Leere als
           Erkenntnis.</em>
@@ -93,11 +102,11 @@ if (query.length > 0) {
 
     {items.length > 0 && (
       <>
-        <p class="suchen-count">
-          {items.length} Treffer für <strong>„{query}"</strong>
+        <p class="mt-0 mb-6 border-0 border-b border-solid border-paper-3 pb-4 font-meta text-[0.78rem] uppercase tracking-[0.12em] text-ink-mute">
+          {items.length} Treffer für <strong class="font-semibold text-ink">„{query}"</strong>
         </p>
 
-        <div class="suchen-results">
+        <div class="flex flex-col">
           {items.map((item: any, i: number) => {
             const idx = String(i + 1).padStart(2, '0');
             const classification = makeClassification(item.id);
@@ -105,31 +114,31 @@ if (query.length > 0) {
             const ausverkauft = item.stock <= 0;
 
             return (
-              <article class="suchen-row">
-                <p class="suchen-row__no">N° {idx}</p>
-                <div class="suchen-row__body">
-                  <p class="suchen-row__rubrik">
-                    Schreibwaren <span class="suchen-row__sep">·</span> {classification}
-                    <span class="suchen-row__sep">·</span> Sign. {sign}
+              <article class="grid grid-cols-[60px_1fr_200px] items-start gap-8 border-0 border-b border-solid border-paper-3 py-[1.8rem] last:border-b-0 max-[720px]:grid-cols-[40px_1fr] max-[720px]:gap-4">
+                <p class="m-0 font-display text-[1.4rem] italic leading-none text-ink-mute">N° {idx}</p>
+                <div class="min-w-0">
+                  <p class="mt-0 mb-2 font-meta text-[0.7rem] uppercase tracking-[0.14em] text-red">
+                    Schreibwaren <span class="mx-[0.3em] text-ink-mute">·</span> {classification}
+                    <span class="mx-[0.3em] text-ink-mute">·</span> Sign. {sign}
                   </p>
-                  <h2 class="suchen-row__title">
-                    <a href={`/product/${item.id}`}>{item.name}</a>
+                  <h2 class="mt-0 mb-2 font-display text-[clamp(1.4rem,2.2vw,1.8rem)] font-bold leading-[1.15]">
+                    <a href={`/product/${item.id}`} class="text-ink transition-colors duration-150 hover:text-red">{item.name}</a>
                   </h2>
-                  <p class="suchen-row__desc">{item.description}</p>
-                  <div class="suchen-row__meta">
+                  <p class="mt-0 mb-[0.8rem] font-body text-[0.98rem] leading-[1.6] text-ink-soft">{item.description}</p>
+                  <div class="flex flex-wrap items-center gap-4">
                     {ausverkauft
                       ? <span class="stamp stamp--neutral stamp--open">Ausverkauft</span>
                       : item.boredom >= 9
                         ? <span class="stamp stamp--red">Sehr begehrt</span>
                         : <span class="stamp stamp--neutral stamp--open">Verfügbar</span>
                     }
-                    <span class="suchen-row__langeweile">Langeweile {item.boredom}/10</span>
+                    <span class="font-meta text-[0.72rem] uppercase tracking-[0.1em] text-ink-mute">Langeweile {item.boredom}/10</span>
                   </div>
                 </div>
-                <div class="suchen-row__price">
-                  <p class="suchen-row__price-label">Tagespreis</p>
-                  <p class="suchen-row__price-value">{item.price.toFixed(2)} €</p>
-                  <a href={`/product/${item.id}`} class="suchen-row__link">Zum Eintrag →</a>
+                <div class="border-0 border-l border-solid border-paper-3 pl-6 text-right max-[720px]:col-span-full max-[720px]:mt-2 max-[720px]:flex max-[720px]:items-baseline max-[720px]:justify-between max-[720px]:border-l-0 max-[720px]:border-t max-[720px]:pl-0 max-[720px]:pt-4 max-[720px]:text-left">
+                  <p class="mt-0 mb-[0.3rem] font-meta text-[0.7rem] uppercase tracking-[0.12em] text-ink-mute max-[720px]:hidden">Tagespreis</p>
+                  <p class="mt-0 mb-[0.8rem] font-display text-[1.8rem] font-extrabold leading-none text-ink max-[720px]:mb-0">{item.price.toFixed(2)} €</p>
+                  <a href={`/product/${item.id}`} class="border-0 border-b border-solid border-ink pb-px font-meta text-[0.75rem] uppercase tracking-[0.1em] text-ink hover:border-red hover:text-red">Zum Eintrag →</a>
                 </div>
               </article>
             );
@@ -140,189 +149,3 @@ if (query.length > 0) {
 
   </main>
 </Layout>
-
-<style>
-  .suchen { max-width: 1100px; padding-top: 2rem; }
-
-  .suchen-head { margin-top: 1rem; }
-  .suchen-head .display-headline { margin: 1rem 0 1rem; }
-  /* .suchen-head__sub: Basis in global.css */
-
-  .suchen-form {
-    display: flex;
-    gap: 0.6rem;
-    margin-bottom: 2.5rem;
-    max-width: 640px;
-  }
-  .suchen-form input[type="search"] {
-    flex: 1;
-    font-size: 1.1rem;
-    padding: 1rem 1.1rem;
-  }
-  .suchen-form button {
-    padding: 1rem 1.4rem;
-    white-space: nowrap;
-  }
-
-  .suchen-empty {
-    text-align: center;
-    padding: 3.5rem 1rem;
-    border-top: var(--rule);
-    border-bottom: var(--rule);
-  }
-  .suchen-empty__title {
-    font-family: var(--font-display);
-    font-size: 1.6rem;
-    font-weight: 700;
-    margin: 0 0 0.8rem;
-  }
-  .suchen-empty__sub {
-    font-family: var(--font-body);
-    color: var(--ink-soft);
-    line-height: 1.7;
-    max-width: 520px;
-    margin: 0 auto 1.5rem;
-  }
-
-  .suchen-count {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0 0 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: var(--rule-soft);
-  }
-  .suchen-count strong {
-    color: var(--ink);
-    font-weight: 600;
-  }
-
-  .suchen-results {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .suchen-row {
-    display: grid;
-    grid-template-columns: 60px 1fr 200px;
-    gap: 2rem;
-    padding: 1.8rem 0;
-    border-bottom: var(--rule-soft);
-    align-items: start;
-  }
-  .suchen-row:last-child { border-bottom: none; }
-
-  .suchen-row__no {
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: 1.4rem;
-    color: var(--ink-mute);
-    margin: 0;
-    line-height: 1;
-  }
-
-  .suchen-row__body { min-width: 0; }
-  .suchen-row__rubrik {
-    font-family: var(--font-meta);
-    font-size: 0.7rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--red);
-    margin: 0 0 0.5rem;
-  }
-  .suchen-row__sep { color: var(--ink-mute); margin: 0 0.3em; }
-
-  .suchen-row__title {
-    font-family: var(--font-display);
-    font-size: clamp(1.4rem, 2.2vw, 1.8rem);
-    font-weight: 700;
-    line-height: 1.15;
-    margin: 0 0 0.5rem;
-  }
-  .suchen-row__title a {
-    color: var(--ink);
-    text-decoration: none;
-    transition: color 0.15s;
-  }
-  .suchen-row__title a:hover { color: var(--red); }
-
-  .suchen-row__desc {
-    font-family: var(--font-body);
-    font-size: 0.98rem;
-    line-height: 1.6;
-    color: var(--ink-soft);
-    margin: 0 0 0.8rem;
-  }
-
-  .suchen-row__meta {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-  .suchen-row__langeweile {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-
-  .suchen-row__price {
-    text-align: right;
-    border-left: var(--rule-soft);
-    padding-left: 1.5rem;
-  }
-  .suchen-row__price-label {
-    font-family: var(--font-meta);
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0 0 0.3rem;
-  }
-  .suchen-row__price-value {
-    font-family: var(--font-display);
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--ink);
-    margin: 0 0 0.8rem;
-    line-height: 1;
-  }
-  .suchen-row__link {
-    font-family: var(--font-meta);
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink);
-    text-decoration: none;
-    border-bottom: 1px solid var(--ink);
-    padding-bottom: 1px;
-  }
-  .suchen-row__link:hover { color: var(--red); border-bottom-color: var(--red); }
-
-  @media (max-width: 720px) {
-    .suchen-row {
-      grid-template-columns: 40px 1fr;
-      gap: 1rem;
-    }
-    .suchen-row__price {
-      grid-column: 1 / -1;
-      text-align: left;
-      border-left: none;
-      border-top: var(--rule-soft);
-      padding-left: 0;
-      padding-top: 1rem;
-      margin-top: 0.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-    }
-    .suchen-row__price-label { display: none; }
-    .suchen-form { flex-direction: column; }
-    .suchen-form button { width: 100%; }
-  }
-</style>
