@@ -11,6 +11,8 @@
 // Zugriffsschutz; sie wird nur noch angezeigt. Ohne gültigen Token
 // gibt es keine Bestelldetails zu sehen.
 //
+// TAILWIND-MIGRATION: vollständig auf Utility-Klassen umgestellt.
+//
 // Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
 // =====================================================================
 
@@ -61,68 +63,68 @@ const enrichedItems = await Promise.all(
 ---
 
 <Layout title="Bestellung eingegangen">
-  <main class="page confirmed">
+  <main class="mx-auto max-w-[720px] px-6 pt-12 pb-16 text-center">
 
-    <div class="section-marker" style="justify-content: center;">
-      <span class="section-marker__no">N° 03</span>
-      <span class="section-marker__line"></span>
-      <span class="section-marker__label">Bestellung · Aktenkundig</span>
+    <div class="mb-4 flex items-center justify-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em]">
+      <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 03</span>
+      <span class="h-px w-8 bg-ink"></span>
+      <span class="font-medium text-red">Bestellung · Aktenkundig</span>
     </div>
 
-    <h1 class="display-headline confirmed__title">
-      Vermerkt.<br/><em>Mit Dank.</em>
+    <h1 class="my-6 text-center font-display text-[clamp(3rem,8vw,6rem)] font-extrabold leading-[0.98] tracking-[-0.02em] text-ink max-[540px]:text-[clamp(1.8rem,8vw,2.6rem)] max-[540px]:leading-[1.05]">
+      Vermerkt.<br/><em class="text-red">Mit Dank.</em>
     </h1>
 
-    <div class="confirmed__stamps">
+    <div class="mb-8 flex flex-wrap justify-center gap-[0.8rem]">
       <span class="stamp stamp--red">Eingegangen</span>
       <span class="stamp stamp--green stamp--open">Bordereau {order.bordereauNr}</span>
     </div>
 
-    <p class="confirmed__lead">
+    <p class="mx-auto mt-0 mb-10 max-w-[560px] font-body text-[1.15rem] leading-[1.7] text-ink-soft">
       Ihre Bestellung wurde an die Redaktion weitergeleitet. Sie wird, sobald wir uns
       gefasst haben, in den Versand gegeben — werktags, in der Reihenfolge der Eingänge.
     </p>
 
     {enrichedItems.length > 0 && (
-      <div class="confirmed__summary">
-        <p class="confirmed__summary-eyebrow">Aufgegebene Artikel</p>
+      <div class="mb-6 border-0 border-t border-b border-solid border-ink py-6 text-left">
+        <p class="mt-0 mb-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] text-ink-mute">Aufgegebene Artikel</p>
         {enrichedItems.map((item) => (
-          <div class="confirmed__row">
-            <span class="confirmed__row-name">{item.name}</span>
-            <span class="confirmed__row-qty">× {item.quantity}</span>
-            <span class="confirmed__row-price">{(item.price * item.quantity).toFixed(2)} €</span>
+          <div class="grid grid-cols-[1fr_auto_auto] items-center gap-6 border-0 border-b border-solid border-paper-3 py-[0.6rem] font-body last:border-b-0">
+            <span class="font-display font-bold">{item.name}</span>
+            <span class="font-meta text-[0.78rem] uppercase tracking-[0.1em] text-ink-mute">× {item.quantity}</span>
+            <span class="font-display font-bold">{(item.price * item.quantity).toFixed(2)} €</span>
           </div>
         ))}
 
-        <div class="rule-thin" style="margin: 1rem 0;"></div>
+        <div class="my-4 border-0 border-t border-solid border-paper-3"></div>
 
-        <div class="confirmed__line">
+        <div class="flex justify-between py-[0.4rem] font-body text-ink-soft">
           <span>Zwischensumme</span>
           <span>{order.subtotal.toFixed(2)} €</span>
         </div>
         {order.discount > 0 && (
-          <div class="confirmed__line confirmed__line--discount">
+          <div class="flex justify-between py-[0.4rem] font-body text-ink-soft">
             <span>Gutschein {order.couponCode ? `(${order.couponCode})` : ''}</span>
-            <span>−{order.discount.toFixed(2)} €</span>
+            <span class="text-red">−{order.discount.toFixed(2)} €</span>
           </div>
         )}
-        <div class="confirmed__line">
+        <div class="flex justify-between py-[0.4rem] font-body text-ink-soft">
           <span>Versand</span>
           <span>{order.shippingCost.toFixed(2)} €</span>
         </div>
 
-        <div class="rule-thick" style="margin: 1rem 0; border-top-color: var(--ink);"></div>
+        <div class="my-4 border-0 border-t border-solid border-ink"></div>
 
-        <div class="confirmed__total">
-          <span>Gesamt</span>
-          <span>{order.total.toFixed(2)} €</span>
+        <div class="flex items-baseline justify-between">
+          <span class="font-meta text-[0.8rem] uppercase tracking-[0.14em] text-ink-mute">Gesamt</span>
+          <span class="font-display text-[2rem] font-extrabold">{order.total.toFixed(2)} €</span>
         </div>
       </div>
     )}
 
-    <div class="confirmed__addr">
-      <p class="confirmed__addr-eyebrow">Lieferung an</p>
-      <p>
+    <div class="mb-6 border-0 border-l-[3px] border-solid border-ink bg-paper-2 px-6 py-[1.2rem] text-left">
+      <p class="mt-0 mb-2 font-meta text-[0.72rem] uppercase tracking-[0.14em] text-ink-mute">Lieferung an</p>
+      <p class="m-0 font-body leading-normal text-ink">
         {order.addrPrename} {order.addrSurname}<br/>
         {order.addrStreet}<br/>
         {order.addrPostal} {order.addrCity}<br/>
@@ -130,124 +132,14 @@ const enrichedItems = await Promise.all(
       </p>
     </div>
 
-    <p class="confirmed__note">
-      <em>Eine Bestätigung wurde an <strong>{order.email}</strong> geschickt —
+    <p class="mt-0 mb-8 font-body text-[0.95rem] italic text-ink-mute">
+      <em>Eine Bestätigung wurde an <strong class="font-semibold text-ink-soft">{order.email}</strong> geschickt —
       sofern unsere Setzerei dazu gekommen ist.</em>
     </p>
 
-    <div class="confirmed__actions">
+    <div class="flex justify-center gap-4">
       <a href="/" class="btn-primary">Zurück zum Katalog →</a>
     </div>
 
   </main>
 </Layout>
-
-<style>
-  .confirmed {
-    max-width: 720px;
-    text-align: center;
-    padding-top: 3rem;
-  }
-  .confirmed__title {
-    text-align: center;
-    margin: 1.5rem 0 1.5rem;
-  }
-  .confirmed__stamps {
-    display: flex;
-    justify-content: center;
-    gap: 0.8rem;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-  }
-  .confirmed__lead {
-    font-family: var(--font-body);
-    font-size: 1.15rem;
-    line-height: 1.7;
-    color: var(--ink-soft);
-    margin: 0 0 2.5rem;
-    max-width: 560px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .confirmed__summary {
-    text-align: left;
-    border-top: var(--rule);
-    border-bottom: var(--rule);
-    padding: 1.5rem 0;
-    margin-bottom: 1.5rem;
-  }
-  .confirmed__summary-eyebrow {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0 0 1rem;
-  }
-  .confirmed__row {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 1.5rem;
-    padding: 0.6rem 0;
-    border-bottom: var(--rule-soft);
-    font-family: var(--font-body);
-    align-items: center;
-  }
-  .confirmed__row:last-of-type { border-bottom: none; }
-  .confirmed__row-name {
-    font-family: var(--font-display);
-    font-weight: 700;
-  }
-  .confirmed__row-qty {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-  .confirmed__row-price {
-    font-family: var(--font-display);
-    font-weight: 700;
-  }
-  /* .confirmed__line: Basis in global.css */
-  .confirmed__line--discount span:last-child { color: var(--red); }
-  /* .confirmed__total (+ spans): Basis in global.css */
-
-  .confirmed__addr {
-    text-align: left;
-    background: var(--paper-2);
-    padding: 1.2rem 1.5rem;
-    border-left: 3px solid var(--ink);
-    margin: 0 0 1.5rem;
-  }
-  .confirmed__addr-eyebrow {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0 0 0.5rem;
-  }
-  .confirmed__addr p {
-    font-family: var(--font-body);
-    line-height: 1.5;
-    margin: 0;
-    color: var(--ink);
-  }
-
-  .confirmed__note {
-    font-family: var(--font-body);
-    font-style: italic;
-    color: var(--ink-mute);
-    margin: 0 0 2rem;
-    font-size: 0.95rem;
-  }
-  .confirmed__note strong { color: var(--ink-soft); font-weight: 600; }
-
-  .confirmed__actions {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-  }
-</style>
