@@ -80,147 +80,149 @@ const memberSince = formatDate(user.createdAt);
 // Statistiken
 const totalSpent = orders.reduce((sum, o) => sum + o.total, 0);
 const orderCount = orders.length;
+
+// TAILWIND-MIGRATION: seitenlokale Styles als Utilities. Die Bestell-
+// tabelle kollabiert auf Mobil zu Blöcken; die ausklappbaren Detail-
+// Zeilen nutzen max-[640px]:[&:not([hidden])]:block, damit der hidden-
+// Zustand (JS-Toggle) auch im Block-Layout korrekt versteckt bleibt.
+const stammdaten = [
+  { dt: 'Name',          dd: `${user.prename} ${user.surname}` },
+  { dt: 'Benutzername',  dd: user.username },
+  { dt: 'E-Mail',        dd: user.email },
+  { dt: 'Mitglied seit', dd: memberSince },
+];
+const inputCell = 'border-0 border-b border-solid border-paper-3 py-4 px-[0.6rem] align-middle';
 ---
 
 <Layout title="Mein Konto">
-  <main class="page konto">
+  <main class="mx-auto max-w-[1100px] px-6 pt-8 pb-16 max-[540px]:px-4">
 
-    <div class="section-marker">
-      <span class="section-marker__no">N° 01</span>
-      <span class="section-marker__line"></span>
-      <span class="section-marker__label">Konto · Persönlicher Bereich</span>
+    <div class="mb-4 flex items-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] max-[540px]:flex-wrap max-[540px]:gap-[0.4rem]">
+      <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 01</span>
+      <span class="h-px w-8 bg-ink"></span>
+      <span class="font-medium text-red max-[540px]:text-[0.65rem]">Konto · Persönlicher Bereich</span>
     </div>
 
-    <header class="konto-head">
-      <h1 class="display-headline">
-        Guten Tag,<br/><em>{user.prename}.</em>
+    <header class="mt-4">
+      <h1 class="my-4 font-display text-[clamp(3rem,8vw,6rem)] font-extrabold leading-[0.98] tracking-[-0.02em] text-ink max-[540px]:text-[clamp(1.8rem,8vw,2.6rem)]">
+        Guten Tag,<br/><em class="text-red">{user.prename}.</em>
       </h1>
-      <p class="konto-head__sub">
+      <p class="m-0 max-w-[600px] font-body text-[1.15rem] italic text-ink-soft">
         Hier finden Sie eine Übersicht Ihrer Vorgänge in unserem Hause.
       </p>
     </header>
 
-    <div class="rule-thick" style="margin: 1rem 0 2.5rem;"></div>
+    <div class="mt-4 mb-10 border-0 border-t border-solid border-ink"></div>
 
     {/* STAMMDATEN-KARTE + STATS */}
-    <section class="konto-stats">
-      <div class="stammdaten">
-        <p class="stammdaten__eyebrow">Stammdaten</p>
-        <dl class="stammdaten__list">
-          <div>
-            <dt>Name</dt>
-            <dd>{user.prename} {user.surname}</dd>
-          </div>
-          <div>
-            <dt>Benutzername</dt>
-            <dd>{user.username}</dd>
-          </div>
-          <div>
-            <dt>E-Mail</dt>
-            <dd>{user.email}</dd>
-          </div>
-          <div>
-            <dt>Mitglied seit</dt>
-            <dd>{memberSince}</dd>
-          </div>
+    <section class="grid grid-cols-[1.4fr_1fr] items-start gap-12 max-[900px]:grid-cols-1 max-[900px]:gap-8">
+      <div>
+        <p class="mt-0 mb-4 font-meta text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-red">Stammdaten</p>
+        <dl class="m-0 grid grid-cols-2 gap-x-8 gap-y-[1.2rem] max-[640px]:grid-cols-1">
+          {stammdaten.map((s) => (
+            <div class="flex flex-col gap-[0.3rem]">
+              <dt class="m-0 font-meta text-[0.72rem] uppercase tracking-[0.12em] text-ink-mute">{s.dt}</dt>
+              <dd class="m-0 font-body text-base text-ink">{s.dd}</dd>
+            </div>
+          ))}
         </dl>
       </div>
 
-      <div class="kennzahlen">
-        <div class="kennzahl">
-          <span class="kennzahl__num">{String(orderCount).padStart(2, '0')}</span>
-          <span class="kennzahl__label">Bestellungen</span>
+      <div class="grid grid-cols-2 border-0 border-l border-solid border-ink pl-8 max-[900px]:border-l-0 max-[900px]:border-t max-[900px]:pl-0 max-[900px]:pt-6">
+        <div class="flex flex-col gap-2 border-0 border-r border-solid border-paper-3 pr-[1.2rem]">
+          <span class="font-display text-[2.4rem] font-extrabold leading-none tracking-[-0.02em] text-red">{String(orderCount).padStart(2, '0')}</span>
+          <span class="font-meta text-[0.72rem] uppercase tracking-[0.12em] text-ink-mute">Bestellungen</span>
         </div>
-        <div class="kennzahl">
-          <span class="kennzahl__num">{totalSpent.toFixed(2)} €</span>
-          <span class="kennzahl__label">Umsatz</span>
+        <div class="flex flex-col gap-2 pl-[1.2rem]">
+          <span class="font-display text-[2.4rem] font-extrabold leading-none tracking-[-0.02em] text-red">{totalSpent.toFixed(2)} €</span>
+          <span class="font-meta text-[0.72rem] uppercase tracking-[0.12em] text-ink-mute">Umsatz</span>
         </div>
       </div>
     </section>
 
-    <div class="rule-thick" style="margin: 2.5rem 0;"></div>
+    <div class="my-10 border-0 border-t border-solid border-ink"></div>
 
     {/* BESTELLUNGEN */}
-    <section class="orders">
-      <div class="orders__head">
-        <h2 class="orders__title">Bestellhistorie</h2>
-        <p class="orders__hint">Klick auf eine Bestellung zeigt die Einzelheiten.</p>
+    <section>
+      <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <h2 class="m-0 font-display text-[2rem] font-bold leading-none">Bestellhistorie</h2>
+        <p class="m-0 font-body text-[0.9rem] italic text-ink-mute">Klick auf eine Bestellung zeigt die Einzelheiten.</p>
       </div>
 
       {orders.length === 0 ? (
-        <div class="orders__empty">
-          <p class="orders__empty-title">Noch keine Bestellung.</p>
-          <p class="orders__empty-sub">
+        <div class="border-0 border-t border-b border-solid border-ink px-4 py-16 text-center">
+          <p class="mt-0 mb-[0.6rem] font-display text-[1.8rem] font-bold">Noch keine Bestellung.</p>
+          <p class="mx-auto mt-0 mb-6 max-w-[460px] font-body italic text-ink-soft">
             <em>Ihr Bordereau ist so leer wie unsere Versprechen. Werden Sie aktiv —
             der Katalog wartet, geduldig wie immer.</em>
           </p>
           <a href="/" class="btn-primary">Zum Katalog →</a>
         </div>
       ) : (
-        <table class="orders-table">
-          <thead>
+        <table class="w-full border-collapse border-0 border-t border-b border-solid border-ink font-body max-[640px]:block">
+          <thead class="border-0 border-b border-solid border-ink max-[640px]:hidden">
             <tr>
-              <th>Bordereau</th>
-              <th>Datum</th>
-              <th class="num">Artikel</th>
-              <th class="num">Summe</th>
-              <th>Status</th>
+              <th class="px-[0.6rem] py-[0.85rem] text-left font-meta text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-ink-mute">Bordereau</th>
+              <th class="px-[0.6rem] py-[0.85rem] text-left font-meta text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-ink-mute">Datum</th>
+              <th class="px-[0.6rem] py-[0.85rem] text-right font-meta text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-ink-mute">Artikel</th>
+              <th class="px-[0.6rem] py-[0.85rem] text-right font-meta text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-ink-mute">Summe</th>
+              <th class="px-[0.6rem] py-[0.85rem] text-left font-meta text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-ink-mute">Status</th>
               <th></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="max-[640px]:block">
             {ordersWithItems.map((order) => {
               const status = statusLabels[order.status] ?? { text: order.status, color: 'neutral' };
               return (
                 <>
-                  <tr class="order-row" data-order-id={order.id}>
-                    <td><code>{order.bordereauNr}</code></td>
-                    <td>{formatDate(order.createdAt)}</td>
-                    <td class="num">{order.items.length}</td>
-                    <td class="num"><strong>{order.total.toFixed(2)} €</strong></td>
-                    <td><span class={`stamp stamp--${status.color} stamp--open`}>{status.text}</span></td>
-                    <td class="num">
-                      <button class="row-toggle" type="button" aria-expanded="false" aria-controls={`detail-${order.id}`}>
+                  <tr class="hover:bg-paper-2 max-[640px]:block max-[640px]:border-0 max-[640px]:border-b max-[640px]:border-solid max-[640px]:border-paper-3 max-[640px]:py-4">
+                    <td class={inputCell + ' max-[640px]:block max-[640px]:border-b-0 max-[640px]:py-[0.3rem]! max-[640px]:text-left!'}><code class="font-meta text-[0.88rem] text-ink">{order.bordereauNr}</code></td>
+                    <td class={inputCell + ' max-[640px]:block max-[640px]:border-b-0 max-[640px]:py-[0.3rem]! max-[640px]:text-left!'}>{formatDate(order.createdAt)}</td>
+                    <td class={inputCell + ' text-right max-[640px]:block max-[640px]:border-b-0 max-[640px]:py-[0.3rem]! max-[640px]:text-left!'}>{order.items.length}</td>
+                    <td class={inputCell + ' text-right max-[640px]:block max-[640px]:border-b-0 max-[640px]:py-[0.3rem]! max-[640px]:text-left!'}><strong class="font-display font-bold">{order.total.toFixed(2)} €</strong></td>
+                    <td class={inputCell + ' max-[640px]:block max-[640px]:border-b-0 max-[640px]:py-[0.3rem]! max-[640px]:text-left!'}><span class={`stamp stamp--${status.color} stamp--open`}>{status.text}</span></td>
+                    <td class={inputCell + ' text-right max-[640px]:block max-[640px]:border-b-0 max-[640px]:py-[0.3rem]! max-[640px]:text-left!'}>
+                      <button class="row-toggle cursor-pointer border border-solid border-ink bg-transparent px-[0.7rem] py-[0.4rem] font-meta text-[0.72rem] uppercase tracking-[0.1em] text-ink transition-colors duration-150 hover:bg-ink hover:text-paper" type="button" aria-expanded="false" aria-controls={`detail-${order.id}`}>
                         Details ▾
                       </button>
                     </td>
                   </tr>
-                  <tr class="order-detail" id={`detail-${order.id}`} hidden>
-                    <td colspan="6">
-                      <div class="detail-grid">
-                        <div class="detail-items">
-                          <p class="detail__eyebrow">Aufgegebene Artikel</p>
+                  <tr class="order-detail max-[640px]:[&:not([hidden])]:block" id={`detail-${order.id}`} hidden>
+                    <td colspan="6" class="border-0 border-b border-solid border-ink bg-paper-2 !p-6 max-[640px]:block">
+                      <div class="grid grid-cols-[1.5fr_1fr] gap-10 max-[900px]:grid-cols-1 max-[900px]:gap-6">
+                        <div>
+                          <p class="mt-0 mb-[0.6rem] block font-meta text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-ink-mute">Aufgegebene Artikel</p>
                           {order.items.map((it) => (
-                            <div class="detail-item">
-                              <span class="detail-item__name">{it.nameSnapshot}</span>
-                              <span class="detail-item__qty">× {it.quantity}</span>
-                              <span class="detail-item__price">{(it.priceSnapshot * it.quantity).toFixed(2)} €</span>
+                            <div class="grid grid-cols-[1fr_auto_auto] items-center gap-6 border-0 border-b border-dotted border-paper-3 py-[0.45rem]">
+                              <span class="font-display font-bold">{it.nameSnapshot}</span>
+                              <span class="font-meta text-[0.78rem] tracking-[0.05em] text-ink-mute">× {it.quantity}</span>
+                              <span class="font-body text-ink">{(it.priceSnapshot * it.quantity).toFixed(2)} €</span>
                             </div>
                           ))}
-                          <div class="detail-line">
+                          <div class="flex justify-between py-[0.4rem] text-ink-soft">
                             <span>Zwischensumme</span>
                             <span>{order.subtotal.toFixed(2)} €</span>
                           </div>
-                          <div class="detail-line">
+                          <div class="flex justify-between py-[0.4rem] text-ink-soft">
                             <span>Versand</span>
                             <span>{order.shippingCost.toFixed(2)} €</span>
                           </div>
-                          <div class="detail-total">
-                            <span>Gesamt</span>
-                            <span>{order.total.toFixed(2)} €</span>
+                          <div class="mt-[0.4rem] flex items-baseline justify-between border-0 border-t border-solid border-ink pt-[0.6rem]">
+                            <span class="font-meta text-[0.78rem] uppercase tracking-[0.12em] text-ink-mute">Gesamt</span>
+                            <span class="font-display text-[1.4rem] font-extrabold">{order.total.toFixed(2)} €</span>
                           </div>
                         </div>
 
-                        <div class="detail-addr">
-                          <p class="detail__eyebrow">Lieferung an</p>
-                          <p>
+                        <div>
+                          <p class="mt-0 mb-[0.6rem] block font-meta text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-ink-mute">Lieferung an</p>
+                          <p class="mt-0 mb-4 font-body leading-[1.55] text-ink">
                             {order.addrPrename} {order.addrSurname}<br/>
                             {order.addrStreet}<br/>
                             {order.addrPostal} {order.addrCity}<br/>
                             {order.addrCountry}
                           </p>
-                          <p class="detail-addr__email">
-                            <span class="detail__eyebrow">Bestätigung an</span>
+                          <p class="mt-4 border-0 border-t border-dotted border-solid border-paper-3 pt-4 font-body leading-[1.55] text-ink">
+                            <span class="mb-[0.3rem] block font-meta text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-ink-mute">Bestätigung an</span>
                             <span>{order.email}</span>
                           </p>
                         </div>
@@ -257,299 +259,4 @@ const orderCount = orders.length;
     });
   });
 </script>
-
-<style>
-  .konto {
-    max-width: 1100px;
-    padding-top: 2rem;
-  }
-
-  /* HEADER */
-  .konto-head { margin-top: 1rem; }
-  .konto-head .display-headline { margin: 1rem 0 1rem; }
-  .konto-head__sub {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 1.15rem;
-    color: var(--ink-soft);
-    margin: 0;
-    max-width: 600px;
-  }
-
-  /* STAMMDATEN + KENNZAHLEN */
-  .konto-stats {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 3rem;
-    align-items: start;
-  }
-  .stammdaten__eyebrow {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--red);
-    margin: 0 0 1rem;
-    font-weight: 600;
-  }
-  .stammdaten__list {
-    margin: 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.2rem 2rem;
-  }
-  .stammdaten__list > div {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-  }
-  .stammdaten__list dt {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0;
-  }
-  .stammdaten__list dd {
-    font-family: var(--font-body);
-    font-size: 1rem;
-    color: var(--ink);
-    margin: 0;
-  }
-
-  .kennzahlen {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-    border-left: var(--rule);
-    padding-left: 2rem;
-  }
-  .kennzahl {
-    padding: 0 1.2rem 0 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    border-right: var(--rule-soft);
-  }
-  .kennzahl:last-child {
-    border-right: none;
-    padding: 0 0 0 1.2rem;
-  }
-  .kennzahl__num {
-    font-family: var(--font-display);
-    font-size: 2.4rem;
-    font-weight: 800;
-    line-height: 1;
-    color: var(--red);
-    letter-spacing: -0.02em;
-  }
-  .kennzahl__label {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-
-  /* BESTELLUNGEN */
-  .orders__head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-  }
-  .orders__title {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1;
-  }
-  .orders__hint {
-    font-family: var(--font-body);
-    font-style: italic;
-    color: var(--ink-mute);
-    margin: 0;
-    font-size: 0.9rem;
-  }
-
-  /* LEERZUSTAND */
-  /* .orders__empty / -title / -sub: Basis in global.css */
-  .orders__empty-sub em { font-style: italic; }
-
-  /* TABELLE */
-  .orders-table {
-    width: 100%;
-    border-collapse: collapse;
-    border-top: var(--rule);
-    border-bottom: var(--rule);
-    font-family: var(--font-body);
-  }
-  .orders-table thead {
-    border-bottom: var(--rule);
-  }
-  .orders-table th {
-    text-align: left;
-    padding: 0.85rem 0.6rem;
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    font-weight: 600;
-  }
-  .orders-table th.num { text-align: right; }
-  .orders-table td {
-    padding: 1rem 0.6rem;
-    color: var(--ink);
-    border-bottom: var(--rule-soft);
-    vertical-align: middle;
-  }
-  .orders-table td.num { text-align: right; }
-  .orders-table tbody tr.order-row:hover {
-    background: var(--paper-2);
-  }
-  .orders-table code {
-    font-family: var(--font-meta);
-    font-size: 0.88rem;
-    color: var(--ink);
-  }
-  .orders-table strong {
-    font-family: var(--font-display);
-    font-weight: 700;
-  }
-
-  .row-toggle {
-    background: none;
-    border: 1px solid var(--ink);
-    padding: 0.4rem 0.7rem;
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink);
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-  }
-  .row-toggle:hover {
-    background: var(--ink);
-    color: var(--paper);
-  }
-
-  /* DETAIL-ZEILE */
-  .order-detail td {
-    background: var(--paper-2);
-    border-bottom: var(--rule);
-    padding: 1.5rem 1rem !important;
-  }
-  .detail-grid {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr;
-    gap: 2.5rem;
-  }
-  .detail__eyebrow {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0 0 0.6rem;
-    font-weight: 600;
-    display: block;
-  }
-  .detail-item {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 1.5rem;
-    padding: 0.45rem 0;
-    border-bottom: 1px dotted var(--paper-3);
-    align-items: center;
-  }
-  .detail-item__name {
-    font-family: var(--font-display);
-    font-weight: 700;
-  }
-  .detail-item__qty {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    color: var(--ink-mute);
-    letter-spacing: 0.05em;
-  }
-  .detail-item__price {
-    font-family: var(--font-body);
-    color: var(--ink);
-  }
-  .detail-line {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.4rem 0;
-    color: var(--ink-soft);
-  }
-  .detail-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 0.6rem 0 0;
-    margin-top: 0.4rem;
-    border-top: 1px solid var(--ink);
-  }
-  .detail-total span:first-child {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-  .detail-total span:last-child {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 1.4rem;
-  }
-
-  .detail-addr p {
-    font-family: var(--font-body);
-    margin: 0 0 1rem;
-    line-height: 1.55;
-    color: var(--ink);
-  }
-  .detail-addr__email {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px dotted var(--paper-3);
-  }
-  .detail-addr__email .detail__eyebrow {
-    margin-bottom: 0.3rem;
-  }
-
-  /* RESPONSIVE */
-  @media (max-width: 900px) {
-    .konto-stats { grid-template-columns: 1fr; gap: 2rem; }
-    .kennzahlen {
-      border-left: none;
-      border-top: var(--rule);
-      padding-left: 0;
-      padding-top: 1.5rem;
-    }
-    .detail-grid { grid-template-columns: 1fr; gap: 1.5rem; }
-  }
-  @media (max-width: 640px) {
-    .orders-table thead { display: none; }
-    .orders-table, .orders-table tbody, .orders-table tr, .orders-table td {
-      display: block;
-      width: 100%;
-    }
-    .orders-table tr.order-row {
-      padding: 1rem 0;
-      border-bottom: var(--rule-soft);
-    }
-    .orders-table td {
-      padding: 0.3rem 0 !important;
-      border-bottom: none;
-      text-align: left !important;
-    }
-    .stammdaten__list { grid-template-columns: 1fr; }
-  }
-</style>
+
