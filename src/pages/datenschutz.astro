@@ -1,8 +1,7 @@
 ---
 export const prerender = true;
 import Layout from '../layouts/Layout.astro';
-import { company } from '../lib/company';
-import '../styles/legal.css';
+import { company } from '../lib/company';
 
 const { name: firma, street, postal, city, email, tel, boss } = company;
 
@@ -30,7 +29,7 @@ const sections = [
 ---
 
 <Layout title="Datenschutzerklärung">
-  <main class="page agb">
+  <main class="agb">
 
     <header class="agb-head">
       <p class="agb-head__rubrik">Rechtliches</p>

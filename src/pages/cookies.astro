@@ -1,8 +1,9 @@
 ---
+// TAILWIND-MIGRATION: legal.css entfällt — die .agb-*/.cookie-*-Klassen
+// leben jetzt als @layer components in src/styles/tailwind.css (global).
 export const prerender = true;
 import Layout from '../layouts/Layout.astro';
 import { company } from '../lib/company';
-import '../styles/legal.css';
 
 const { name: firma, email } = company;
 
@@ -41,7 +42,7 @@ const cookies = [
 ---
 
 <Layout title="Cookie-Richtlinie">
-  <main class="page agb">
+  <main class="agb">
 
     <header class="agb-head">
       <p class="agb-head__rubrik">Rechtliches</p>
@@ -284,84 +285,5 @@ const cookies = [
 
   </main>
 </Layout>
-
-<style>
-  /* Nur Cookies-spezifisch — das geteilte .agb-* System kommt aus legal.css */
-  .agb-body { max-width: 760px; }
-
-  /* COOKIE-TABELLE */
-  .cookie-table-wrap {
-    margin: 1rem 0 0;
-    overflow-x: auto;
-    border: 1px solid var(--paper-3);
-    background: var(--paper-2);
-  }
-  .cookie-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: var(--font-body);
-    font-size: 0.92rem;
-    min-width: 720px;
-  }
-  .cookie-table thead {
-    background: var(--paper);
-    border-bottom: 1px solid var(--ink);
-  }
-  .cookie-table th {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    font-weight: 600;
-    text-align: left;
-    padding: 0.9rem 1rem;
-  }
-  .cookie-table td {
-    padding: 0.9rem 1rem;
-    border-bottom: var(--rule-soft);
-    color: var(--ink-soft);
-    vertical-align: top;
-    line-height: 1.55;
-  }
-  .cookie-table tr:last-child td { border-bottom: none; }
-  .cookie-table code {
-    font-family: var(--font-meta);
-    font-size: 0.85rem;
-    background: var(--paper);
-    padding: 0.15em 0.4em;
-    color: var(--ink);
-    border: 1px solid var(--paper-3);
-    white-space: nowrap;
-  }
-
-  /* BROWSER-LISTE */
-  .browser-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-  .browser-list > li {
-    padding: 0.7rem 1rem;
-    background: var(--paper-2);
-    border-left: 2px solid var(--ink);
-    font-family: var(--font-body);
-    font-size: 0.95rem;
-    color: var(--ink-soft);
-  }
-  .browser-list strong {
-    color: var(--ink);
-    font-weight: 600;
-    margin-right: 0.4rem;
-  }
-  .browser-list a {
-    color: var(--ink);
-    text-decoration: underline;
-    word-break: break-all;
-  }
-  .browser-list a:hover { color: var(--red); }
-</style>
+
 

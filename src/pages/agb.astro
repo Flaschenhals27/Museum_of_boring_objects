@@ -1,8 +1,7 @@
 ---
 export const prerender = true;
 import Layout from '../layouts/Layout.astro';
-import { company } from '../lib/company';
-import '../styles/legal.css';
+import { company } from '../lib/company';
 
 // Werte aus env (genauso wie im Impressum), mit Fallbacks
 const { name: firma, street, postal, city, email, tel, boss, vatId } = company;
@@ -29,7 +28,7 @@ const sections = [
 ---
 
 <Layout title="Allgemeine Geschäftsbedingungen">
-  <main class="page agb">
+  <main class="agb">
 
     {/* Header — bewusst nüchtern, keine Ironie */}
     <header class="agb-head">
