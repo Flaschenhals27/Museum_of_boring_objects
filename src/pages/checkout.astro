@@ -38,8 +38,13 @@ const { coupon, discount } = await resolveDiscount(cartRecord?.couponCode, total
 const shippingCost = SHIPPING_COST;
 const grandTotal = Math.max(0, total - discount) + shippingCost;
 
-// Formularfelder (Label + Input-Attribute) — hält das Markup unten schlank
-const addressFields = [
+// Formularfelder (Label + Input-Attribute) — hält das Markup unten schlank.
+// `type` explizit als Literal-Union typisiert, sonst inferiert TS `string`
+// und <input type> akzeptiert nur HTMLInputTypeAttribute.
+const addressFields: Array<{
+  id: string; name: string; label: string;
+  placeholder: string; type: 'text' | 'email'; full: boolean;
+}> = [
   { id: 'cf-prename', name: 'prename', label: 'Vorname',              placeholder: 'Max',            type: 'text',  full: false },
   { id: 'cf-surname', name: 'surname', label: 'Nachname',             placeholder: 'Mustermann',     type: 'text',  full: false },
   { id: 'cf-street',  name: 'street',  label: 'Straße & Hausnummer',  placeholder: 'Musterstraße 1', type: 'text',  full: true },
