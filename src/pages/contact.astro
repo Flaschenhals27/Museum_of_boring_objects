@@ -1,46 +1,63 @@
 ---
+// =====================================================================
+// pages/contact.astro — Kontakt
+// =====================================================================
+// TAILWIND-MIGRATION: seitenlokale Styles als Utilities. Die geteilte
+// .form-field-Klasse (global.css) bleibt bis zum Finale bestehen und
+// stylt Label + Input weiterhin zentral.
+// =====================================================================
 export const prerender = true;
 import Layout from '../layouts/Layout.astro';
 import { company } from '../lib/company';
 
 const { name: firma, street, postal, city, email, tel, mapBbox, markerLat, markerLng } = company;
+
+const sprechzeiten = [
+  { tag: 'Montag',     zeit: '09:00–17:00', zu: false },
+  { tag: 'Dienstag',   zeit: '09:00–17:00', zu: false },
+  { tag: 'Mittwoch',   zeit: '09:00–17:00', zu: false },
+  { tag: 'Donnerstag', zeit: '09:00–17:00', zu: false },
+  { tag: 'Freitag',    zeit: '09:00–14:00', zu: false },
+  { tag: 'Samstag',    zeit: 'geschlossen', zu: true },
+  { tag: 'Sonntag',    zeit: 'geschlossen', zu: true },
+];
 ---
 
 <Layout title="Kontakt">
-  <main class="page kontakt">
+  <main class="mx-auto max-w-[1100px] px-6 pt-8 pb-16 max-[540px]:px-4">
 
-    <div class="section-marker">
-      <span class="section-marker__no">N° 01</span>
-      <span class="section-marker__line"></span>
-      <span class="section-marker__label">Service · Kontakt zur Redaktion</span>
+    <div class="mb-4 flex items-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] max-[540px]:flex-wrap max-[540px]:gap-[0.4rem]">
+      <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 01</span>
+      <span class="h-px w-8 bg-ink"></span>
+      <span class="font-medium text-red max-[540px]:text-[0.65rem]">Service · Kontakt zur Redaktion</span>
     </div>
 
-    <header class="kontakt-head">
-      <h1 class="display-headline">Schreiben Sie uns. <em>Leise.</em></h1>
-      <p class="kontakt-head__sub">
+    <header class="mt-4">
+      <h1 class="mt-2 mb-4 max-w-[900px] font-display text-[clamp(3rem,8vw,6rem)] font-extrabold leading-[0.98] tracking-[-0.02em] text-ink max-[540px]:text-[clamp(1.8rem,8vw,2.6rem)]">Schreiben Sie uns. <em class="text-red">Leise.</em></h1>
+      <p class="m-0 max-w-[680px] font-body text-[1.15rem] italic leading-[1.55] text-ink-soft">
         Wir antworten werktags zwischen neun und siebzehn Uhr, in der Reihenfolge
         der Eingänge — und mit der Gelassenheit, die das Wochenblatt von uns verlangt.
       </p>
     </header>
 
-    <div class="rule-thick" style="margin: 1rem 0 2.5rem;"></div>
+    <div class="mt-4 mb-10 border-0 border-t border-solid border-ink"></div>
 
-    <div class="kontakt-layout">
+    <div class="grid grid-cols-[1.4fr_1fr] items-start gap-16 max-[900px]:grid-cols-1 max-[900px]:gap-10">
 
       {/* FORMULAR */}
-      <section class="kontakt-form">
-        <p class="kontakt-form__eyebrow">Anfrage einreichen</p>
-        <h2 class="kontakt-form__title">Nachricht.</h2>
+      <section>
+        <p class="mt-0 mb-[0.4rem] font-meta text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-red">Anfrage einreichen</p>
+        <h2 class="mt-0 mb-8 font-display text-[2.4rem] font-extrabold leading-none tracking-[-0.02em] text-ink">Nachricht.</h2>
 
-        <form id="kontakt-form" onsubmit="event.preventDefault();">
+        <form id="kontakt-form" class="flex flex-col gap-[1.4rem]" onsubmit="event.preventDefault();">
 
-          <div id="form-success" class="form-success" hidden>
-            <p class="form-success__title">Vermerkt.</p>
-            <p>Ihre Nachricht ist bei uns eingegangen. Wir melden uns,
+          <div id="form-success" class="border-0 border-l-[3px] border-solid border-[#4a6f3a] bg-paper-2 p-6" hidden>
+            <p class="mt-0 mb-2 font-display text-[1.6rem] font-extrabold text-ink">Vermerkt.</p>
+            <p class="m-0 font-body leading-[1.65] text-ink-soft">Ihre Nachricht ist bei uns eingegangen. Wir melden uns,
             sobald die Redaktion sich gefasst hat — werktags, ohne Hast.</p>
           </div>
 
-          <div class="form-grid">
+          <div class="grid grid-cols-2 gap-[1.4rem] max-[540px]:grid-cols-1">
             <div class="form-field">
               <label for="kf-prename">Vorname</label>
               <input type="text" id="kf-prename" name="prename" placeholder="Max" required />
@@ -58,7 +75,7 @@ const { name: firma, street, postal, city, email, tel, mapBbox, markerLat, marke
 
           <div class="form-field">
             <label for="kf-topic">Anliegen</label>
-            <select id="kf-topic" name="topic" required>
+            <select id="kf-topic" name="topic" required class="appearance-none bg-[right_1rem_center] bg-no-repeat pr-[2.4rem]" style="background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%231a1612' d='M6 8L0 0h12z'/></svg>&quot;)">
               <option value="">Bitte wählen …</option>
               <option value="bestellung">Frage zu einer Bestellung</option>
               <option value="versand">Versand &amp; Lieferung</option>
@@ -77,21 +94,21 @@ const { name: firma, street, postal, city, email, tel, mapBbox, markerLat, marke
 
           <div class="form-field">
             <label for="kf-message">Ihre Nachricht</label>
-            <textarea id="kf-message" name="message" rows="6" placeholder="Schreiben Sie uns, was Ihnen einfällt — wir lesen alles." required></textarea>
+            <textarea id="kf-message" name="message" rows="6" placeholder="Schreiben Sie uns, was Ihnen einfällt — wir lesen alles." required class="min-h-[140px] resize-y font-body leading-[1.6]"></textarea>
           </div>
 
-          <label class="form-check">
-            <input type="checkbox" id="kf-privacy" required />
+          <label class="flex cursor-pointer items-start gap-[0.7rem] font-body text-[0.9rem] leading-[1.55] text-ink-soft">
+            <input type="checkbox" id="kf-privacy" required class="mt-[0.15rem] h-[18px] w-[18px] shrink-0 [accent-color:var(--color-ink)] [&.invalid]:outline-2 [&.invalid]:outline-offset-2 [&.invalid]:outline-red" />
             <span>
-              Ich habe die <a href="/datenschutz">Datenschutzerklärung</a> zur
+              Ich habe die <a href="/datenschutz" class="text-ink underline hover:text-red">Datenschutzerklärung</a> zur
               Kenntnis genommen und bin mit der Verarbeitung meiner Angaben zum
               Zweck der Bearbeitung meiner Anfrage einverstanden.
             </span>
           </label>
 
-          <button type="submit" class="btn-primary" id="kf-submit">Nachricht senden →</button>
+          <button type="submit" class="btn-primary self-start" style="margin-top:0.4rem" id="kf-submit">Nachricht senden →</button>
 
-          <p class="form-note">
+          <p class="form-note m-0 font-body text-[0.85rem] italic leading-[1.55] text-ink-mute">
             <em>Eine Antwort erreicht Sie in der Regel innerhalb von zwei Werktagen.
             Bei komplexeren Anliegen darf es etwas länger dauern.</em>
           </p>
@@ -100,64 +117,55 @@ const { name: firma, street, postal, city, email, tel, mapBbox, markerLat, marke
       </section>
 
       {/* KONTAKTDATEN */}
-      <aside class="kontakt-info">
+      <aside class="sticky top-8 flex flex-col gap-6 max-[900px]:static">
 
-        <div class="info-card">
-          <p class="info-card__eyebrow">Direkter Draht</p>
+        <div class="border-0 border-t border-solid border-ink pt-[1.2rem]">
+          <p class="mt-0 mb-4 font-meta text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-ink-mute">Direkter Draht</p>
 
-          <div class="info-row">
-            <dt>E-Mail</dt>
-            <dd><a href={`mailto:${email}`}>{email}</a></dd>
+          <div class="grid grid-cols-[110px_1fr] items-baseline gap-4 py-[0.45rem] max-[540px]:grid-cols-1 max-[540px]:gap-[0.2rem]">
+            <dt class="m-0 font-meta text-[0.72rem] uppercase tracking-[0.12em] text-ink-mute">E-Mail</dt>
+            <dd class="m-0 font-body text-[0.95rem] leading-[1.55] text-ink"><a href={`mailto:${email}`} class="text-ink underline hover:text-red">{email}</a></dd>
           </div>
-          <div class="info-row">
-            <dt>Telefon</dt>
-            <dd>{tel}</dd>
+          <div class="grid grid-cols-[110px_1fr] items-baseline gap-4 py-[0.45rem] max-[540px]:grid-cols-1 max-[540px]:gap-[0.2rem]">
+            <dt class="m-0 font-meta text-[0.72rem] uppercase tracking-[0.12em] text-ink-mute">Telefon</dt>
+            <dd class="m-0 font-body text-[0.95rem] leading-[1.55] text-ink">{tel}</dd>
           </div>
-          <div class="info-row">
-            <dt>Postanschrift</dt>
-            <dd>
-              {firma}<br/>
-              {street}<br/>
-              {postal} {city}<br/>
-              Deutschland
+          <div class="grid grid-cols-[110px_1fr] items-baseline gap-4 py-[0.45rem] max-[540px]:grid-cols-1 max-[540px]:gap-[0.2rem]">
+            <dt class="m-0 font-meta text-[0.72rem] uppercase tracking-[0.12em] text-ink-mute">Postanschrift</dt>
+            <dd class="m-0 font-body text-[0.95rem] leading-[1.55] text-ink">
+              {firma}<br/>{street}<br/>{postal} {city}<br/>Deutschland
             </dd>
           </div>
         </div>
 
-        <div class="info-card">
-          <p class="info-card__eyebrow">Sprechzeiten</p>
-          <table class="hours-table">
+        <div class="border-0 border-t border-solid border-ink pt-[1.2rem]">
+          <p class="mt-0 mb-4 font-meta text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-ink-mute">Sprechzeiten</p>
+          <table class="w-full border-collapse font-body text-[0.95rem]">
             <tbody>
-              <tr><td>Montag</td><td>09:00–17:00</td></tr>
-              <tr><td>Dienstag</td><td>09:00–17:00</td></tr>
-              <tr><td>Mittwoch</td><td>09:00–17:00</td></tr>
-              <tr><td>Donnerstag</td><td>09:00–17:00</td></tr>
-              <tr><td>Freitag</td><td>09:00–14:00</td></tr>
-              <tr><td>Samstag</td><td class="muted">geschlossen</td></tr>
-              <tr><td>Sonntag</td><td class="muted">geschlossen</td></tr>
+              {sprechzeiten.map((s) => (
+                <tr class="[&:last-child>td]:border-b-0">
+                  <td class="border-0 border-b border-solid border-paper-3 py-[0.45rem] text-ink">{s.tag}</td>
+                  <td class={'border-0 border-b border-solid border-paper-3 py-[0.45rem] text-right font-meta text-[0.85rem] ' + (s.zu ? 'italic text-ink-mute' : 'text-ink-soft')}>{s.zeit}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
-          <p class="info-card__note">
+          <p class="mt-[0.8rem] mb-0 font-body text-[0.85rem] italic leading-[1.55] text-ink-mute">
             <em>Außerhalb der Sprechzeiten erreichen Sie uns am verlässlichsten
             per E-Mail. Wir antworten, sobald es uns gelingt.</em>
           </p>
         </div>
 
-        <div class="info-card info-card--map">
-          <p class="info-card__eyebrow">Anschrift der Redaktion</p>
-          <div class="kontakt-map">
+        <div class="border-0 border-t border-solid border-ink pt-[1.2rem]">
+          <p class="mt-0 mb-4 font-meta text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-ink-mute">Anschrift der Redaktion</p>
+          <div class="mb-[0.4rem] h-[240px] w-full overflow-hidden border border-solid border-ink bg-paper-2 [filter:sepia(0.18)_contrast(0.95)_saturate(0.85)]">
             <iframe
               src={`https://www.openstreetmap.org/export/embed.html?bbox=${mapBbox}&layer=mapnik&marker=${markerLat}%2C${markerLng}`}
-              style="border: 0;"
-              width="100%"
-              height="100%"
-              allowfullscreen
-              loading="lazy"
-              referrerpolicy="no-referrer-when-downgrade"
-              title="Karte zum Sitz der Redaktion"
+              style="border: 0;" width="100%" height="100%" allowfullscreen loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade" title="Karte zum Sitz der Redaktion"
             ></iframe>
           </div>
-          <p class="info-card__note">
+          <p class="mt-[0.8rem] mb-0 font-body text-[0.85rem] italic leading-[1.55] text-ink-mute">
             <em>Persönliche Besuche sind nicht erwünscht. Wir sind meistens nicht da —
             und falls doch, sehr leise.</em>
           </p>
@@ -167,16 +175,16 @@ const { name: firma, street, postal, city, email, tel, mapBbox, markerLat, marke
     </div>
 
     {/* HINWEIS-BANNER: FAQ zuerst */}
-    <section class="kontakt-hint">
+    <section class="mt-12 grid grid-cols-[1.6fr_auto] items-center gap-8 bg-ochre px-12 py-10 text-ink max-[900px]:grid-cols-1 max-[900px]:px-6 max-[900px]:py-8">
       <div>
-        <p class="kontakt-hint__eyebrow">Bevor Sie schreiben</p>
-        <h2 class="kontakt-hint__title">Vielleicht haben wir die Antwort bereits gedruckt.</h2>
-        <p class="kontakt-hint__sub">
+        <p class="mt-0 mb-2 font-meta text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-ink">Bevor Sie schreiben</p>
+        <h2 class="mt-0 mb-[0.6rem] font-display text-[clamp(1.6rem,3vw,2.2rem)] font-bold leading-[1.15] text-ink">Vielleicht haben wir die Antwort bereits gedruckt.</h2>
+        <p class="m-0 font-body italic leading-[1.55] text-ink/70">
           Ein Blick in unsere Häufigen Fragen lohnt sich oft — und spart allen Beteiligten
           etwas Zeit.
         </p>
       </div>
-      <a href="/faq" class="kontakt-hint__btn">Zu den Häufigen Fragen →</a>
+      <a href="/faq" class="whitespace-nowrap border-0 bg-ink px-[1.6rem] py-[1.1rem] font-meta text-[0.85rem] uppercase tracking-[0.12em] text-paper transition-colors duration-150 hover:bg-red pointer-coarse:min-h-11">Zu den Häufigen Fragen →</a>
     </section>
 
   </main>
@@ -235,268 +243,3 @@ const { name: firma, street, postal, city, email, tel, mapBbox, markerLat, marke
     }, 600);
   });
 </script>
-
-<style>
-  .kontakt {
-    max-width: 1100px;
-    padding-top: 2rem;
-  }
-
-  /* HEADER */
-  .kontakt-head { margin-top: 1rem; }
-  .kontakt-head .display-headline {
-    margin: 0.5rem 0 1rem;
-    max-width: 900px;
-  }
-  /* .kontakt-head__sub: Basis in global.css */
-
-  /* LAYOUT */
-  .kontakt-layout {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 4rem;
-    align-items: start;
-  }
-
-  /* FORM */
-  .kontakt-form__eyebrow {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--red);
-    margin: 0 0 0.4rem;
-    font-weight: 600;
-  }
-  .kontakt-form__title {
-    font-family: var(--font-display);
-    font-size: 2.4rem;
-    font-weight: 800;
-    line-height: 1;
-    margin: 0 0 2rem;
-    color: var(--ink);
-    letter-spacing: -0.02em;
-  }
-
-  form { display: flex; flex-direction: column; gap: 1.4rem; }
-
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.4rem;
-  }
-  /* .form-field / label / __hint / input-Basis / .invalid: siehe global.css */
-  .form-field textarea {
-    resize: vertical;
-    min-height: 140px;
-    font-family: var(--font-body);
-    line-height: 1.6;
-  }
-  .form-field select {
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%231a1612' d='M6 8L0 0h12z'/></svg>");
-    background-repeat: no-repeat;
-    background-position: right 1rem center;
-    padding-right: 2.4rem;
-  }
-  .form-check {
-    display: flex;
-    gap: 0.7rem;
-    align-items: flex-start;
-    font-family: var(--font-body);
-    font-size: 0.9rem;
-    line-height: 1.55;
-    color: var(--ink-soft);
-    cursor: pointer;
-  }
-  .form-check input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    margin: 0;
-    accent-color: var(--ink);
-    flex-shrink: 0;
-    margin-top: 0.15rem;
-  }
-  .form-check input.invalid {
-    outline: 2px solid var(--red);
-    outline-offset: 2px;
-  }
-  .form-check a { color: var(--ink); text-decoration: underline; }
-  .form-check a:hover { color: var(--red); }
-
-  #kf-submit { align-self: flex-start; margin-top: 0.4rem; }
-
-  .form-note {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 0.85rem;
-    color: var(--ink-mute);
-    margin: 0;
-    line-height: 1.55;
-  }
-
-  .form-success {
-    background: var(--paper-2);
-    border-left: 3px solid #4a6f3a;
-    padding: 1.5rem 1.5rem;
-  }
-  .form-success__title {
-    font-family: var(--font-display);
-    font-size: 1.6rem;
-    font-weight: 800;
-    margin: 0 0 0.5rem;
-    color: var(--ink);
-  }
-  .form-success p {
-    font-family: var(--font-body);
-    line-height: 1.65;
-    color: var(--ink-soft);
-    margin: 0;
-  }
-
-  /* INFO-SIDEBAR */
-  .kontakt-info {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    position: sticky;
-    top: 2rem;
-  }
-  .info-card {
-    border-top: var(--rule);
-    padding-top: 1.2rem;
-  }
-  .info-card__eyebrow {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0 0 1rem;
-    font-weight: 600;
-  }
-  .info-row {
-    display: grid;
-    grid-template-columns: 110px 1fr;
-    gap: 1rem;
-    align-items: baseline;
-    padding: 0.45rem 0;
-  }
-  .info-row dt {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0;
-  }
-  .info-row dd {
-    font-family: var(--font-body);
-    font-size: 0.95rem;
-    color: var(--ink);
-    margin: 0;
-    line-height: 1.55;
-  }
-  .info-row a { color: var(--ink); text-decoration: underline; }
-  .info-row a:hover { color: var(--red); }
-
-  .hours-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: var(--font-body);
-    font-size: 0.95rem;
-  }
-  .hours-table td {
-    padding: 0.45rem 0;
-    border-bottom: var(--rule-soft);
-    color: var(--ink);
-  }
-  .hours-table tr:last-child td { border-bottom: none; }
-  .hours-table td:last-child {
-    text-align: right;
-    font-family: var(--font-meta);
-    font-size: 0.85rem;
-    color: var(--ink-soft);
-  }
-  .hours-table td.muted { color: var(--ink-mute); font-style: italic; }
-
-  .info-card__note {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 0.85rem;
-    color: var(--ink-mute);
-    margin: 0.8rem 0 0;
-    line-height: 1.55;
-  }
-
-  .kontakt-map {
-    width: 100%;
-    height: 240px;
-    border: 1px solid var(--ink);
-    background: var(--paper-2);
-    overflow: hidden;
-    filter: sepia(0.18) contrast(0.95) saturate(0.85);
-    margin-bottom: 0.4rem;
-  }
-
-  /* HINWEIS */
-  .kontakt-hint {
-    background: var(--ochre);
-    color: var(--ink);
-    padding: 2.5rem 3rem;
-    margin-top: 3rem;
-    display: grid;
-    grid-template-columns: 1.6fr auto;
-    gap: 2rem;
-    align-items: center;
-  }
-  .kontakt-hint__eyebrow {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink);
-    margin: 0 0 0.5rem;
-    font-weight: 600;
-  }
-  .kontakt-hint__title {
-    font-family: var(--font-display);
-    font-size: clamp(1.6rem, 3vw, 2.2rem);
-    font-weight: 700;
-    line-height: 1.15;
-    margin: 0 0 0.6rem;
-    color: var(--ink);
-  }
-  .kontakt-hint__sub {
-    font-family: var(--font-body);
-    font-style: italic;
-    color: rgba(26,22,18,0.7);
-    margin: 0;
-    line-height: 1.55;
-  }
-  .kontakt-hint__btn {
-    background: var(--ink);
-    color: var(--paper);
-    font-family: var(--font-meta);
-    font-size: 0.85rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 1.1rem 1.6rem;
-    text-decoration: none;
-    transition: background 0.15s;
-    white-space: nowrap;
-  }
-  .kontakt-hint__btn:hover { background: var(--red); color: var(--paper); }
-
-  /* RESPONSIVE */
-  @media (max-width: 900px) {
-    .kontakt-layout { grid-template-columns: 1fr; gap: 2.5rem; }
-    .kontakt-info { position: static; }
-    .kontakt-hint { grid-template-columns: 1fr; padding: 2rem 1.5rem; }
-  }
-  @media (max-width: 540px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .info-row { grid-template-columns: 1fr; gap: 0.2rem; }
-  }
-</style>
