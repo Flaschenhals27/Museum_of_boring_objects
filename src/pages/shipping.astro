@@ -1,603 +1,232 @@
 ---
+// =====================================================================
+// pages/shipping.astro — Versand & Rücksendung
+// =====================================================================
+// TAILWIND-MIGRATION: seitenlokale Styles als Utilities. Die wieder-
+// kehrende Artikel-Typografie (h3/p/a) wird über Kindselektor-Utilities
+// ([&_h3]:… ) an einem Wrapper gesetzt, statt an jedem Element einzeln.
+// =====================================================================
 export const prerender = true;
 import Layout from '../layouts/Layout.astro';
 import { company } from '../lib/company';
 
 const { email, tel } = company;
-
 const stand = '14. Mai 2026';
+
+// Typografie eines Inhalts-Artikels (h3 + Absätze + Links) an einer Stelle
+const item =
+  '[&_h3]:mt-0 [&_h3]:mb-[0.6rem] [&_h3]:font-display [&_h3]:text-[1.2rem] [&_h3]:font-bold [&_h3]:text-ink ' +
+  '[&>p]:mt-0 [&>p]:mb-[0.8rem] [&>p]:font-body [&>p]:text-base [&>p]:leading-[1.7] [&>p]:text-ink-soft [&>p:last-child]:mb-0 ' +
+  '[&_a]:text-ink [&_a]:underline [&_a:hover]:text-red';
+
+const kennzahlen = [
+  { num: '3–7',    label: 'Werktage Lieferzeit' },
+  { num: '14',     label: 'Tage Widerrufsrecht' },
+  { num: '4,90 €', label: 'Standardversand DE' },
+  { num: '50 €',   label: 'Versandkostenfrei ab' },
+];
+const versandkosten = [
+  ['Deutschland', '4,90 €', '9,90 €'],
+  ['Österreich, Schweiz', '9,90 €', '14,90 €'],
+  ['EU-Ausland (übrige Länder)', '12,90 €', 'auf Anfrage'],
+  ['Weltweit', 'auf Anfrage', '—'],
+];
+const schritte = [
+  { t: 'Widerruf erklären',            p: `Senden Sie uns eine kurze E-Mail an <a href="mailto:${email}">${email}</a> mit der Bestellnummer und dem Hinweis auf den Widerruf. Eine Begründung ist nicht erforderlich.` },
+  { t: 'Rücksendeschein erhalten',     p: 'Sie erhalten innerhalb eines Werktages einen vorgedruckten Rücksendeschein per E-Mail. Drucken Sie diesen aus und legen Sie ihn der Rücksendung bei.' },
+  { t: 'Ware verpacken und versenden', p: 'Verpacken Sie die Ware nach Möglichkeit in der Originalverpackung und senden Sie das Paket innerhalb von vierzehn (14) Tagen nach Erklärung des Widerrufs an die auf dem Rücksendeschein angegebene Adresse.' },
+  { t: 'Erstattung',                   p: 'Nach Erhalt und Prüfung der Rücksendung erstatten wir Ihnen den Kaufpreis sowie die ursprünglichen Versandkosten innerhalb von vierzehn (14) Tagen auf das ursprünglich verwendete Zahlungsmittel.' },
+];
+
+const blockHead = 'sticky top-8 max-[900px]:static';
+const blockNo = 'mt-0 mb-[0.3rem] font-display text-[2.2rem] font-bold italic leading-none text-red';
+const blockTitle = 'm-0 font-display text-[1.8rem] font-bold leading-[1.1] text-ink';
 ---
 
 <Layout title="Versand und Rücksendung">
-  <main class="page versand">
+  <main class="mx-auto max-w-[1100px] px-6 pt-8 pb-16 max-[540px]:px-4">
 
-    <div class="section-marker">
-      <span class="section-marker__no">N° 01</span>
-      <span class="section-marker__line"></span>
-      <span class="section-marker__label">Service · Versand &amp; Rücksendung</span>
+    <div class="mb-4 flex items-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] max-[540px]:flex-wrap max-[540px]:gap-[0.4rem]">
+      <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 01</span>
+      <span class="h-px w-8 bg-ink"></span>
+      <span class="font-medium text-red max-[540px]:text-[0.65rem]">Service · Versand &amp; Rücksendung</span>
     </div>
 
-    <header class="versand-head">
-      <h1 class="display-headline">Versand <em>&amp; Rücksendung.</em></h1>
-      <p class="versand-head__sub">
+    <header class="mt-8">
+      <h1 class="mt-2 mb-4 font-display text-[clamp(3rem,8vw,6rem)] font-extrabold leading-[0.98] tracking-[-0.02em] text-ink max-[540px]:text-[clamp(1.8rem,8vw,2.6rem)]">Versand <em class="text-red">&amp; Rücksendung.</em></h1>
+      <p class="m-0 max-w-[680px] font-body text-[1.15rem] italic leading-[1.5] text-ink-soft">
         Wie unsere Artikel zu Ihnen kommen — und unter welchen Bedingungen
         sie wieder zu uns zurückfinden.
       </p>
     </header>
 
-    <div class="rule-thick" style="margin: 0.5rem 0 2.5rem;"></div>
+    <div class="mt-2 mb-10 border-0 border-t border-solid border-ink"></div>
 
-    {/* KENNZAHLEN — kurz und übersichtlich */}
-    <section class="versand-kennzahlen">
-      <div class="kennzahl">
-        <span class="kennzahl__num">3–7</span>
-        <span class="kennzahl__label">Werktage Lieferzeit</span>
-      </div>
-      <div class="kennzahl">
-        <span class="kennzahl__num">14</span>
-        <span class="kennzahl__label">Tage Widerrufsrecht</span>
-      </div>
-      <div class="kennzahl">
-        <span class="kennzahl__num">4,90 €</span>
-        <span class="kennzahl__label">Standardversand DE</span>
-      </div>
-      <div class="kennzahl">
-        <span class="kennzahl__num">50 €</span>
-        <span class="kennzahl__label">Versandkostenfrei ab</span>
-      </div>
+    {/* KENNZAHLEN */}
+    <section class="grid grid-cols-4 max-[900px]:grid-cols-2 max-[540px]:grid-cols-1">
+      {kennzahlen.map((k) => (
+        <div class="flex flex-col gap-[0.4rem] border-0 border-r border-solid border-paper-3 px-6 py-4 last:border-r-0 max-[900px]:[&:nth-child(2)]:border-r-0 max-[540px]:border-r-0 max-[540px]:border-b max-[540px]:px-0 max-[540px]:py-4">
+          <span class="font-display text-[2.6rem] font-extrabold leading-none tracking-[-0.02em] text-ink">{k.num}</span>
+          <span class="font-meta text-[0.72rem] uppercase tracking-[0.12em] text-ink-mute">{k.label}</span>
+        </div>
+      ))}
     </section>
 
-    <div class="rule-thick" style="margin: 2.5rem 0;"></div>
+    <div class="my-10 border-0 border-t border-solid border-ink"></div>
 
     {/* VERSAND */}
-    <section class="versand-block">
-      <div class="versand-block__head">
-        <p class="versand-block__no">01</p>
-        <h2 class="versand-block__title">Versand</h2>
+    <section class="grid grid-cols-[200px_1fr] items-start gap-12 max-[900px]:grid-cols-1 max-[900px]:gap-6">
+      <div class={blockHead}>
+        <p class={blockNo}>01</p>
+        <h2 class={blockTitle}>Versand</h2>
       </div>
-      <div class="versand-block__body">
+      <div class="flex max-w-[720px] flex-col gap-8">
 
-        <article class="versand-item">
+        <article class={item}>
           <h3>Lieferzeit</h3>
-          <p>
-            Sofern in der Artikelbeschreibung nicht abweichend angegeben, beträgt
-            die voraussichtliche Lieferzeit innerhalb Deutschlands drei (3) bis
-            sieben (7) Werktage ab Erhalt der Versandbestätigung. Die Versendung
-            erfolgt von Montag bis Freitag.
-          </p>
-          <p>
-            Bei Vorkasse erfolgt der Versand erst nach Eingang des vollständigen
-            Kaufpreises auf unserem Konto.
-          </p>
+          <p>Sofern in der Artikelbeschreibung nicht abweichend angegeben, beträgt die voraussichtliche Lieferzeit innerhalb Deutschlands drei (3) bis sieben (7) Werktage ab Erhalt der Versandbestätigung. Die Versendung erfolgt von Montag bis Freitag.</p>
+          <p>Bei Vorkasse erfolgt der Versand erst nach Eingang des vollständigen Kaufpreises auf unserem Konto.</p>
         </article>
 
-        <article class="versand-item">
+        <article class={item}>
           <h3>Versandkosten</h3>
-          <table class="versand-table">
-            <thead>
+          <table class="my-2 w-full border-collapse border border-solid border-paper-3 bg-paper-2 font-body text-[0.95rem] max-[540px]:text-[0.85rem]">
+            <thead class="border-0 border-b border-solid border-ink bg-paper">
               <tr>
-                <th>Zielgebiet</th>
-                <th>Standardversand</th>
-                <th>Express</th>
+                <th class="px-4 py-[0.7rem] text-left font-meta text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-ink-mute max-[540px]:px-[0.7rem] max-[540px]:py-2">Zielgebiet</th>
+                <th class="px-4 py-[0.7rem] text-left font-meta text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-ink-mute max-[540px]:px-[0.7rem] max-[540px]:py-2">Standardversand</th>
+                <th class="px-4 py-[0.7rem] text-left font-meta text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-ink-mute max-[540px]:px-[0.7rem] max-[540px]:py-2">Express</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Deutschland</td>
-                <td>4,90 €</td>
-                <td>9,90 €</td>
-              </tr>
-              <tr>
-                <td>Österreich, Schweiz</td>
-                <td>9,90 €</td>
-                <td>14,90 €</td>
-              </tr>
-              <tr>
-                <td>EU-Ausland (übrige Länder)</td>
-                <td>12,90 €</td>
-                <td>auf Anfrage</td>
-              </tr>
-              <tr>
-                <td>Weltweit</td>
-                <td>auf Anfrage</td>
-                <td>—</td>
-              </tr>
+              {versandkosten.map(([ziel, std, exp]) => (
+                <tr class="[&:last-child>td]:border-b-0">
+                  <td class="border-0 border-b border-solid border-paper-3 px-4 py-[0.7rem] align-top font-medium text-ink max-[540px]:px-[0.7rem] max-[540px]:py-2">{ziel}</td>
+                  <td class="border-0 border-b border-solid border-paper-3 px-4 py-[0.7rem] align-top text-ink-soft max-[540px]:px-[0.7rem] max-[540px]:py-2">{std}</td>
+                  <td class="border-0 border-b border-solid border-paper-3 px-4 py-[0.7rem] align-top text-ink-soft max-[540px]:px-[0.7rem] max-[540px]:py-2">{exp}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
-          <p class="versand-item__note">
-            <strong>Versandkostenfrei</strong> innerhalb Deutschlands ab einem
-            Bestellwert von 50,00 €. Bei Lieferungen in Länder außerhalb der
-            Europäischen Union können zusätzlich Zollgebühren und Einfuhrabgaben
-            anfallen, die vom Empfänger zu tragen sind.
+          <p class="mt-2! border-0 border-l-2 border-solid border-ink bg-paper-2 px-4 py-[0.8rem] text-[0.95rem]! [&_strong]:font-semibold [&_strong]:text-ink">
+            <strong>Versandkostenfrei</strong> innerhalb Deutschlands ab einem Bestellwert von 50,00 €. Bei Lieferungen in Länder außerhalb der Europäischen Union können zusätzlich Zollgebühren und Einfuhrabgaben anfallen, die vom Empfänger zu tragen sind.
           </p>
         </article>
 
-        <article class="versand-item">
+        <article class={item}>
           <h3>Versanddienstleister</h3>
-          <p>
-            Der Versand erfolgt in der Regel mit DHL. Auf Wunsch kann eine
-            abweichende Versandart vereinbart werden; etwaige Mehrkosten gehen
-            zu Lasten des Kunden.
-          </p>
-          <p>
-            Sobald Ihre Sendung unser Lager verlässt, erhalten Sie eine
-            Versandbestätigung per E-Mail mit einer Sendungsverfolgungsnummer.
-          </p>
+          <p>Der Versand erfolgt in der Regel mit DHL. Auf Wunsch kann eine abweichende Versandart vereinbart werden; etwaige Mehrkosten gehen zu Lasten des Kunden.</p>
+          <p>Sobald Ihre Sendung unser Lager verlässt, erhalten Sie eine Versandbestätigung per E-Mail mit einer Sendungsverfolgungsnummer.</p>
         </article>
 
-        <article class="versand-item">
+        <article class={item}>
           <h3>Lieferadressen und Packstationen</h3>
-          <p>
-            Eine Lieferung an DHL-Packstationen ist möglich. Bitte geben Sie
-            hierfür im Bestellprozess Ihre Postnummer sowie die Nummer der
-            gewünschten Packstation an. Lieferungen an Postfächer sind aus
-            betrieblichen Gründen nicht möglich.
-          </p>
+          <p>Eine Lieferung an DHL-Packstationen ist möglich. Bitte geben Sie hierfür im Bestellprozess Ihre Postnummer sowie die Nummer der gewünschten Packstation an. Lieferungen an Postfächer sind aus betrieblichen Gründen nicht möglich.</p>
         </article>
 
-        <article class="versand-item">
+        <article class={item}>
           <h3>Lieferverzögerungen</h3>
-          <p>
-            Sollte es im Einzelfall zu Verzögerungen kommen, werden wir Sie
-            unverzüglich informieren. Für Lieferverzögerungen, die wir nicht
-            zu vertreten haben (z. B. höhere Gewalt, Streik, Naturereignisse),
-            übernehmen wir keine Haftung.
-          </p>
+          <p>Sollte es im Einzelfall zu Verzögerungen kommen, werden wir Sie unverzüglich informieren. Für Lieferverzögerungen, die wir nicht zu vertreten haben (z. B. höhere Gewalt, Streik, Naturereignisse), übernehmen wir keine Haftung.</p>
         </article>
 
       </div>
     </section>
 
-    <div class="rule-thick" style="margin: 2.5rem 0;"></div>
+    <div class="my-10 border-0 border-t border-solid border-ink"></div>
 
     {/* RÜCKSENDUNG */}
-    <section class="versand-block">
-      <div class="versand-block__head">
-        <p class="versand-block__no">02</p>
-        <h2 class="versand-block__title">Rücksendung</h2>
+    <section class="grid grid-cols-[200px_1fr] items-start gap-12 max-[900px]:grid-cols-1 max-[900px]:gap-6">
+      <div class={blockHead}>
+        <p class={blockNo}>02</p>
+        <h2 class={blockTitle}>Rücksendung</h2>
       </div>
-      <div class="versand-block__body">
+      <div class="flex max-w-[720px] flex-col gap-8">
 
-        <article class="versand-item">
+        <article class={item}>
           <h3>Widerrufsrecht</h3>
-          <p>
-            Als Verbraucher haben Sie das Recht, binnen vierzehn (14) Tagen
-            ohne Angabe von Gründen den Kaufvertrag zu widerrufen. Die
-            Widerrufsfrist beginnt mit dem Tag, an dem Sie oder ein von Ihnen
-            benannter Dritter die Ware in Besitz genommen haben.
-          </p>
-          <p>
-            Die vollständige Widerrufsbelehrung sowie das Muster-Widerrufsformular
-            finden Sie in unseren <a href="/agb#paragraph-7">Allgemeinen Geschäftsbedingungen</a>.
-          </p>
+          <p>Als Verbraucher haben Sie das Recht, binnen vierzehn (14) Tagen ohne Angabe von Gründen den Kaufvertrag zu widerrufen. Die Widerrufsfrist beginnt mit dem Tag, an dem Sie oder ein von Ihnen benannter Dritter die Ware in Besitz genommen haben.</p>
+          <p>Die vollständige Widerrufsbelehrung sowie das Muster-Widerrufsformular finden Sie in unseren <a href="/agb#paragraph-7">Allgemeinen Geschäftsbedingungen</a>.</p>
         </article>
 
-        <article class="versand-item">
+        <article class={item}>
           <h3>Rücksendung im Schritt</h3>
-          <ol class="versand-steps">
-            <li>
-              <span class="versand-step__no">1</span>
-              <div>
-                <strong>Widerruf erklären</strong>
-                <p>
-                  Senden Sie uns eine kurze E-Mail an <a href={`mailto:${email}`}>{email}</a>
-                  mit der Bestellnummer und dem Hinweis auf den Widerruf.
-                  Eine Begründung ist nicht erforderlich.
-                </p>
-              </div>
-            </li>
-            <li>
-              <span class="versand-step__no">2</span>
-              <div>
-                <strong>Rücksendeschein erhalten</strong>
-                <p>
-                  Sie erhalten innerhalb eines Werktages einen vorgedruckten
-                  Rücksendeschein per E-Mail. Drucken Sie diesen aus und
-                  legen Sie ihn der Rücksendung bei.
-                </p>
-              </div>
-            </li>
-            <li>
-              <span class="versand-step__no">3</span>
-              <div>
-                <strong>Ware verpacken und versenden</strong>
-                <p>
-                  Verpacken Sie die Ware nach Möglichkeit in der Originalverpackung
-                  und senden Sie das Paket innerhalb von vierzehn (14) Tagen
-                  nach Erklärung des Widerrufs an die auf dem Rücksendeschein
-                  angegebene Adresse.
-                </p>
-              </div>
-            </li>
-            <li>
-              <span class="versand-step__no">4</span>
-              <div>
-                <strong>Erstattung</strong>
-                <p>
-                  Nach Erhalt und Prüfung der Rücksendung erstatten wir Ihnen
-                  den Kaufpreis sowie die ursprünglichen Versandkosten innerhalb
-                  von vierzehn (14) Tagen auf das ursprünglich verwendete
-                  Zahlungsmittel.
-                </p>
-              </div>
-            </li>
+          <ol class="m-0 flex list-none flex-col gap-[0.7rem] p-0">
+            {schritte.map((s, i) => (
+              <li class="grid grid-cols-[44px_1fr] items-start gap-4 border-0 border-l-2 border-solid border-ink bg-paper-2 px-[1.2rem] py-4">
+                <span class="font-display text-[1.6rem] font-extrabold leading-none text-red">{i + 1}</span>
+                <div>
+                  <strong class="mb-[0.3rem] block font-display text-[1.05rem] text-ink">{s.t}</strong>
+                  <p class="m-0 font-body text-[0.95rem] leading-[1.6] text-ink-soft [&_a]:text-ink [&_a]:underline [&_a:hover]:text-red" set:html={s.p}></p>
+                </div>
+              </li>
+            ))}
           </ol>
         </article>
 
-        <article class="versand-item">
+        <article class={item}>
           <h3>Kosten der Rücksendung</h3>
-          <p>
-            Die unmittelbaren Kosten der Rücksendung trägt grundsätzlich der
-            Kunde. Bei einer berechtigten Mängelrüge (z. B. Transportschaden,
-            Falschlieferung) übernehmen wir selbstverständlich die vollständigen
-            Rücksendekosten.
-          </p>
+          <p>Die unmittelbaren Kosten der Rücksendung trägt grundsätzlich der Kunde. Bei einer berechtigten Mängelrüge (z. B. Transportschaden, Falschlieferung) übernehmen wir selbstverständlich die vollständigen Rücksendekosten.</p>
         </article>
 
-        <article class="versand-item">
+        <article class={item}>
           <h3>Zustand der Ware</h3>
-          <p>
-            Bitte gehen Sie mit der Ware sorgfältig um. Sie müssen für einen
-            etwaigen Wertverlust nur aufkommen, wenn dieser auf einen zur
-            Prüfung der Beschaffenheit, Eigenschaften und Funktionsweise nicht
-            notwendigen Umgang zurückzuführen ist.
-          </p>
+          <p>Bitte gehen Sie mit der Ware sorgfältig um. Sie müssen für einen etwaigen Wertverlust nur aufkommen, wenn dieser auf einen zur Prüfung der Beschaffenheit, Eigenschaften und Funktionsweise nicht notwendigen Umgang zurückzuführen ist.</p>
         </article>
 
-        <article class="versand-item">
+        <article class={item}>
           <h3>Vom Widerrufsrecht ausgeschlossen</h3>
-          <p>
-            Das Widerrufsrecht besteht nicht bei Verträgen zur Lieferung
-            von Waren, die nach Kundenspezifikation angefertigt wurden oder
-            eindeutig auf die persönlichen Bedürfnisse zugeschnitten sind,
-            sowie bei versiegelten Waren, die aus Gründen des Gesundheitsschutzes
-            oder der Hygiene nicht zur Rückgabe geeignet sind, sofern ihre
-            Versiegelung nach der Lieferung entfernt wurde.
-          </p>
+          <p>Das Widerrufsrecht besteht nicht bei Verträgen zur Lieferung von Waren, die nach Kundenspezifikation angefertigt wurden oder eindeutig auf die persönlichen Bedürfnisse zugeschnitten sind, sowie bei versiegelten Waren, die aus Gründen des Gesundheitsschutzes oder der Hygiene nicht zur Rückgabe geeignet sind, sofern ihre Versiegelung nach der Lieferung entfernt wurde.</p>
         </article>
 
       </div>
     </section>
 
-    <div class="rule-thick" style="margin: 2.5rem 0;"></div>
+    <div class="my-10 border-0 border-t border-solid border-ink"></div>
 
     {/* MÄNGEL / TRANSPORTSCHADEN */}
-    <section class="versand-block">
-      <div class="versand-block__head">
-        <p class="versand-block__no">03</p>
-        <h2 class="versand-block__title">Mängel und Transportschäden</h2>
+    <section class="grid grid-cols-[200px_1fr] items-start gap-12 max-[900px]:grid-cols-1 max-[900px]:gap-6">
+      <div class={blockHead}>
+        <p class={blockNo}>03</p>
+        <h2 class={blockTitle}>Mängel und Transportschäden</h2>
       </div>
-      <div class="versand-block__body">
+      <div class="flex max-w-[720px] flex-col gap-8">
 
-        <article class="versand-item">
+        <article class={item}>
           <h3>Beschädigte Sendungen</h3>
-          <p>
-            Sollte Ihre Sendung sichtbare Transportschäden aufweisen, melden Sie
-            diese bitte möglichst sofort beim zustellenden Mitarbeiter und
-            informieren Sie uns zeitnah. Ihre gesetzlichen Gewährleistungsrechte
-            bleiben hiervon unberührt — die Meldung dient lediglich dazu, etwaige
-            Ansprüche gegenüber dem Versanddienstleister geltend zu machen.
-          </p>
+          <p>Sollte Ihre Sendung sichtbare Transportschäden aufweisen, melden Sie diese bitte möglichst sofort beim zustellenden Mitarbeiter und informieren Sie uns zeitnah. Ihre gesetzlichen Gewährleistungsrechte bleiben hiervon unberührt — die Meldung dient lediglich dazu, etwaige Ansprüche gegenüber dem Versanddienstleister geltend zu machen.</p>
         </article>
 
-        <article class="versand-item">
+        <article class={item}>
           <h3>Gewährleistung</h3>
-          <p>
-            Es gelten die gesetzlichen Gewährleistungsrechte mit einer Frist von
-            zwei (2) Jahren ab Übergabe der Ware. Bei Mängeln wenden Sie sich
-            bitte an unseren Kundenservice unter <a href={`mailto:${email}`}>{email}</a>
-            oder telefonisch unter {tel}.
-          </p>
+          <p>Es gelten die gesetzlichen Gewährleistungsrechte mit einer Frist von zwei (2) Jahren ab Übergabe der Ware. Bei Mängeln wenden Sie sich bitte an unseren Kundenservice unter <a href={`mailto:${email}`}>{email}</a> oder telefonisch unter {tel}.</p>
         </article>
 
       </div>
     </section>
 
     {/* KONTAKT-KASTEN */}
-    <section class="versand-kontakt">
+    <section class="mt-12 grid grid-cols-[1.4fr_1fr] items-center gap-12 bg-ink px-12 py-10 text-paper max-[900px]:grid-cols-1 max-[900px]:px-6 max-[900px]:py-8">
       <div>
-        <p class="versand-kontakt__eyebrow">Noch Fragen?</p>
-        <h2 class="versand-kontakt__title">Wir sind für Sie da.</h2>
-        <p class="versand-kontakt__sub">
+        <p class="mt-0 mb-[0.3rem] font-meta text-[0.78rem] uppercase tracking-[0.14em] text-ochre">Noch Fragen?</p>
+        <h2 class="mt-0 mb-4 font-display text-[clamp(1.6rem,3vw,2.2rem)] font-bold leading-[1.1] text-paper">Wir sind für Sie da.</h2>
+        <p class="m-0 font-body italic leading-[1.6] text-paper/70">
           Bei Fragen zu Versand, Rücksendung oder Bestellung erreichen Sie
           unseren Kundenservice werktags zwischen 9 und 17 Uhr.
         </p>
       </div>
-      <div class="versand-kontakt__details">
-        <div>
-          <dt>E-Mail</dt>
-          <dd><a href={`mailto:${email}`}>{email}</a></dd>
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-[0.2rem]">
+          <dt class="m-0 font-meta text-[0.72rem] uppercase tracking-[0.14em] text-paper/50">E-Mail</dt>
+          <dd class="m-0 font-display text-[1.2rem] font-semibold text-paper"><a href={`mailto:${email}`} class="text-paper underline hover:text-ochre">{email}</a></dd>
         </div>
-        <div>
-          <dt>Telefon</dt>
-          <dd>{tel}</dd>
+        <div class="flex flex-col gap-[0.2rem]">
+          <dt class="m-0 font-meta text-[0.72rem] uppercase tracking-[0.14em] text-paper/50">Telefon</dt>
+          <dd class="m-0 font-display text-[1.2rem] font-semibold text-paper">{tel}</dd>
         </div>
       </div>
     </section>
 
-    <p class="versand-footer">Stand: {stand}</p>
+    <p class="mt-8 mb-0 text-center font-meta text-[0.78rem] uppercase tracking-[0.1em] text-ink-mute">Stand: {stand}</p>
 
   </main>
 </Layout>
-
-<style>
-  .versand {
-    padding-top: 2rem;
-    max-width: 1100px;
-  }
-
-  .versand-head {
-    margin-top: 2rem;
-  }
-  .versand-head .display-headline {
-    margin: 0.5rem 0 1rem;
-  }
-  .versand-head__sub {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 1.15rem;
-    line-height: 1.5;
-    color: var(--ink-soft);
-    max-width: 680px;
-    margin: 0;
-  }
-
-  /* KENNZAHLEN */
-  .versand-kennzahlen {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-  }
-  .kennzahl {
-    padding: 1rem 1.5rem;
-    border-right: var(--rule-soft);
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-  .kennzahl:last-child { border-right: none; }
-  .kennzahl__num {
-    font-family: var(--font-display);
-    font-size: 2.6rem;
-    font-weight: 800;
-    line-height: 1;
-    color: var(--ink);
-    letter-spacing: -0.02em;
-  }
-  .kennzahl__label {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-
-  /* BLOCK-STRUKTUR */
-  .versand-block {
-    display: grid;
-    grid-template-columns: 200px 1fr;
-    gap: 3rem;
-    align-items: start;
-  }
-  .versand-block__head {
-    position: sticky;
-    top: 2rem;
-  }
-  .versand-block__no {
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: var(--red);
-    margin: 0 0 0.3rem;
-    line-height: 1;
-  }
-  .versand-block__title {
-    font-family: var(--font-display);
-    font-size: 1.8rem;
-    font-weight: 700;
-    line-height: 1.1;
-    margin: 0;
-    color: var(--ink);
-  }
-
-  .versand-block__body {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    max-width: 720px;
-  }
-
-  .versand-item h3 {
-    font-family: var(--font-display);
-    font-size: 1.2rem;
-    font-weight: 700;
-    margin: 0 0 0.6rem;
-    color: var(--ink);
-  }
-  .versand-item p {
-    font-family: var(--font-body);
-    font-size: 1rem;
-    line-height: 1.7;
-    color: var(--ink-soft);
-    margin: 0 0 0.8rem;
-  }
-  .versand-item p:last-child { margin-bottom: 0; }
-  .versand-item__note {
-    background: var(--paper-2);
-    border-left: 2px solid var(--ink);
-    padding: 0.8rem 1rem;
-    margin-top: 0.8rem !important;
-    font-size: 0.95rem !important;
-  }
-  .versand-item__note strong { color: var(--ink); font-weight: 600; }
-  .versand-item a { color: var(--ink); text-decoration: underline; }
-  .versand-item a:hover { color: var(--red); }
-
-  /* TABELLE */
-  .versand-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 0.5rem 0;
-    border: 1px solid var(--paper-3);
-    background: var(--paper-2);
-    font-family: var(--font-body);
-    font-size: 0.95rem;
-  }
-  .versand-table thead {
-    background: var(--paper);
-    border-bottom: 1px solid var(--ink);
-  }
-  .versand-table th {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    font-weight: 600;
-    text-align: left;
-    padding: 0.7rem 1rem;
-  }
-  .versand-table td {
-    padding: 0.7rem 1rem;
-    border-bottom: var(--rule-soft);
-    color: var(--ink-soft);
-    vertical-align: top;
-  }
-  .versand-table tr:last-child td { border-bottom: none; }
-  .versand-table td:first-child {
-    color: var(--ink);
-    font-weight: 500;
-  }
-
-  /* SCHRITT-LISTE */
-  .versand-steps {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-  .versand-steps > li {
-    display: grid;
-    grid-template-columns: 44px 1fr;
-    gap: 1rem;
-    align-items: flex-start;
-    padding: 1rem 1.2rem;
-    background: var(--paper-2);
-    border-left: 2px solid var(--ink);
-  }
-  .versand-step__no {
-    font-family: var(--font-display);
-    font-size: 1.6rem;
-    font-weight: 800;
-    color: var(--red);
-    line-height: 1;
-  }
-  .versand-steps strong {
-    display: block;
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    color: var(--ink);
-    margin-bottom: 0.3rem;
-  }
-  .versand-steps p {
-    margin: 0;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: var(--ink-soft);
-  }
-  .versand-steps a { color: var(--ink); text-decoration: underline; }
-  .versand-steps a:hover { color: var(--red); }
-
-  /* KONTAKT */
-  .versand-kontakt {
-    background: var(--ink);
-    color: var(--paper);
-    padding: 2.5rem 3rem;
-    margin-top: 3rem;
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 3rem;
-    align-items: center;
-  }
-  .versand-kontakt__eyebrow {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ochre);
-    margin: 0 0 0.3rem;
-  }
-  .versand-kontakt__title {
-    font-family: var(--font-display);
-    font-size: clamp(1.6rem, 3vw, 2.2rem);
-    font-weight: 700;
-    line-height: 1.1;
-    margin: 0 0 1rem;
-    color: var(--paper);
-  }
-  .versand-kontakt__sub {
-    font-family: var(--font-body);
-    font-style: italic;
-    color: rgba(243,237,225,0.7);
-    margin: 0;
-    line-height: 1.6;
-  }
-  .versand-kontakt__details {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .versand-kontakt__details > div {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-  }
-  .versand-kontakt__details dt {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: rgba(243,237,225,0.5);
-    margin: 0;
-  }
-  .versand-kontakt__details dd {
-    font-family: var(--font-display);
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--paper);
-    margin: 0;
-  }
-  .versand-kontakt__details a {
-    color: var(--paper);
-    text-decoration: underline;
-  }
-  .versand-kontakt__details a:hover { color: var(--ochre); }
-
-  .versand-footer {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    text-align: center;
-    margin: 2rem 0 0;
-  }
-
-  /* RESPONSIVE */
-  @media (max-width: 900px) {
-    .versand-block { grid-template-columns: 1fr; gap: 1.5rem; }
-    .versand-block__head { position: static; }
-    .versand-kennzahlen { grid-template-columns: repeat(2, 1fr); }
-    .kennzahl:nth-child(2) { border-right: none; }
-    .versand-kontakt { grid-template-columns: 1fr; padding: 2rem 1.5rem; }
-  }
-  @media (max-width: 540px) {
-    .versand-kennzahlen { grid-template-columns: 1fr; }
-    .kennzahl { border-right: none; border-bottom: var(--rule-soft); padding: 1rem 0; }
-    .versand-table { font-size: 0.85rem; }
-    .versand-table th, .versand-table td { padding: 0.5rem 0.7rem; }
-  }
-</style>
