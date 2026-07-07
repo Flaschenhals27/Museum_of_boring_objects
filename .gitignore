@@ -26,3 +26,6 @@ pnpm-debug.log*
 # local databases
 local.db
 dev.db
+# Lokale Lern-/Notiz-Dateien (nicht ins Repo)
+LERNFRAGEN.md
+GEFUNDENE_INKONSISTENZEN.md
