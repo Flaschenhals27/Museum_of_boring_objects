@@ -1,4 +1,11 @@
 ---
+// =====================================================================
+// pages/about.astro — Die Redaktion
+// =====================================================================
+// TAILWIND-MIGRATION: seitenlokale Styles als Utilities; geteilte
+// Designsystem-Klassen (.stamp, .rule-thick, .reveal) bleiben vorerst.
+// Der Count-Up-Hook läuft über die js-stat-Klasse.
+// =====================================================================
 import Layout from '../layouts/Layout.astro';
 import { db, Item, count } from 'astro:db';
 
@@ -6,88 +13,92 @@ export const prerender = true;
 
 const countResult = await db.select({ value: count() }).from(Item);
 const itemCount = countResult[0].value;
+
+const werte = [
+  { num: '01', head: 'Mittelmäßigkeit ohne Kompromiss.', text: 'Wir kuratieren ausschließlich Gegenstände, die niemand wirklich braucht. Das ist unsere redaktionelle Grundlage.' },
+  { num: '02', head: 'Zertifizierte Langeweile.',        text: 'Jedes Stück wird auf sein Langeweile-Potenzial geprüft. Unter 7/10 erscheint es nicht im Katalog.' },
+  { num: '03', head: 'Nachhaltige Bedeutungslosigkeit.', text: 'Unsere Artikel hinterlassen keinen Eindruck — und damit nur eine minimale Spur im kollektiven Gedächtnis.' },
+];
+const stats = [
+  { num: itemCount.toString().padStart(2, '0'), target: String(itemCount), label: 'Einträge im Katalog' },
+  { num: '00', target: '0',    label: 'Erhaltene Auszeichnungen' },
+  { num: '∞',  target: null,   label: 'Zertifizierte Langeweile' },
+  { num: '01', target: null,   label: 'Grauer Gründungs-Dienstag' },
+];
 ---
 
 <Layout title="Die Redaktion">
-  <main class="page redaktion">
+  <main class="mx-auto max-w-[1200px] px-6 pt-8 pb-16 max-[540px]:px-4">
 
     {/* HERO */}
-    <section class="redaktion-hero reveal">
-      <div class="section-marker">
-        <span class="section-marker__no">N° 01</span>
-        <span class="section-marker__line"></span>
-        <span class="section-marker__label">Die Redaktion · Unsere Philosophie</span>
+    <section class="reveal py-8 pb-12 text-center">
+      <div class="mb-4 flex items-center justify-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] max-[540px]:flex-wrap max-[540px]:gap-[0.4rem]">
+        <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 01</span>
+        <span class="h-px w-8 bg-ink"></span>
+        <span class="font-medium text-red max-[540px]:text-[0.65rem]">Die Redaktion · Unsere Philosophie</span>
       </div>
 
-      <h1 class="display-headline">
-        Hinter <br/><em>der Langeweile.</em>
+      <h1 class="my-2 font-display text-[clamp(3rem,8vw,6rem)] font-extrabold leading-[0.98] tracking-[-0.02em] text-ink max-[540px]:text-[clamp(1.8rem,8vw,2.6rem)]">
+        Hinter <br/><em class="text-red">der Langeweile.</em>
       </h1>
-      <p class="redaktion-hero__sub">
+      <p class="mx-auto mt-4 mb-12 max-w-[640px] font-body text-[1.15rem] italic leading-[1.6] text-ink-soft">
         Die Welt, so meinen wir, ist laut genug. Unsere Redaktion ist ein Ort der<br/>
         Stille — und der absoluten Mittelmäßigkeit.
       </p>
 
-      <div class="redaktion-img reveal">
-        <img src="/newsroom.jpg" alt="Redaktionsraum" />
-        <span class="redaktion-img__caption">Redaktionsraum, eigene Aufnahme</span>
+      <div class="reveal relative aspect-[16/8] w-full border border-solid border-paper-3">
+        <img src="/newsroom.jpg" alt="Redaktionsraum" class="block h-full w-full object-cover mix-blend-multiply [filter:sepia(0.12)_contrast(0.95)]" />
+        <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border border-solid border-paper-3 bg-paper px-[0.9rem] py-[0.4rem] font-meta text-[0.75rem] uppercase tracking-[0.1em] text-ink-soft">Redaktionsraum, eigene Aufnahme</span>
       </div>
     </section>
 
     {/* DREI WERTE */}
     <div class="rule-thick"></div>
 
-    <section class="values">
-      <div class="value reveal">
-        <p class="value__num">01</p>
-        <h3>Mittelmäßigkeit ohne Kompromiss.</h3>
-        <p>Wir kuratieren ausschließlich Gegenstände, die niemand wirklich braucht. Das ist unsere redaktionelle Grundlage.</p>
-      </div>
-      <div class="value reveal">
-        <p class="value__num">02</p>
-        <h3>Zertifizierte Langeweile.</h3>
-        <p>Jedes Stück wird auf sein Langeweile-Potenzial geprüft. Unter 7/10 erscheint es nicht im Katalog.</p>
-      </div>
-      <div class="value reveal">
-        <p class="value__num">03</p>
-        <h3>Nachhaltige Bedeutungslosigkeit.</h3>
-        <p>Unsere Artikel hinterlassen keinen Eindruck — und damit nur eine minimale Spur im kollektiven Gedächtnis.</p>
-      </div>
+    <section class="grid grid-cols-3 py-10 max-[900px]:grid-cols-2 max-[540px]:grid-cols-1">
+      {werte.map((w) => (
+        <div class="reveal flex flex-col gap-[0.8rem] border-0 border-r border-solid border-paper-3 py-4 pr-8 last:border-r-0 [&:not(:first-child)]:pl-8 max-[900px]:border-r-0 max-[900px]:pl-0! max-[900px]:pr-0">
+          <p class="m-0 font-display text-[3rem] font-bold leading-none text-red">{w.num}</p>
+          <h3 class="m-0 font-display text-[1.4rem] font-bold leading-[1.2] tracking-[-0.01em]">{w.head}</h3>
+          <p class="m-0 font-body text-[0.95rem] leading-[1.6] text-ink-soft">{w.text}</p>
+        </div>
+      ))}
     </section>
 
     <div class="rule-thick"></div>
 
     {/* GRÜNDUNGSBERICHT */}
-    <section class="founding reveal">
-      <div class="founding__head">
-        <div class="section-marker">
-          <span class="section-marker__no">N° 02</span>
-          <span class="section-marker__line"></span>
-          <span class="section-marker__label">Wie alles begann</span>
+    <section class="reveal grid grid-cols-[1fr_1.4fr] gap-16 py-12 max-[900px]:grid-cols-1 max-[900px]:gap-8">
+      <div>
+        <div class="mb-4 flex items-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] max-[540px]:flex-wrap max-[540px]:gap-[0.4rem]">
+          <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 02</span>
+          <span class="h-px w-8 bg-ink"></span>
+          <span class="font-medium text-red max-[540px]:text-[0.65rem]">Wie alles begann</span>
         </div>
 
-        <h2 class="founding__title">
+        <h2 class="mt-2 mb-6 font-display text-[clamp(2rem,4vw,3.4rem)] font-extrabold leading-none tracking-[-0.02em]">
           Ein grauer Dienstag, wie jeder andere.
         </h2>
 
-        <p class="founding__meta">Gründungsbericht · Lesedauer ca. 3 Minuten (entspannt gelesen).</p>
-        <div class="founding__stamps">
+        <p class="mt-0 mb-4 font-body text-[0.95rem] italic text-ink-soft">Gründungsbericht · Lesedauer ca. 3 Minuten (entspannt gelesen).</p>
+        <div class="flex flex-wrap gap-3">
           <span class="stamp stamp--red">Aktenkundig</span>
           <span class="stamp stamp--neutral stamp--open">Vorgang 2026/0001</span>
         </div>
       </div>
 
-      <div class="founding__body">
-        <p class="founding__lead">
-          <span class="dropcap">E</span>s war ein grauer Dienstagmorgen. Eine Büroklammer lag auf dem Schreibtisch.
+      <div class="font-body text-base leading-[1.75] text-ink-soft [column-gap:2.5rem] [column-rule:1px_solid_var(--color-paper-3)] min-[901px]:[column-count:2]">
+        <p class="mt-0 mb-[1.2rem] text-ink!">
+          <span class="float-left pt-[0.1rem] pr-2 font-display text-[4rem] font-bold leading-[0.85] text-red">E</span>s war ein grauer Dienstagmorgen. Eine Büroklammer lag auf dem Schreibtisch.
           Niemand beachtete sie. In genau diesem Moment wurde The Ordinary Emporium gegründet —
           als stiller Protest gegen die Tyrannei des Interessanten.
         </p>
-        <p>
+        <p class="mt-0 mb-[1.2rem]">
           Seither dokumentieren wir unermüdlich Gegenstände, die für gewöhnlich übersehen werden.
           Vom ausgetrockneten Textmarker bis zum leicht verbogenen Lineal — jedes Stück erzählt
           die lange Geschichte seiner eigenen Unwichtigkeit, und wir drucken sie ab.
         </p>
-        <p>
+        <p class="mt-0 mb-[1.2rem]">
           Unser fünfköpfiges Lektorat liest jede Ausgabe leise vor, auf der Suche nach jenem
           einen Satz, der wirklich überhaupt nichts mehr sagt. Sobald er auftaucht, setzen wir
           ihn auf die Titelseite.
@@ -98,258 +109,27 @@ const itemCount = countResult[0].value;
     {/* STATS */}
     <div class="rule-thick"></div>
 
-    <section class="redaktion-stats">
-      <div class="stat reveal">
-        <span class="stat__num" data-target={itemCount}>{itemCount.toString().padStart(2, '0')}</span>
-        <span class="stat__label">Einträge im Katalog</span>
-      </div>
-      <div class="stat reveal">
-        <span class="stat__num" data-target="0">00</span>
-        <span class="stat__label">Erhaltene Auszeichnungen</span>
-      </div>
-      <div class="stat reveal">
-        <span class="stat__num">∞</span>
-        <span class="stat__label">Zertifizierte Langeweile</span>
-      </div>
-      <div class="stat reveal">
-        <span class="stat__num">01</span>
-        <span class="stat__label">Grauer Gründungs-Dienstag</span>
-      </div>
+    <section class="grid grid-cols-4 py-10 max-[900px]:grid-cols-2 max-[540px]:grid-cols-1">
+      {stats.map((s) => (
+        <div class="reveal flex flex-col gap-[0.4rem] border-0 border-r border-solid border-paper-3 px-6 py-4 text-left last:border-r-0 max-[900px]:border-r-0 max-[900px]:px-0">
+          <span class="js-stat font-display text-[4rem] font-extrabold leading-none tracking-[-0.02em] text-ink" data-target={s.target ?? undefined}>{s.num}</span>
+          <span class="font-meta text-[0.72rem] uppercase tracking-[0.12em] text-ink-mute">{s.label}</span>
+        </div>
+      ))}
     </section>
 
     {/* CTA */}
-    <section class="redaktion-cta reveal">
-      <div class="redaktion-cta__inner">
-        <p class="eyebrow" style="color: var(--ink);">Bereit für das Gewöhnliche?</p>
-        <h2 class="redaktion-cta__title">Entdecken Sie unseren Katalog.</h2>
-        <p class="redaktion-cta__sub">Sie werden moderat enttäuscht sein. So muss es sein.</p>
+    <section class="reveal mt-8 grid grid-cols-[1.6fr_auto] items-center gap-8 bg-ochre px-10 py-12 text-ink max-[900px]:grid-cols-1">
+      <div>
+        <p class="m-0 font-meta text-[0.78rem] font-medium uppercase tracking-[0.14em] text-ink">Bereit für das Gewöhnliche?</p>
+        <h2 class="my-2 font-display text-[clamp(1.8rem,3.4vw,2.6rem)] font-extrabold leading-[1.1] text-ink">Entdecken Sie unseren Katalog.</h2>
+        <p class="m-0 font-body italic text-ink/70">Sie werden moderat enttäuscht sein. So muss es sein.</p>
       </div>
-      <a href="/" class="redaktion-cta__btn">Zum Katalog →</a>
+      <a href="/" class="border-0 bg-ink px-[1.6rem] py-[1.1rem] font-meta text-[0.85rem] uppercase tracking-[0.12em] text-paper transition-colors duration-150 hover:bg-red pointer-coarse:min-h-11">Zum Katalog →</a>
     </section>
 
   </main>
 </Layout>
-
-<style>
-  .redaktion { padding-top: 2rem; }
-
-  /* HERO */
-  .redaktion-hero {
-    text-align: center;
-    padding: 2rem 0 3rem;
-  }
-  .redaktion-hero .section-marker { justify-content: center; }
-  .redaktion-hero__sub {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 1.15rem;
-    color: var(--ink-soft);
-    max-width: 640px;
-    margin: 1rem auto 3rem;
-    line-height: 1.6;
-  }
-  .redaktion-img {
-    width: 100%;
-    aspect-ratio: 16/8;
-    border: 1px solid var(--paper-3);
-    position: relative;
-  }
-  .redaktion-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    filter: sepia(0.12) contrast(0.95);
-    mix-blend-mode: multiply;
-  }
-  .redaktion-img__caption {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--paper);
-    padding: 0.4rem 0.9rem;
-    font-family: var(--font-meta);
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    border: 1px solid var(--paper-3);
-  }
-
-  /* WERTE */
-  .values {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0;
-    padding: 2.5rem 0;
-  }
-  .value {
-    padding: 1rem 2rem 1rem 0;
-    border-right: var(--rule-soft);
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-  .value:last-child { border-right: none; }
-  .value:not(:first-child) { padding-left: 2rem; }
-  .value__num {
-    font-family: var(--font-display);
-    font-size: 3rem;
-    font-weight: 700;
-    color: var(--red);
-    margin: 0;
-    line-height: 1;
-  }
-  .value h3 {
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-    font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: -0.01em;
-    margin: 0;
-  }
-  .value p {
-    font-family: var(--font-body);
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: var(--ink-soft);
-    margin: 0;
-  }
-
-  /* GRÜNDUNGSBERICHT */
-  .founding {
-    display: grid;
-    grid-template-columns: 1fr 1.4fr;
-    gap: 4rem;
-    padding: 3rem 0;
-  }
-  .founding__title {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: clamp(2rem, 4vw, 3.4rem);
-    line-height: 1;
-    letter-spacing: -0.02em;
-    margin: 0.5rem 0 1.5rem;
-  }
-  .founding__meta {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 0.95rem;
-    color: var(--ink-soft);
-    margin: 0 0 1rem;
-  }
-  .founding__stamps {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-  }
-  .founding__body {
-    column-count: 2;
-    column-gap: 2.5rem;
-    column-rule: 1px solid var(--paper-3);
-    font-family: var(--font-body);
-    font-size: 1rem;
-    line-height: 1.75;
-    color: var(--ink-soft);
-  }
-  .founding__body p { margin: 0 0 1.2rem; }
-  .founding__lead {
-    color: var(--ink) !important;
-  }
-  .dropcap {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 4rem;
-    line-height: 0.85;
-    float: left;
-    padding: 0.1rem 0.5rem 0 0;
-    color: var(--red);
-  }
-
-  /* STATS */
-  .redaktion-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    padding: 2.5rem 0;
-  }
-  .stat {
-    padding: 1rem 1.5rem;
-    text-align: left;
-    border-right: var(--rule-soft);
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-  }
-  .stat:last-child { border-right: none; }
-  .stat__num {
-    font-family: var(--font-display);
-    font-size: 4rem;
-    font-weight: 800;
-    line-height: 1;
-    color: var(--ink);
-    letter-spacing: -0.02em;
-  }
-  .stat__label {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-
-  /* CTA */
-  .redaktion-cta {
-    background: var(--ochre);
-    color: var(--ink);
-    padding: 3rem 2.5rem;
-    margin-top: 2rem;
-    display: grid;
-    grid-template-columns: 1.6fr auto;
-    gap: 2rem;
-    align-items: center;
-  }
-  .redaktion-cta__title {
-    font-family: var(--font-display);
-    font-size: clamp(1.8rem, 3.4vw, 2.6rem);
-    font-weight: 800;
-    line-height: 1.1;
-    margin: 0.5rem 0 0.5rem;
-    color: var(--ink);
-  }
-  .redaktion-cta__sub {
-    font-family: var(--font-body);
-    font-style: italic;
-    margin: 0;
-    color: rgba(26,22,18,0.7);
-  }
-  .redaktion-cta__btn {
-    background: var(--ink);
-    color: var(--paper);
-    font-family: var(--font-meta);
-    font-size: 0.85rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 1.1rem 1.6rem;
-    text-decoration: none;
-    border: none;
-    transition: background 0.15s;
-  }
-  .redaktion-cta__btn:hover { background: var(--red); color: var(--paper); }
-
-  /* Responsive */
-  @media (max-width: 900px) {
-    .values, .redaktion-stats { grid-template-columns: repeat(2, 1fr); }
-    .value, .stat { border-right: none; padding-left: 0 !important; padding-right: 0; }
-    .founding { grid-template-columns: 1fr; gap: 2rem; }
-    .founding__body { column-count: 1; }
-    .redaktion-cta { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 540px) {
-    .values, .redaktion-stats { grid-template-columns: 1fr; }
-  }
-</style>
 
 <script>
   const observer = new IntersectionObserver((entries) => {
@@ -376,5 +156,5 @@ const itemCount = countResult[0].value;
       observer.unobserve(el);
     });
   }, { threshold: 0.5 });
-  document.querySelectorAll('.stat__num[data-target]').forEach(el => observer.observe(el));
+  document.querySelectorAll('.js-stat[data-target]').forEach(el => observer.observe(el));
 </script>
