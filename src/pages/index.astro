@@ -9,6 +9,10 @@
 //   - SEO-freundlich (Suchmaschinen sehen gefilterte Inhalte)
 //   - Funktioniert ohne JavaScript (Progressive Enhancement)
 //
+// TAILWIND-MIGRATION: seitenlokale Styles + Produktkarten-Skelett als
+// Utilities; geteilte Designsystem-Klassen (.stamp, .btn-*, .rule-thick,
+// .bg-stripes, .reveal) bleiben vorerst in global.css.
+//
 // Diese Datei wurde mit Hilfe von Claude (Anthropic) angepasst.
 // =====================================================================
 
@@ -81,37 +85,50 @@ function buildUrl(overrides: { filter?: Filter; sort?: Sort }) {
   return qs ? `/?${qs}` : '/';
 }
 
-
+// Filter-Tabs (Label + Ziel-URL + aktiv?)
+const filterTabs = [
+  { href: buildUrl({ filter: 'alle' }),       label: `Alle (${allItems.length})`,             active: activeFilter === 'alle' },
+  { href: buildUrl({ filter: 'verfuegbar' }), label: `Verfügbar (${verfuegbarCount})`,        active: activeFilter === 'verfuegbar' },
+  { href: buildUrl({ filter: 'begehrt' }),    label: `Sehr begehrt (${sehrBegehrtCount})`,    active: activeFilter === 'begehrt' },
+];
 ---
 
 <Layout title="Katalog">
-  <main class="page katalog">
+  <main class="mx-auto max-w-[1200px] px-6 pt-8 pb-16 max-[540px]:px-4">
 
     {/* Section Header */}
-    <div class="katalog-head">
-      <div class="section-marker">
-        <span class="section-marker__no">N° 01</span>
-        <span class="section-marker__line"></span>
-        <span class="section-marker__label">Katalog · Sämtliche Einträge</span>
+    <div class="mb-6 flex flex-wrap items-end justify-between gap-8">
+      <div class="mb-4 flex items-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] max-[540px]:flex-wrap max-[540px]:gap-[0.4rem]">
+        <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 01</span>
+        <span class="h-px w-8 bg-ink"></span>
+        <span class="font-medium text-red max-[540px]:text-[0.65rem]">Katalog · Sämtliche Einträge</span>
       </div>
 
-      <ul class="filter-tabs">
-        <li><a href={buildUrl({ filter: 'alle' })}       class={activeFilter === 'alle' ? 'is-active' : ''}>Alle ({allItems.length})</a></li>
-        <li><a href={buildUrl({ filter: 'verfuegbar' })} class={activeFilter === 'verfuegbar' ? 'is-active' : ''}>Verfügbar ({verfuegbarCount})</a></li>
-        <li><a href={buildUrl({ filter: 'begehrt' })}    class={activeFilter === 'begehrt' ? 'is-active' : ''}>Sehr begehrt ({sehrBegehrtCount})</a></li>
+      <ul class="m-0 flex list-none gap-6 p-0 font-meta text-[0.78rem] uppercase tracking-[0.12em]">
+        {filterTabs.map((tab) => (
+          <li>
+            <a
+              href={tab.href}
+              class={
+                'border-0 border-b-2 border-solid pb-[0.3rem] ' +
+                (tab.active ? 'border-red text-red' : 'border-transparent text-ink-soft hover:text-ink')
+              }
+            >{tab.label}</a>
+          </li>
+        ))}
       </ul>
     </div>
 
-    <div class="rule-thick" style="margin: 0 0 1.2rem;"></div>
+    <div class="mb-[1.2rem] border-0 border-t border-solid border-ink"></div>
 
-    <div class="katalog-meta">
-      <span class="katalog-count">{items.length} Einträge · Gefiltert: {filterLabels[activeFilter]}</span>
-      <form class="katalog-sort" method="get" id="sort-form">
+    <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
+      <span class="font-meta text-[0.78rem] uppercase tracking-[0.1em] text-ink-mute">{items.length} Einträge · Gefiltert: {filterLabels[activeFilter]}</span>
+      <form class="flex items-center gap-[0.6rem] font-meta text-[0.78rem] uppercase tracking-[0.1em] text-ink-mute" method="get" id="sort-form">
         {/* aktuellen Filter durch hidden field beibehalten */}
         {activeFilter !== 'alle' && <input type="hidden" name="filter" value={activeFilter} />}
         <label>
           Sortierung:
-          <select name="sort" id="sort-select">
+          <select name="sort" id="sort-select" class="ml-1 border border-solid border-ink bg-paper px-2 py-[0.3rem] font-meta text-[0.78rem] text-ink">
             {Object.entries(sortLabels).map(([value, label]) => (
               <option value={value} selected={activeSort === value}>{label}</option>
             ))}
@@ -122,10 +139,9 @@ function buildUrl(overrides: { filter?: Filter; sort?: Sort }) {
         </noscript>
       </form>
     </div>
-    </div>
 
     {/* GRID */}
-    <section class="product-grid">
+    <section class="grid grid-cols-3 border-0 border-t border-solid border-paper-3 max-[900px]:grid-cols-2 max-[600px]:grid-cols-1">
       {items.map((item, idx) => {
         const images = (item.images as string[]) ?? [];
         const thumbnail = images[0];
@@ -139,35 +155,35 @@ function buildUrl(overrides: { filter?: Filter; sort?: Sort }) {
         const isOut = item.stock === 0;
 
         return (
-          <article class="product-card reveal">
+          <article class="reveal flex flex-col gap-4 border-0 border-b border-r border-solid border-paper-3 p-6 [&:nth-child(3n)]:border-r-0 max-[900px]:[&:nth-child(3n)]:border-r max-[900px]:[&:nth-child(2n)]:border-r-0 max-[600px]:border-r-0!">
 
-            <a href={`/product/${item.id}`} class="product-card__media bg-stripes">
+            <a href={`/product/${item.id}`} class="bg-stripes relative block aspect-[4/3] w-full overflow-hidden">
               {thumbnail
-                ? <img src={thumbnail} alt={item.name} />
-                : <span class="product-card__caption">Tafel-Aufnahme folgt</span>
+                ? <img src={thumbnail} alt={item.name} class="block h-full w-full object-cover mix-blend-multiply [filter:sepia(0.15)_contrast(0.95)]" />
+                : <span class="absolute top-1/2 left-1/2 max-w-[80%] -translate-x-1/2 -translate-y-1/2 overflow-hidden text-ellipsis whitespace-nowrap border border-solid border-ink bg-paper px-[0.7rem] py-[0.3rem] font-meta text-[0.72rem] uppercase tracking-[0.1em] text-ink-soft">Tafel-Aufnahme folgt</span>
               }
 
-              <span class="product-card__no">N° {signum}</span>
-              <span class="product-card__boredom">Langeweile {item.boredom}/10</span>
+              <span class="absolute top-[0.6rem] left-[0.6rem] bg-paper px-[0.55rem] py-[0.2rem] font-meta text-[0.7rem] uppercase tracking-[0.1em] text-ink">N° {signum}</span>
+              <span class="absolute top-[0.6rem] right-[0.6rem] bg-ink px-[0.55rem] py-[0.2rem] font-meta text-[0.7rem] uppercase tracking-[0.1em] text-paper">Langeweile {item.boredom}/10</span>
 
               {isBegehrt && (
-                <span class="product-card__stamp">
+                <span class="absolute right-[0.6rem] bottom-[0.6rem]">
                   <span class="stamp stamp--red">Sehr begehrt</span>
                 </span>
               )}
             </a>
 
-            <div class="product-card__body">
-              <p class="product-card__rubrik">
+            <div class="flex flex-1 flex-col gap-2">
+              <p class="m-0 font-meta text-[0.72rem] font-medium uppercase tracking-[0.1em] text-red">
                 Schreibwaren · {classification} · Sign. {sign}
               </p>
-              <h3 class="product-card__name">
-                <a href={`/product/${item.id}`}>{item.name}</a>
+              <h3 class="m-0 font-display text-[1.6rem] font-bold leading-[1.1] tracking-[-0.01em]">
+                <a href={`/product/${item.id}`} class="text-ink hover:text-red">{item.name}</a>
               </h3>
-              <p class="product-card__desc">{item.description}</p>
+              <p class="m-0 flex-1 font-body text-[0.95rem] italic leading-normal text-ink-soft">{item.description}</p>
 
-              <div class="product-card__footer">
-                <span class="product-card__price">{item.price.toFixed(2)} €</span>
+              <div class="mt-2 flex items-center justify-between gap-4">
+                <span class="font-display text-[1.5rem] font-bold text-ink">{item.price.toFixed(2)} €</span>
                 {isOut
                   ? <span class="btn-outline" style="cursor:default; opacity:0.65;">Auf Wunschliste</span>
                   : <AddToCart client:load itemId={item.id} initialStock={item.stock} variant="inline" />
@@ -180,24 +196,27 @@ function buildUrl(overrides: { filter?: Filter; sort?: Sort }) {
     </section>
 
     {/* Schluss-Zitat */}
-    <section class="katalog-quote reveal">
-      <blockquote>
-        „Wir verkaufen nicht, was Sie brauchen. <em>Wir verkaufen, was Sie schon vergessen hatten.</em>"
+    <section class="reveal mt-12 border-0 border-t border-b border-solid border-ink px-4 py-16 text-center">
+      <blockquote class="mx-auto mt-0 mb-4 max-w-[900px] font-display text-[clamp(1.4rem,3vw,2.1rem)] font-bold leading-[1.3] text-ink">
+        „Wir verkaufen nicht, was Sie brauchen. <em class="text-red">Wir verkaufen, was Sie schon vergessen hatten.</em>"
       </blockquote>
-      <cite>— Die Redaktion</cite>
+      <cite class="font-meta text-[0.78rem] not-italic uppercase tracking-[0.14em] text-ink-mute">— Die Redaktion</cite>
     </section>
 
     <div class="rule-thick"></div>
 
     {/* Newsletter-CTA */}
-    <section class="katalog-cta reveal" data-newsletter-wrapper>
-      <div class="katalog-cta__left">
-        <p class="eyebrow">Der wöchentliche Bestandsbericht</p>
-        <h2>Erfahren Sie zuerst, was Sie ohnehin nicht brauchen.</h2>
-        <p class="katalog-cta__note" data-newsletter-status>Einmal pro Woche. Nichts Dringendes. Versprochen.</p>
+    <section class="reveal grid grid-cols-[1.4fr_1fr] items-center gap-12 bg-ink px-10 py-12 text-paper max-[900px]:grid-cols-1" data-newsletter-wrapper>
+      <div>
+        <p class="m-0 font-meta text-[0.78rem] font-medium uppercase tracking-[0.14em] text-ochre">Der wöchentliche Bestandsbericht</p>
+        <h2 class="mt-2 mb-4 font-display text-[clamp(1.6rem,3vw,2.4rem)] font-bold leading-[1.15] text-paper">Erfahren Sie zuerst, was Sie ohnehin nicht brauchen.</h2>
+        <p class="m-0 font-body text-[0.95rem] italic text-paper/60" data-newsletter-status>Einmal pro Woche. Nichts Dringendes. Versprochen.</p>
       </div>
-      <form class="katalog-cta__form" data-newsletter-form>
-        <input type="email" name="email" placeholder="ihre.adresse@beispiel.de" required />
+      <form class="flex" data-newsletter-form>
+        <input
+          type="email" name="email" placeholder="ihre.adresse@beispiel.de" required
+          class="flex-1 border border-solid border-paper/30 bg-transparent px-4 py-[0.9rem] font-body text-base text-paper placeholder:italic placeholder:text-paper/40"
+        />
         <button type="submit" class="btn-ochre">Abonnieren</button>
       </form>
     </section>
@@ -212,192 +231,3 @@ function buildUrl(overrides: { filter?: Filter; sort?: Sort }) {
     (document.getElementById('sort-form') as HTMLFormElement | null)?.submit();
   });
 </script>
-
-<style>
-  .katalog { padding-top: 2rem; }
-
-  .katalog-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 2rem;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-  }
-
-  .filter-tabs {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    gap: 1.5rem;
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-  }
-  .filter-tabs a {
-    color: var(--ink-soft);
-    text-decoration: none;
-    padding-bottom: 0.3rem;
-    border-bottom: 2px solid transparent;
-  }
-  .filter-tabs a:hover { color: var(--ink); }
-  .filter-tabs a.is-active {
-    color: var(--red);
-    border-bottom-color: var(--red);
-  }
-
-  .katalog-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-  .katalog-count {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-  }
-  .katalog-sort {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-  .katalog-sort select {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    padding: 0.3rem 0.5rem;
-    border: 1px solid var(--ink);
-    background: var(--paper);
-    color: var(--ink);
-  }
-
-  /* PRODUKTKARTE — Skelett in global.css; hier nur Katalog-Extras */
-  .product-card__caption {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: var(--paper);
-    border: 1px solid var(--ink);
-    padding: 0.3rem 0.7rem;
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    white-space: nowrap;
-    max-width: 80%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .product-card__no {
-    position: absolute;
-    top: 0.6rem;
-    left: 0.6rem;
-    background: var(--paper);
-    padding: 0.2rem 0.55rem;
-    font-family: var(--font-meta);
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink);
-  }
-  .product-card__rubrik {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--red);
-    margin: 0;
-    font-weight: 500;
-  }
-
-  /* QUOTE */
-  .katalog-quote {
-    text-align: center;
-    padding: 4rem 1rem;
-    border-top: var(--rule);
-    border-bottom: var(--rule);
-    margin: 3rem 0 0;
-  }
-  .katalog-quote blockquote {
-    font-family: var(--font-display);
-    font-size: clamp(1.4rem, 3vw, 2.1rem);
-    font-weight: 700;
-    line-height: 1.3;
-    margin: 0 0 1rem;
-    max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
-    color: var(--ink);
-  }
-  .katalog-quote blockquote em {
-    font-style: italic;
-    color: var(--red);
-  }
-  .katalog-quote cite {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    font-style: normal;
-  }
-
-  /* CTA */
-  .katalog-cta {
-    background: var(--ink);
-    color: var(--paper);
-    padding: 3rem 2.5rem;
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 3rem;
-    align-items: center;
-  }
-  .katalog-cta .eyebrow { color: var(--ochre); }
-  .katalog-cta h2 {
-    font-family: var(--font-display);
-    font-size: clamp(1.6rem, 3vw, 2.4rem);
-    font-weight: 700;
-    line-height: 1.15;
-    margin: 0.5rem 0 1rem;
-    color: var(--paper);
-  }
-  .katalog-cta__note {
-    font-family: var(--font-body);
-    font-style: italic;
-    color: rgba(243,237,225,0.6);
-    margin: 0;
-    font-size: 0.95rem;
-  }
-  .katalog-cta__form {
-    display: flex;
-    gap: 0;
-  }
-  .katalog-cta__form input {
-    flex: 1;
-    background: transparent;
-    border: 1px solid rgba(243,237,225,0.3);
-    color: var(--paper);
-    padding: 0.9rem 1rem;
-    font-family: var(--font-body);
-    font-size: 1rem;
-  }
-  .katalog-cta__form input::placeholder { color: rgba(243,237,225,0.4); font-style: italic; }
-
-  /* Responsive */
-  @media (max-width: 900px) {
-    .katalog-cta { grid-template-columns: 1fr; }
-  }
-</style>
