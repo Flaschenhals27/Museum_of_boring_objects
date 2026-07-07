@@ -7,8 +7,9 @@
 //
 // Diese Datei wurde mit Hilfe von Claude (Anthropic) angepasst.
 
+// TAILWIND-MIGRATION: recently-viewed.css gelöscht, Styles als Utilities.
+// Der Bild-Platzhalter nutzt die geteilte .bg-stripes-Klasse (global.css).
 import { createSignal, onMount, For, Show } from 'solid-js';
-import '../styles/recently-viewed.css';
 
 interface Props {
   currentId: number;
@@ -57,30 +58,30 @@ export default function RecentlyViewed(props: Props) {
   });
 
   return (
-    <section class="recently-viewed">
+    <section class="mt-12 border-0 border-t border-solid border-ink pt-8">
       {/* Eyebrow ist immer da -> stabile Höhe für client:visible */}
-      <p class="section-eyebrow">Zuletzt im Lesesaal</p>
+      <p class="mt-0 mb-2 font-meta text-[0.78rem] uppercase tracking-[0.14em] text-red">Zuletzt im Lesesaal</p>
 
       <Show when={!loaded()}>
-        <p class="recent-empty"><em>Wird geladen ...</em></p>
+        <p class="mt-6 mb-0 py-4 font-body text-[0.95rem] text-ink-mute"><em>Wird geladen ...</em></p>
       </Show>
 
       <Show when={loaded() && !hasData()}>
-        <p class="recent-empty">
+        <p class="mt-6 mb-0 py-4 font-body text-[0.95rem] text-ink-mute">
           <em>Sie haben in dieser Sitzung noch keine weiteren Objekte aufgesucht.</em>
         </p>
       </Show>
 
       <Show when={hasData()}>
-        <div class="recent-grid">
+        <div class="mt-6 grid grid-cols-3 border-0 border-t border-solid border-paper-3 max-[720px]:grid-cols-1">
           <For each={recent()}>
             {(product) => (
-              <a href={`/product/${product.id}`} class="recent-card">
-                <div class="recent-img-wrapper">
-                  <img src={product.thumbnail} alt={product.name} class="recent-img" />
+              <a href={`/product/${product.id}`} class="flex flex-col gap-3 border-0 border-b border-r border-solid border-paper-3 p-4 text-ink transition-colors duration-150 hover:bg-paper-2 [&:nth-child(3n)]:border-r-0 max-[720px]:border-r-0">
+                <div class="bg-stripes aspect-[4/3] overflow-hidden">
+                  <img src={product.thumbnail} alt={product.name} class="block h-full w-full object-cover mix-blend-multiply [filter:sepia(0.12)_contrast(0.95)]" />
                 </div>
-                <p class="recent-name">{product.name}</p>
-                <p class="recent-price">{product.price.toFixed(2)} €</p>
+                <p class="m-0 font-display text-[1.1rem] font-bold leading-[1.15]">{product.name}</p>
+                <p class="m-0 font-display text-base font-bold text-ink">{product.price.toFixed(2)} €</p>
               </a>
             )}
           </For>

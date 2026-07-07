@@ -11,8 +11,8 @@
 // Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
 // =====================================================================
 
+// TAILWIND-MIGRATION: wishlist-button.css gelöscht, Styles als Utilities.
 import { createSignal, onMount } from 'solid-js';
-import '../styles/wishlist-button.css';
 
 interface Props {
   itemId: number;
@@ -71,12 +71,23 @@ export default function WishlistButton(props: Props) {
 
   const variant = props.variant ?? 'icon';
 
+  // Gemeinsame Basis + zustandsabhängige Utilities (aktiv = rot gefüllt)
+  const iconBase =
+    'inline-flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full ' +
+    'border border-solid text-[1.1rem] leading-none transition-all duration-150 ' +
+    'disabled:cursor-wait disabled:opacity-60';
+  const blockBase =
+    'mt-2 w-full cursor-pointer border border-solid px-6 py-4 font-meta text-[0.85rem] ' +
+    'font-semibold uppercase tracking-[0.12em] transition-colors duration-150 pointer-coarse:min-h-11';
+
   if (variant === 'icon') {
     return (
       <button
         onClick={toggle}
         disabled={loading()}
-        class={'wishlist-icon-btn ' + (active() ? 'is-active' : '')}
+        class={iconBase + ' ' + (active()
+          ? 'border-red bg-red text-paper'
+          : 'border-paper-3 bg-paper text-ink-mute enabled:hover:border-red enabled:hover:text-red')}
         aria-label={active() ? 'Aus Wunschliste entfernen' : 'Zur Wunschliste hinzufügen'}
         title={active() ? 'Aus Wunschliste entfernen' : 'Zur Wunschliste hinzufügen'}
       >
@@ -90,7 +101,9 @@ export default function WishlistButton(props: Props) {
     <button
       onClick={toggle}
       disabled={loading()}
-      class={'wishlist-block-btn ' + (active() ? 'is-active' : '')}
+      class={blockBase + ' ' + (active()
+        ? 'border-red bg-red text-paper enabled:hover:bg-red-deep'
+        : 'border-ink bg-transparent text-ink enabled:hover:bg-paper-2')}
     >
       {loading() ? '…' : active() ? '♥ Vermerkt auf Wunschliste' : '♡ Zur Wunschliste'}
     </button>

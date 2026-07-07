@@ -13,9 +13,10 @@
 // Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
 // =====================================================================
 
+// TAILWIND-MIGRATION: gallery.css gelöscht, Styles als Utilities.
+// Der Bild-Platzhalter nutzt die geteilte .bg-stripes-Klasse (global.css).
 import { createSignal, onCleanup, onMount, For, Show } from 'solid-js';
 import { isServer } from 'solid-js/web';
-import '../styles/gallery.css';
 
 interface Props {
   images: string[];
@@ -110,13 +111,19 @@ export default function ImageGallery(props: Props) {
     });
   });
 
+  // Wiederkehrende Utility-Kombi für die Lightbox-Pfeile
+  const arrowBtn =
+    'flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center border border-solid ' +
+    'border-paper/30 bg-paper/10 font-display text-[1.8rem] text-paper transition-colors ' +
+    'duration-150 hover:bg-paper/20 max-[720px]:text-[1.6rem]';
+
   // ---- Render ----
   return (
-    <div class="gallery">
+    <div class="flex flex-col gap-4">
 
       {/* Hauptbild */}
       <div
-        class="gallery-main"
+        class="bg-stripes group relative aspect-[4/3] cursor-zoom-in overflow-hidden border border-solid border-paper-3"
         onClick={() => { setUserInteracted(true); setLightboxOpen(true); }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -124,18 +131,18 @@ export default function ImageGallery(props: Props) {
         <img
           src={props.images[activeIndex()] || '/products/placeholder.jpg'}
           alt={props.alt}
-          class="gallery-main-img"
+          class="block h-full w-full object-cover mix-blend-multiply transition-opacity duration-300 [filter:sepia(0.12)_contrast(0.95)]"
           style={{ opacity: fading() ? '0' : '1' }}
         />
-        <div class="gallery-zoom-hint">🔍 Klicken zum Vergrößern</div>
+        <div class="pointer-events-none absolute bottom-[0.6rem] right-[0.6rem] bg-ink px-[0.6rem] py-[0.3rem] font-meta text-[0.7rem] uppercase tracking-[0.1em] text-paper opacity-0 transition-opacity duration-200 group-hover:opacity-100 max-[720px]:hidden">🔍 Klicken zum Vergrößern</div>
 
         {/* Fortschritts-Ring — komplett JS-gesteuert (kein CSS-Animation) */}
         <Show when={!userInteracted() && props.images.length > 1}>
-          <div class="slideshow-progress">
-            <svg viewBox="0 0 36 36" class="progress-ring">
-              <circle class="progress-ring-bg" cx="18" cy="18" r="15" />
+          <div class="absolute bottom-[0.6rem] left-[0.6rem] h-7 w-7">
+            <svg viewBox="0 0 36 36" class="h-full w-full [transform:rotate(-90deg)]">
+              <circle class="fill-none [stroke:rgba(26,22,18,0.2)] [stroke-width:3]" cx="18" cy="18" r="15" />
               <circle
-                class="progress-ring-fill"
+                class="fill-none stroke-ink [stroke-linecap:round] [stroke-width:3] [transition:stroke-dashoffset_0.05s_linear]"
                 cx="18" cy="18" r="15"
                 stroke-dasharray={RING_CIRCUMFERENCE}
                 stroke-dashoffset={RING_CIRCUMFERENCE * (1 - progress())}
@@ -147,13 +154,16 @@ export default function ImageGallery(props: Props) {
 
       {/* Thumbnails */}
       <Show when={props.images.length > 1}>
-        <div class="gallery-thumbs">
+        <div class="flex flex-wrap gap-2 max-[720px]:justify-start max-[720px]:gap-[0.4rem] max-[720px]:overflow-x-auto max-[720px]:pb-[0.4rem]">
           <For each={props.images}>
             {(src, i) => (
               <img
                 src={src}
                 alt={`${props.alt} ${i() + 1}`}
-                class={`gallery-thumb ${i() === activeIndex() ? 'active' : ''}`}
+                class={
+                  'h-[70px] w-[70px] cursor-pointer border border-solid object-cover transition-[opacity,border-color] duration-200 [filter:sepia(0.12)_contrast(0.95)] hover:border-ink hover:opacity-100 max-[720px]:h-[60px] max-[720px]:w-[60px] max-[720px]:shrink-0 ' +
+                  (i() === activeIndex() ? 'border-ink opacity-100' : 'border-paper-3 opacity-55')
+                }
                 onClick={() => {
                   setUserInteracted(true);
                   setActiveIndex(i());
@@ -166,21 +176,21 @@ export default function ImageGallery(props: Props) {
 
       {/* Lightbox */}
       <Show when={lightboxOpen()}>
-        <div class="lightbox" onClick={() => setLightboxOpen(false)}>
-          <div class="lightbox-content" onClick={e => e.stopPropagation()}>
-            <button class="lightbox-close" onClick={() => setLightboxOpen(false)}>✕</button>
+        <div class="fixed inset-0 z-[99999] flex items-center justify-center bg-[rgba(26,22,18,0.92)]" onClick={() => setLightboxOpen(false)}>
+          <div class="relative flex max-h-[90vh] max-w-[90vw] items-center gap-4" onClick={e => e.stopPropagation()}>
+            <button class="absolute -top-10 right-0 cursor-pointer border-0 bg-transparent font-meta text-[1.2rem] text-paper opacity-70 transition-opacity hover:opacity-100" onClick={() => setLightboxOpen(false)}>✕</button>
             <Show when={props.images.length > 1}>
-              <button class="lightbox-arrow lightbox-arrow--left" onClick={prev}>‹</button>
+              <button class={arrowBtn} onClick={prev}>‹</button>
             </Show>
             <img
               src={props.images[activeIndex()] || '/products/placeholder.jpg'}
               alt={props.alt}
-              class="lightbox-img"
+              class="max-h-[85vh] max-w-[80vw] object-contain [filter:sepia(0.12)_contrast(0.95)]"
             />
             <Show when={props.images.length > 1}>
-              <button class="lightbox-arrow lightbox-arrow--right" onClick={next}>›</button>
+              <button class={arrowBtn} onClick={next}>›</button>
             </Show>
-            <p class="lightbox-counter">{activeIndex() + 1} / {props.images.length}</p>
+            <p class="absolute -bottom-8 left-1/2 m-0 -translate-x-1/2 font-meta text-[0.78rem] uppercase tracking-[0.1em] text-paper opacity-50">{activeIndex() + 1} / {props.images.length}</p>
           </div>
         </div>
       </Show>
