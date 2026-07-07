@@ -159,84 +159,85 @@ const total = kategorien.reduce((sum, k) => sum + k.eintraege.length, 0);
 ---
 
 <Layout title="Häufige Fragen">
-  <main class="page faq">
+  <main class="mx-auto max-w-[980px] px-6 pt-8 pb-16 max-[540px]:px-4">
 
     {/* HERO */}
-    <section class="faq-hero">
-      <div class="section-marker">
-        <span class="section-marker__no">N° 01</span>
-        <span class="section-marker__line"></span>
-        <span class="section-marker__label">Service · Häufige Fragen</span>
+    <section class="mt-4">
+      <div class="mb-4 flex items-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] max-[540px]:flex-wrap max-[540px]:gap-[0.4rem]">
+        <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 01</span>
+        <span class="h-px w-8 bg-ink"></span>
+        <span class="font-medium text-red max-[540px]:text-[0.65rem]">Service · Häufige Fragen</span>
       </div>
 
-      <h1 class="display-headline">Häufige <em>Fragen.</em></h1>
-      <p class="faq-hero__sub">
+      <h1 class="my-4 font-display text-[clamp(3rem,8vw,6rem)] font-extrabold leading-[0.98] tracking-[-0.02em] text-ink max-[540px]:text-[clamp(1.8rem,8vw,2.6rem)]">Häufige <em class="text-red">Fragen.</em></h1>
+      <p class="mt-0 mb-8 max-w-[640px] font-body text-[1.15rem] italic leading-[1.5] text-ink-soft">
         Antworten auf alles, was man uns bisher gefragt hat —
         und einige Dinge, die niemand wirklich fragen wollte.
       </p>
 
       {/* Suche */}
-      <div class="faq-search">
+      <div class="mb-6 flex max-w-[540px] flex-col gap-[0.4rem]">
         <input
           type="search"
           id="faq-search"
           placeholder="Frage eingeben …"
           aria-label="FAQ durchsuchen"
+          class="w-full border border-solid border-ink bg-paper px-4 py-[0.85rem] font-body text-base text-ink focus:outline-2 focus:outline-red focus:-outline-offset-1"
         />
-        <p class="faq-search__hint" id="faq-search-hint">
+        <p class="m-0 font-meta text-[0.72rem] uppercase tracking-[0.1em] text-ink-mute" id="faq-search-hint">
           {total} Einträge in {kategorien.length} Kategorien
         </p>
       </div>
 
       {/* Kategorie-Filter */}
-      <ul class="faq-tabs" id="faq-tabs">
-        <li><button data-cat="all" class="is-active">Alle ({total})</button></li>
+      <ul class="m-0 flex list-none flex-wrap gap-2 p-0" id="faq-tabs">
+        <li><button data-cat="all" data-active class="cursor-pointer border border-solid border-paper-3 bg-transparent px-[0.9rem] py-2 font-meta text-[0.78rem] uppercase tracking-[0.1em] text-ink-soft transition-colors duration-150 hover:border-ink hover:text-ink data-[active]:border-ink data-[active]:bg-ink data-[active]:text-paper max-[720px]:px-[0.7rem] max-[720px]:py-[0.4rem] max-[720px]:text-[0.72rem]">Alle ({total})</button></li>
         {kategorien.map(k => (
-          <li><button data-cat={k.id}>{k.label} ({k.eintraege.length})</button></li>
+          <li><button data-cat={k.id} class="cursor-pointer border border-solid border-paper-3 bg-transparent px-[0.9rem] py-2 font-meta text-[0.78rem] uppercase tracking-[0.1em] text-ink-soft transition-colors duration-150 hover:border-ink hover:text-ink data-[active]:border-ink data-[active]:bg-ink data-[active]:text-paper max-[720px]:px-[0.7rem] max-[720px]:py-[0.4rem] max-[720px]:text-[0.72rem]">{k.label} ({k.eintraege.length})</button></li>
         ))}
       </ul>
     </section>
 
-    <div class="rule-thick" style="margin: 2rem 0;"></div>
+    <div class="my-8 border-0 border-t border-solid border-ink"></div>
 
     {/* FAQ-LISTE */}
-    <section class="faq-list" id="faq-list">
+    <section id="faq-list">
       {kategorien.map(k => (
-        <div class="faq-cat" data-cat={k.id}>
-          <h2 class="faq-cat__title" id={`cat-${k.id}`}>
-            <span class="faq-cat__no">·</span> {k.label}
+        <div class="faq-cat mb-10" data-cat={k.id}>
+          <h2 class="mt-0 mb-4 border-0 border-b border-solid border-ink pb-[0.6rem] font-meta text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-red" id={`cat-${k.id}`}>
+            <span class="mr-[0.3rem] text-ink-mute">·</span> {k.label}
           </h2>
 
-          {k.eintraege.map((e, i) => (
-            <details class="faq-item">
-              <summary>
-                <span class="faq-item__q">{e.q}</span>
-                <span class="faq-item__icon" aria-hidden="true">+</span>
+          {k.eintraege.map((e) => (
+            <details class="faq-item group border-0 border-b border-solid border-paper-3">
+              <summary class="flex cursor-pointer list-none items-start justify-between gap-4 py-[1.2rem] transition-colors duration-150 [&::-webkit-details-marker]:hidden [&::marker]:content-['']">
+                <span class="faq-item__q flex-1 font-display text-[1.2rem] font-bold leading-[1.3] text-ink group-hover:text-red max-[720px]:text-[1.05rem]">{e.q}</span>
+                <span class="faq-item__icon w-6 flex-shrink-0 text-center font-display text-[1.6rem] font-normal leading-none text-red transition-transform duration-200 group-open:rotate-180" aria-hidden="true">+</span>
               </summary>
-              <div class="faq-item__a">
-                <p>{e.a}</p>
+              <div class="faq-item__a pb-6 pr-10">
+                <p class="m-0 font-body text-base leading-[1.7] text-ink-soft">{e.a}</p>
               </div>
             </details>
           ))}
         </div>
       ))}
 
-      <p class="faq-empty" id="faq-empty" hidden>
+      <p class="mx-auto my-0 max-w-[480px] px-4 py-12 text-center font-body text-base italic text-ink-mute" id="faq-empty" hidden>
         Keine Treffer. Vielleicht haben Sie zu spezifisch gesucht —
         oder die Frage wartet noch darauf, gestellt zu werden.
       </p>
     </section>
 
     {/* KONTAKT-CTA */}
-    <section class="faq-cta">
+    <section class="mt-8 grid grid-cols-[1.4fr_auto] items-center gap-8 bg-ink px-12 py-10 text-paper max-[720px]:grid-cols-1 max-[720px]:px-6 max-[720px]:py-8">
       <div>
-        <p class="faq-cta__eyebrow">Noch nicht beantwortet?</p>
-        <h2 class="faq-cta__title">Schreiben Sie uns.</h2>
-        <p class="faq-cta__sub">
+        <p class="mt-0 mb-[0.3rem] font-meta text-[0.78rem] uppercase tracking-[0.14em] text-ochre">Noch nicht beantwortet?</p>
+        <h2 class="mt-0 mb-[0.6rem] font-display text-[clamp(1.6rem,3vw,2.2rem)] font-bold leading-[1.1] text-paper">Schreiben Sie uns.</h2>
+        <p class="m-0 font-body italic text-paper/70">
           Wir antworten werktags, in der Reihenfolge der Eingänge, ohne Hast.
         </p>
       </div>
-      <a href={`mailto:${email}`} class="faq-cta__btn">
+      <a href={`mailto:${email}`} class="whitespace-nowrap bg-ochre px-[1.6rem] py-[1.1rem] font-meta text-[0.85rem] font-semibold uppercase tracking-[0.08em] text-ink transition-colors duration-150 hover:bg-paper pointer-coarse:min-h-11">
         {email} →
       </a>
     </section>
@@ -300,8 +301,9 @@ const total = kategorien.reduce((sum, k) => sum + k.eintraege.length, 0);
   tabsRoot.addEventListener('click', (e) => {
     const btn = (e.target as HTMLElement).closest('button[data-cat]') as HTMLButtonElement | null;
     if (!btn) return;
-    tabsRoot.querySelectorAll('button').forEach(b => b.classList.remove('is-active'));
-    btn.classList.add('is-active');
+    // Aktiver Tab über data-active (matcht die data-[active]:-Utilities)
+    tabsRoot.querySelectorAll('button').forEach(b => b.removeAttribute('data-active'));
+    btn.setAttribute('data-active', '');
     activeCat = btn.dataset.cat!;
     applyFilters();
   });
@@ -314,227 +316,4 @@ const total = kategorien.reduce((sum, k) => sum + k.eintraege.length, 0);
     });
   });
 </script>
-
-<style>
-  .faq {
-    max-width: 980px;
-    padding-top: 2rem;
-  }
-
-  /* HERO */
-  .faq-hero { margin-top: 1rem; }
-  .faq-hero .display-headline {
-    margin: 1rem 0 1rem;
-  }
-  .faq-hero__sub {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 1.15rem;
-    line-height: 1.5;
-    color: var(--ink-soft);
-    max-width: 640px;
-    margin: 0 0 2rem;
-  }
-
-  /* SUCHE */
-  .faq-search {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    margin-bottom: 1.5rem;
-    max-width: 540px;
-  }
-  .faq-search input {
-    padding: 0.85rem 1rem;
-    border: 1px solid var(--ink);
-    background: var(--paper);
-    color: var(--ink);
-    font-family: var(--font-body);
-    font-size: 1rem;
-    width: 100%;
-  }
-  .faq-search input:focus {
-    outline: 2px solid var(--red);
-    outline-offset: -1px;
-  }
-  .faq-search__hint {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0;
-  }
-
-  /* TABS */
-  .faq-tabs {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  .faq-tabs button {
-    background: transparent;
-    border: 1px solid var(--paper-3);
-    padding: 0.5rem 0.9rem;
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
-  }
-  .faq-tabs button:hover {
-    border-color: var(--ink);
-    color: var(--ink);
-  }
-  .faq-tabs button.is-active {
-    background: var(--ink);
-    color: var(--paper);
-    border-color: var(--ink);
-  }
-
-  /* LISTE */
-  .faq-cat { margin-bottom: 2.5rem; }
-  .faq-cat[hidden] { display: none; }
-  .faq-cat__title {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--red);
-    font-weight: 600;
-    margin: 0 0 1rem;
-    padding-bottom: 0.6rem;
-    border-bottom: 1px solid var(--ink);
-  }
-  .faq-cat__no {
-    color: var(--ink-mute);
-    margin-right: 0.3rem;
-  }
-
-  .faq-item {
-    border-bottom: var(--rule-soft);
-  }
-  .faq-item[hidden] { display: none; }
-  .faq-item > summary {
-    list-style: none;
-    cursor: pointer;
-    padding: 1.2rem 0;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
-    transition: color 0.15s;
-  }
-  .faq-item > summary::-webkit-details-marker { display: none; }
-  .faq-item > summary::marker { content: ''; }
-  .faq-item > summary:hover { color: var(--red); }
-  .faq-item__q {
-    font-family: var(--font-display);
-    font-size: 1.2rem;
-    font-weight: 700;
-    line-height: 1.3;
-    color: var(--ink);
-    flex: 1;
-  }
-  .faq-item > summary:hover .faq-item__q { color: var(--red); }
-  .faq-item__icon {
-    font-family: var(--font-display);
-    font-size: 1.6rem;
-    font-weight: 400;
-    color: var(--red);
-    line-height: 1;
-    flex-shrink: 0;
-    width: 1.5rem;
-    text-align: center;
-    transition: transform 0.2s;
-  }
-  .faq-item[open] .faq-item__icon {
-    transform: rotate(180deg);
-  }
-
-  .faq-item__a {
-    padding: 0 0 1.5rem;
-    padding-right: 2.5rem;
-  }
-  .faq-item__a p {
-    font-family: var(--font-body);
-    font-size: 1rem;
-    line-height: 1.7;
-    color: var(--ink-soft);
-    margin: 0;
-  }
-
-  .faq-empty {
-    text-align: center;
-    padding: 3rem 1rem;
-    font-family: var(--font-body);
-    font-style: italic;
-    color: var(--ink-mute);
-    font-size: 1rem;
-    max-width: 480px;
-    margin: 0 auto;
-  }
-
-  /* CTA */
-  .faq-cta {
-    background: var(--ink);
-    color: var(--paper);
-    padding: 2.5rem 3rem;
-    margin-top: 2rem;
-    display: grid;
-    grid-template-columns: 1.4fr auto;
-    gap: 2rem;
-    align-items: center;
-  }
-  .faq-cta__eyebrow {
-    font-family: var(--font-meta);
-    font-size: 0.78rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ochre);
-    margin: 0 0 0.3rem;
-  }
-  .faq-cta__title {
-    font-family: var(--font-display);
-    font-size: clamp(1.6rem, 3vw, 2.2rem);
-    font-weight: 700;
-    line-height: 1.1;
-    margin: 0 0 0.6rem;
-    color: var(--paper);
-  }
-  .faq-cta__sub {
-    font-family: var(--font-body);
-    font-style: italic;
-    color: rgba(243,237,225,0.7);
-    margin: 0;
-  }
-  .faq-cta__btn {
-    background: var(--ochre);
-    color: var(--ink);
-    font-family: var(--font-meta);
-    font-size: 0.85rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 1.1rem 1.6rem;
-    text-decoration: none;
-    transition: background 0.15s;
-    white-space: nowrap;
-    font-weight: 600;
-  }
-  .faq-cta__btn:hover {
-    background: var(--paper);
-  }
-
-  /* RESPONSIVE */
-  @media (max-width: 720px) {
-    .faq-tabs { gap: 0.4rem; }
-    .faq-tabs button { font-size: 0.72rem; padding: 0.4rem 0.7rem; }
-    .faq-item__q { font-size: 1.05rem; }
-    .faq-cta { grid-template-columns: 1fr; padding: 2rem 1.5rem; }
-  }
-</style>
+
