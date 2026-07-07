@@ -7,6 +7,9 @@
 // kümmert sich um Order-Anlage, Mail-Versand, Stock-Reduzierung
 // und Cart-Cleanup. Diese Seite ist nur UI-Schicht.
 //
+// TAILWIND-MIGRATION: seitenlokale Styles als Utilities; die Auswahl-
+// Optik der Zahlarten läuft über peer-checked statt input:checked+Karte.
+//
 // Diese Datei wurde mit Hilfe von Claude (Anthropic) erstellt.
 // =====================================================================
 
@@ -34,93 +37,90 @@ const { coupon, discount } = await resolveDiscount(cartRecord?.couponCode, total
 
 const shippingCost = SHIPPING_COST;
 const grandTotal = Math.max(0, total - discount) + shippingCost;
+
+// Formularfelder (Label + Input-Attribute) — hält das Markup unten schlank
+const addressFields = [
+  { id: 'cf-prename', name: 'prename', label: 'Vorname',              placeholder: 'Max',            type: 'text',  full: false },
+  { id: 'cf-surname', name: 'surname', label: 'Nachname',             placeholder: 'Mustermann',     type: 'text',  full: false },
+  { id: 'cf-street',  name: 'street',  label: 'Straße & Hausnummer',  placeholder: 'Musterstraße 1', type: 'text',  full: true },
+  { id: 'cf-postal',  name: 'postal',  label: 'PLZ',                  placeholder: '12345',          type: 'text',  full: false },
+  { id: 'cf-city',    name: 'city',    label: 'Ort',                  placeholder: 'Musterstadt',    type: 'text',  full: false },
+  { id: 'cf-email',   name: 'email',   label: 'E-Mail (für die Eingangsbestätigung)', placeholder: 'ihre.adresse@beispiel.de', type: 'email', full: true },
+];
+
+const inputClasses =
+  'w-full border border-solid border-ink bg-paper px-[0.9rem] py-[0.85rem] font-body text-base text-ink ' +
+  'focus:outline-2 focus:outline-red focus:-outline-offset-1 ' +
+  '[&.invalid]:border-red [&.invalid]:bg-red/5 max-[540px]:text-[16px]';
 ---
 
 <Layout title="Kasse">
-  <main class="page checkout">
+  <main class="mx-auto max-w-[1200px] px-6 pt-8 pb-16 max-[540px]:px-4">
 
-    <div class="section-marker">
-      <span class="section-marker__no">N° 02</span>
-      <span class="section-marker__line"></span>
-      <span class="section-marker__label">Zur Kasse · Bordereau-Bestätigung</span>
+    <div class="mb-4 flex items-center gap-4 font-meta text-[0.78rem] uppercase tracking-[0.14em] max-[540px]:flex-wrap max-[540px]:gap-[0.4rem]">
+      <span class="font-body text-[0.95rem] italic tracking-normal text-ink-soft">N° 02</span>
+      <span class="h-px w-8 bg-ink"></span>
+      <span class="font-medium text-red max-[540px]:text-[0.65rem]">Zur Kasse · Bordereau-Bestätigung</span>
     </div>
 
-    <div class="checkout-head">
-      <h1 class="display-headline">Kasse.</h1>
-      <p class="checkout-head__motto"><em>Fast vollbracht. Oder auch nicht.</em></p>
+    <div class="mt-8 grid grid-cols-2 items-end gap-8 max-[900px]:grid-cols-1">
+      <h1 class="mt-2 mb-4 font-display text-[clamp(3rem,8vw,6rem)] font-extrabold leading-[0.98] tracking-[-0.02em] text-ink max-[540px]:text-[clamp(1.8rem,8vw,2.6rem)] max-[540px]:leading-[1.05]">Kasse.</h1>
+      <p class="m-0 text-right font-body text-[1.2rem] italic text-ink-soft max-[900px]:text-left"><em>Fast vollbracht. Oder auch nicht.</em></p>
     </div>
 
-    <div class="rule-thick" style="margin: 1rem 0 0;"></div>
+    <div class="mt-4 border-0 border-t border-solid border-ink"></div>
 
-    <div class="checkout-layout">
+    <div class="mt-8 grid grid-cols-[1.6fr_1fr] items-start gap-12 max-[900px]:grid-cols-1">
 
-      <form class="checkout-form" id="checkout-form" onsubmit="event.preventDefault();">
+      <form id="checkout-form" onsubmit="event.preventDefault();">
 
-        <div id="form-error" class="form-error" hidden></div>
+        <div id="form-error" class="mb-6 border-0 border-l-[3px] border-solid border-red bg-red/8 px-4 py-[0.9rem] font-meta text-[0.85rem] text-red" hidden></div>
 
-        <section class="form-section">
-          <h2 class="form-title">
-            <span class="form-title__no">01.</span> Lieferadresse
+        <section class="border-0 border-b border-solid border-paper-3 py-[1.8rem] pt-0">
+          <h2 class="mt-0 mb-[0.4rem] font-display text-[1.6rem] font-bold leading-[1.1]">
+            <span class="mr-[0.4rem] italic text-red">01.</span> Lieferadresse
           </h2>
-          <p class="form-meta">Postzustellung erfolgt werktags, in der Reihenfolge der Eingänge.</p>
+          <p class="mt-0 mb-[1.2rem] font-body text-[0.95rem] italic text-ink-mute">Postzustellung erfolgt werktags, in der Reihenfolge der Eingänge.</p>
 
-          <div class="form-grid">
-            <div class="form-field">
-              <label for="cf-prename">Vorname</label>
-              <input type="text" id="cf-prename" name="prename" placeholder="Max" required />
-            </div>
-            <div class="form-field">
-              <label for="cf-surname">Nachname</label>
-              <input type="text" id="cf-surname" name="surname" placeholder="Mustermann" required />
-            </div>
-            <div class="form-field form-field--full">
-              <label for="cf-street">Straße &amp; Hausnummer</label>
-              <input type="text" id="cf-street" name="street" placeholder="Musterstraße 1" required />
-            </div>
-            <div class="form-field">
-              <label for="cf-postal">PLZ</label>
-              <input type="text" id="cf-postal" name="postal" placeholder="12345" required />
-            </div>
-            <div class="form-field">
-              <label for="cf-city">Ort</label>
-              <input type="text" id="cf-city" name="city" placeholder="Musterstadt" required />
-            </div>
-            <div class="form-field form-field--full">
-              <label for="cf-email">E-Mail (für die Eingangsbestätigung)</label>
-              <input type="email" id="cf-email" name="email" placeholder="ihre.adresse@beispiel.de" required />
-            </div>
+          <div class="grid grid-cols-2 gap-4 max-[540px]:grid-cols-1">
+            {addressFields.map((f) => (
+              <div class={'flex flex-col gap-[0.4rem]' + (f.full ? ' col-span-full max-[540px]:col-span-1' : '')}>
+                <label for={f.id} class="font-meta text-[0.72rem] font-medium uppercase tracking-[0.14em] text-ink-mute">{f.label}</label>
+                <input type={f.type} id={f.id} name={f.name} placeholder={f.placeholder} required class={inputClasses} />
+              </div>
+            ))}
           </div>
         </section>
 
-        <section class="form-section">
-          <h2 class="form-title">
-            <span class="form-title__no">02.</span> Zahlungsmethode
+        <section class="border-0 border-b border-solid border-paper-3 py-[1.8rem]">
+          <h2 class="mt-0 mb-[0.4rem] font-display text-[1.6rem] font-bold leading-[1.1]">
+            <span class="mr-[0.4rem] italic text-red">02.</span> Zahlungsmethode
           </h2>
-          <p class="form-meta">Wir akzeptieren ausschließlich das Belanglose — aber wohlwollend.</p>
+          <p class="mt-0 mb-[1.2rem] font-body text-[0.95rem] italic text-ink-mute">Wir akzeptieren ausschließlich das Belanglose — aber wohlwollend.</p>
 
-          <div class="payment-options">
-            <label class="payment-option">
-              <input type="radio" name="payment" value="milliardaer" checked />
-              <div class="payment-card">
-                <span class="payment-name">Auf Kosten eines weltbekannten Milliardärs.</span>
-                <span class="payment-desc"><em>Er hat genug. Wir fragen ihn gar nicht erst.</em></span>
-                <span class="stamp stamp--red">Empfohlen</span>
+          <div class="flex flex-col gap-3">
+            <label class="block cursor-pointer">
+              <input type="radio" name="payment" value="milliardaer" checked class="peer hidden" />
+              <div class="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-[0.2rem] border border-solid border-paper-3 bg-paper px-[1.2rem] py-4 transition-colors duration-150 peer-checked:border-ink peer-checked:bg-paper-2 [grid-template-areas:'name_stamp'_'desc_stamp']">
+                <span class="font-display text-[1.05rem] font-bold text-ink [grid-area:name]">Auf Kosten eines weltbekannten Milliardärs.</span>
+                <span class="font-body text-[0.88rem] text-ink-soft [grid-area:desc]"><em>Er hat genug. Wir fragen ihn gar nicht erst.</em></span>
+                <span class="stamp stamp--red [grid-area:stamp]">Empfohlen</span>
               </div>
             </label>
-            <label class="payment-option payment-option--disabled">
-              <input type="radio" name="payment" value="card" disabled />
-              <div class="payment-card">
-                <span class="payment-name">Kreditkarte</span>
-                <span class="payment-desc"><em>Wozu, wenn ein anderer zahlt?</em></span>
-                <span class="stamp stamp--neutral stamp--open">Nicht verfügbar</span>
+            <label class="block cursor-not-allowed opacity-55">
+              <input type="radio" name="payment" value="card" disabled class="peer hidden" />
+              <div class="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-[0.2rem] border border-solid border-paper-3 bg-paper px-[1.2rem] py-4 [grid-template-areas:'name_stamp'_'desc_stamp']">
+                <span class="font-display text-[1.05rem] font-bold text-ink [grid-area:name]">Kreditkarte</span>
+                <span class="font-body text-[0.88rem] text-ink-soft [grid-area:desc]"><em>Wozu, wenn ein anderer zahlt?</em></span>
+                <span class="stamp stamp--neutral stamp--open [grid-area:stamp]">Nicht verfügbar</span>
               </div>
             </label>
-            <label class="payment-option payment-option--disabled">
-              <input type="radio" name="payment" value="paypal" disabled />
-              <div class="payment-card">
-                <span class="payment-name">PayPal</span>
-                <span class="payment-desc"><em>Auch hier: nicht erforderlich.</em></span>
-                <span class="stamp stamp--neutral stamp--open">Nicht verfügbar</span>
+            <label class="block cursor-not-allowed opacity-55">
+              <input type="radio" name="payment" value="paypal" disabled class="peer hidden" />
+              <div class="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-[0.2rem] border border-solid border-paper-3 bg-paper px-[1.2rem] py-4 [grid-template-areas:'name_stamp'_'desc_stamp']">
+                <span class="font-display text-[1.05rem] font-bold text-ink [grid-area:name]">PayPal</span>
+                <span class="font-body text-[0.88rem] text-ink-soft [grid-area:desc]"><em>Auch hier: nicht erforderlich.</em></span>
+                <span class="stamp stamp--neutral stamp--open [grid-area:stamp]">Nicht verfügbar</span>
               </div>
             </label>
           </div>
@@ -128,66 +128,71 @@ const grandTotal = Math.max(0, total - discount) + shippingCost;
 
       </form>
 
-      <aside class="checkout-summary">
-        <p class="checkout-summary__eyebrow">Ihre Bestellung</p>
-        <h2 class="checkout-summary__title">Der Vorgang.</h2>
+      <aside class="sticky top-8 border-0 border-t border-solid border-ink pt-6 max-[900px]:static">
+        <p class="mt-0 mb-[0.3rem] font-meta text-[0.78rem] uppercase tracking-[0.14em] text-ink-mute">Ihre Bestellung</p>
+        <h2 class="mt-0 mb-4 font-display text-[2.4rem] font-extrabold leading-none">Der Vorgang.</h2>
 
-        <div class="rule-thin" style="margin: 0.5rem 0 1rem;"></div>
+        <div class="mt-2 mb-4 border-0 border-t border-solid border-paper-3"></div>
 
         {cartItems.map((item) => {
           const images = (item.product.images as string[]) ?? [];
           const thumbnail = images[0];
           return (
-            <div class="summary-item">
-              <div class="summary-img bg-stripes">
-                {thumbnail ? <img src={thumbnail} alt={item.product.name} /> : null}
+            <div class="grid grid-cols-[56px_1fr_auto] items-center gap-[0.9rem] py-[0.6rem]">
+              <div class="bg-stripes h-14 w-14 overflow-hidden">
+                {thumbnail ? <img src={thumbnail} alt={item.product.name} class="h-full w-full object-cover mix-blend-multiply [filter:sepia(0.12)_contrast(0.95)]" /> : null}
               </div>
-              <div class="summary-info">
-                <p class="summary-item-name">{item.product.name}</p>
-                <p class="summary-item-qty">× {item.quantity}</p>
+              <div>
+                <p class="m-0 font-display text-[0.95rem] font-bold leading-[1.2]">{item.product.name}</p>
+                <p class="mt-[0.2rem] mb-0 font-meta text-[0.72rem] uppercase tracking-[0.1em] text-ink-mute">× {item.quantity}</p>
               </div>
-              <p class="summary-item-price">{(item.product.price * item.quantity).toFixed(2)} €</p>
+              <p class="m-0 font-display text-base font-bold">{(item.product.price * item.quantity).toFixed(2)} €</p>
             </div>
           );
         })}
 
-        <div class="rule-thin" style="margin: 1rem 0;"></div>
+        <div class="my-4 border-0 border-t border-solid border-paper-3"></div>
 
-        <div class="summary-line">
+        <div class="flex justify-between py-[0.4rem] font-body text-ink-soft">
           <span>Zwischensumme</span>
           <span>{total.toFixed(2)} €</span>
         </div>
         {discount > 0 && coupon && (
-          <div class="summary-line summary-line--discount">
-            <span>Gutschein <em>({coupon.code})</em></span>
-            <span>−{discount.toFixed(2)} €</span>
+          <div class="flex justify-between py-[0.4rem] font-body text-ink-soft">
+            <span>Gutschein <em class="text-[0.9em] italic text-ink-mute">({coupon.code})</em></span>
+            <span class="text-red">−{discount.toFixed(2)} €</span>
           </div>
         )}
-        <div class="summary-line">
-          <span>Versand <em>(langsam)</em></span>
+        <div class="flex justify-between py-[0.4rem] font-body text-ink-soft">
+          <span>Versand <em class="text-[0.9em] italic text-ink-mute">(langsam)</em></span>
           <span>{shippingCost.toFixed(2)} €</span>
         </div>
-        <div class="summary-line">
+        <div class="flex justify-between py-[0.4rem] font-body text-ink-soft">
           <span>Symbolische Steuer</span>
           <span>0,00 €</span>
         </div>
 
-        <div class="rule-thick" style="margin: 1rem 0; border-top-color: var(--ink);"></div>
+        <div class="my-4 border-0 border-t border-solid border-ink"></div>
 
-        <div class="summary-total">
-          <span class="summary-total__label">Gesamt</span>
-          <span class="summary-total__value">{grandTotal.toFixed(2)} €</span>
+        <div class="flex items-baseline justify-between">
+          <span class="font-meta text-[0.8rem] uppercase tracking-[0.14em] text-ink-mute">Gesamt</span>
+          <span class="font-display text-[2rem] font-extrabold">{grandTotal.toFixed(2)} €</span>
         </div>
 
-        <div class="summary-uebernahme">
-          <p>Wird übernommen — siehe oben.</p>
+        <div class="my-4 border-0 border-l-[3px] border-solid border-ochre bg-paper-2 px-4 py-[0.8rem]">
+          <p class="m-0 font-body text-[0.92rem] italic">Wird übernommen — siehe oben.</p>
         </div>
 
-        <button type="button" class="checkout-cta" id="order-btn">
+        <button
+          type="button"
+          id="order-btn"
+          class="mt-2 w-full cursor-pointer border-0 bg-ink px-4 py-[1.1rem] font-meta text-[0.85rem] uppercase tracking-[0.12em] text-paper
+                 transition-colors duration-150 enabled:hover:bg-red disabled:cursor-not-allowed disabled:opacity-60 pointer-coarse:min-h-11"
+        >
           Bestellung aufgeben →
         </button>
 
-        <p class="checkout-disclaimer">
+        <p class="mx-0 mt-4 mb-0 text-center font-body text-[0.82rem] italic leading-normal text-ink-mute">
           <em>Mit dem Klick bestätigen Sie, dass der oben genannte Dritte ungefragt
           für diese Transaktion in Anspruch genommen wird. Wir bedauern nichts.</em>
         </p>
@@ -204,7 +209,7 @@ const grandTotal = Math.max(0, total - discount) + shippingCost;
   // Checkout-Submit-Logik
   // -------------------------------------------------------------------
   // Sammelt die Formulardaten, ruft POST /api/orders auf, navigiert bei
-  // Erfolg zu /order-confirmed?nr=<bordereauNr>.
+  // Erfolg zu /order-confirmed?token=<token>.
   // -------------------------------------------------------------------
 
   const orderBtn = document.getElementById('order-btn') as HTMLButtonElement;
@@ -323,186 +328,3 @@ const grandTotal = Math.max(0, total - discount) + shippingCost;
     }
   });
 </script>
-
-<style>
-  .checkout { padding-top: 2rem; }
-
-  /* .checkout-head / __motto: Basis in global.css */
-
-  .checkout-layout {
-    display: grid;
-    grid-template-columns: 1.6fr 1fr;
-    gap: 3rem;
-    align-items: start;
-    margin-top: 2rem;
-  }
-
-  .form-error {
-    background: rgba(122,31,31,0.08);
-    color: var(--red);
-    padding: 0.9rem 1rem;
-    font-family: var(--font-meta);
-    font-size: 0.85rem;
-    border-left: 3px solid var(--red);
-    margin-bottom: 1.5rem;
-  }
-
-  .form-section {
-    padding: 1.8rem 0;
-    border-bottom: var(--rule-soft);
-  }
-  .form-section:first-child { padding-top: 0; }
-  .form-title {
-    font-family: var(--font-display);
-    font-size: 1.6rem;
-    font-weight: 700;
-    margin: 0 0 0.4rem;
-    line-height: 1.1;
-  }
-  .form-title__no {
-    color: var(--red);
-    font-style: italic;
-    margin-right: 0.4rem;
-  }
-  .form-meta {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 0.95rem;
-    color: var(--ink-mute);
-    margin: 0 0 1.2rem;
-  }
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-  /* .form-field / label / input-Basis: siehe global.css */
-  .form-field--full { grid-column: 1 / -1; }
-
-  .payment-options { display: flex; flex-direction: column; gap: 0.75rem; }
-  .payment-option { cursor: pointer; display: block; }
-  .payment-option input { display: none; }
-  .payment-card {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-areas: "name stamp" "desc stamp";
-    gap: 0.2rem 1rem;
-    align-items: center;
-    padding: 1rem 1.2rem;
-    border: 1px solid var(--paper-3);
-    background: var(--paper);
-    transition: border-color 0.15s, background 0.15s;
-  }
-  .payment-option input:checked + .payment-card {
-    border-color: var(--ink);
-    background: var(--paper-2);
-  }
-  .payment-option--disabled { opacity: 0.55; cursor: not-allowed; }
-  .payment-name {
-    grid-area: name;
-    font-family: var(--font-display);
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: var(--ink);
-  }
-  .payment-desc {
-    grid-area: desc;
-    font-family: var(--font-body);
-    font-size: 0.88rem;
-    color: var(--ink-soft);
-  }
-  .payment-card .stamp { grid-area: stamp; }
-
-  /* .checkout-summary / __eyebrow: Basis in global.css */
-  .checkout-summary__title {
-    font-family: var(--font-display);
-    font-size: 2.4rem;
-    font-weight: 800;
-    line-height: 1;
-    margin: 0 0 1rem;
-  }
-  .summary-item {
-    display: grid;
-    grid-template-columns: 56px 1fr auto;
-    gap: 0.9rem;
-    align-items: center;
-    padding: 0.6rem 0;
-  }
-  .summary-img { width: 56px; height: 56px; overflow: hidden; }
-  .summary-img img {
-    width: 100%; height: 100%; object-fit: cover;
-    filter: sepia(0.12) contrast(0.95);
-    mix-blend-mode: multiply;
-  }
-  .summary-item-name {
-    font-family: var(--font-display);
-    font-size: 0.95rem;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1.2;
-  }
-  .summary-item-qty {
-    font-family: var(--font-meta);
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    margin: 0.2rem 0 0;
-  }
-  .summary-item-price {
-    font-family: var(--font-display);
-    font-size: 1rem;
-    font-weight: 700;
-    margin: 0;
-  }
-  /* .summary-line / em: Basis in global.css */
-  .summary-line--discount span:last-child { color: var(--red); }
-  /* .summary-total / __label / __value: Basis in global.css */
-  .summary-uebernahme {
-    background: var(--paper-2);
-    padding: 0.8rem 1rem;
-    border-left: 3px solid var(--ochre);
-    margin: 1rem 0;
-  }
-  .summary-uebernahme p {
-    font-family: var(--font-body);
-    font-style: italic;
-    margin: 0;
-    font-size: 0.92rem;
-  }
-  .checkout-cta {
-    width: 100%;
-    background: var(--ink);
-    color: var(--paper);
-    border: none;
-    padding: 1.1rem;
-    margin-top: 0.5rem;
-    font-family: var(--font-meta);
-    font-size: 0.85rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-  .checkout-cta:hover:not(:disabled) { background: var(--red); }
-  .checkout-cta:disabled { opacity: 0.6; cursor: not-allowed; }
-  .checkout-disclaimer {
-    font-family: var(--font-body);
-    font-style: italic;
-    font-size: 0.82rem;
-    color: var(--ink-mute);
-    text-align: center;
-    line-height: 1.5;
-    margin: 1rem 0 0;
-  }
-
-  @media (max-width: 900px) {
-    .checkout-layout { grid-template-columns: 1fr; }
-    .checkout-summary { position: static; }
-    .checkout-head { grid-template-columns: 1fr; }
-    .checkout-head__motto { text-align: left; }
-  }
-  @media (max-width: 540px) {
-    .form-grid { grid-template-columns: 1fr; }
-  }
-</style>
